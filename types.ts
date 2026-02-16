@@ -39,10 +39,34 @@ export interface ChatMessage {
   timestamp: Date;
 }
 
+export interface CustomsDeclarationData {
+  submissionDate: string;
+  agentName: string;
+  importerName: string;
+  fullDeclarationNumber: string;
+  lastFourDigits: string;
+  quantity: string;
+  weight: string;
+  internalTransit: string;
+  billOfLadingDate: string;
+  cargoDescription: string;
+}
+
+export interface CustomsProcessingState {
+  step: 'input' | 'upload' | 'processing' | 'results';
+  shipmentRequestNumber: string;
+  shipmentDescription: string;
+  uploadedFile: File | null;
+  uploadedImageUrl: string | null;
+  extractedData: CustomsDeclarationData | null;
+  error: string | null;
+}
+
 export enum AppSection {
   HOME = 'home',
   SYLLABUS = 'syllabus',
   AGENT_BUILDER = 'agent-builder',
   ADVANCED_AI = 'advanced-ai',
+  CUSTOMS = 'customs',
   CONTACT = 'contact'
 }

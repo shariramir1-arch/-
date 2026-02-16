@@ -24,6 +24,7 @@ const Header: React.FC<HeaderProps> = ({ currentSection, onNavigate }) => {
     { label: 'סילבוס הדרכה', value: AppSection.SYLLABUS },
     { label: 'יישומים מתקדמים', value: AppSection.ADVANCED_AI },
     { label: 'בנה סוכן', value: AppSection.AGENT_BUILDER },
+    { label: 'עמילות מכס', value: AppSection.CUSTOMS },
   ];
 
   const handleNav = (val: AppSection) => {

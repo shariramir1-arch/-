@@ -61,3 +61,111 @@ export const generateAgentResponse = async (
     return "אירעה שגיאה בתקשורת עם הבינה המלאכותית. אנא נסה שנית מאוחר יותר.";
   }
 };
+
+import { CustomsDeclarationData } from '../types';
+
+export const extractCustomsDeclaration = async (
+  imageBase64: string,
+  mimeType: string,
+  shipmentRequestNumber: string
+): Promise<{ success: boolean; data?: CustomsDeclarationData; error?: string }> => {
+  const ai = getClient();
+  if (!ai) {
+    return { success: false, error: "שגיאת מערכת: מפתח API חסר. נא להגדיר את process.env.API_KEY." };
+  }
+
+  try {
+    const model = "gemini-2.5-flash";
+    const systemInstruction = `
+      אתה סוכן חכם לעמילות מכס. תפקידך לחלץ נתונים מהצהרות מכס ישראליות.
+      עליך לחלץ את השדות הבאים בדיוק מהמסמך:
+      - תאריך הגשה (submissionDate) - בפורמט DD/MM/YYYY
+      - שם סוכן (agentName) - שם הסוכן/עמיל המכס
+      - שם יבואן (importerName) - שם היבואן
+      - מספר הצהרה מלא (fullDeclarationNumber) - מספר בקשת השינוע המלא
+      - 4 ספרות אחרונות (lastFourDigits) - 4 הספרות האחרונות של מספר ההצהרה
+      - כמות (quantity) - כמות יחידות + יחידת מידה
+      - משקל (weight) - משקל כולל בפורמט XX,XXX.XX
+      - מעבר פנימי (internalTransit) - שדה "מעבר פנימי" מההצהרה
+      - תאריך שטר מטען (billOfLadingDate) - תאריך BL בפורמט DD/MM/YYYY
+      - תיאור מטען (cargoDescription) - תיאור הסחורה
+
+      מספר בקשת השינוע שיש לאמת: ${shipmentRequestNumber}
+
+      החזר את התשובה אך ורק בפורמט JSON הבא, ללא טקסט נוסף:
+      {
+        "verified": true/false,
+        "submissionDate": "...",
+        "agentName": "...",
+        "importerName": "...",
+        "fullDeclarationNumber": "...",
+        "lastFourDigits": "...",
+        "quantity": "...",
+        "weight": "...",
+        "internalTransit": "...",
+        "billOfLadingDate": "...",
+        "cargoDescription": "..."
+      }
+
+      אם מספר בקשת השינוע לא תואם למסמך, החזר verified: false.
+      אם שדה לא נמצא במסמך, רשום "לא נמצא".
+    `;
+
+    const response = await ai.models.generateContent({
+      model,
+      contents: [
+        {
+          role: "user",
+          parts: [
+            {
+              inlineData: {
+                mimeType,
+                data: imageBase64,
+              },
+            },
+            {
+              text: `חלץ את כל הנתונים מהצהרת המכס הזו. מספר בקשת שינוע לאימות: ${shipmentRequestNumber}`,
+            },
+          ],
+        },
+      ],
+      config: {
+        systemInstruction,
+        temperature: 0.1,
+      },
+    });
+
+    const responseText = response.text || "";
+
+    // Extract JSON from the response (handle markdown code blocks)
+    const jsonMatch = responseText.match(/\{[\s\S]*\}/);
+    if (!jsonMatch) {
+      return { success: false, error: "לא ניתן היה לפרסר את תשובת המודל." };
+    }
+
+    const parsed = JSON.parse(jsonMatch[0]);
+
+    if (parsed.verified === false) {
+      return { success: false, error: "מספר בקשת השינוע אינו תואם למסמך שהועלה. נא להעלות את המסמך הנכון." };
+    }
+
+    return {
+      success: true,
+      data: {
+        submissionDate: parsed.submissionDate || "לא נמצא",
+        agentName: parsed.agentName || "לא נמצא",
+        importerName: parsed.importerName || "לא נמצא",
+        fullDeclarationNumber: parsed.fullDeclarationNumber || "לא נמצא",
+        lastFourDigits: parsed.lastFourDigits || "לא נמצא",
+        quantity: parsed.quantity || "לא נמצא",
+        weight: parsed.weight || "לא נמצא",
+        internalTransit: parsed.internalTransit || "לא נמצא",
+        billOfLadingDate: parsed.billOfLadingDate || "לא נמצא",
+        cargoDescription: parsed.cargoDescription || "לא נמצא",
+      },
+    };
+  } catch (error) {
+    console.error("Gemini Customs Extraction Error:", error);
+    return { success: false, error: "אירעה שגיאה בעיבוד המסמך. אנא נסה שנית." };
+  }
+};

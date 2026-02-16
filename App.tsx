@@ -4,6 +4,7 @@ import Hero from './components/Hero';
 import SyllabusViewer from './components/SyllabusViewer';
 import AdvancedShowcase from './components/AdvancedShowcase';
 import AgentBuilder from './components/AgentBuilder';
+import CustomsDeclarationProcessor from './components/CustomsDeclarationProcessor';
 import LeadForm from './components/LeadForm';
 import Footer from './components/Footer';
 import { AppSection } from './types';
@@ -45,6 +46,10 @@ const App: React.FC = () => {
 
         <div id={AppSection.AGENT_BUILDER}>
           <AgentBuilder />
+        </div>
+
+        <div id={AppSection.CUSTOMS}>
+          <CustomsDeclarationProcessor />
         </div>
 
         <div id={AppSection.CONTACT}>
