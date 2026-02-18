@@ -2,8 +2,8 @@
 import React, { useState } from 'react';
 import { Send, CheckCircle, Loader2, MessageSquare, Mic, Code, Lightbulb, Crown, ArrowLeft } from 'lucide-react';
 import ServiceModal from './ServiceModal';
-import { SERVICE_DETAILS } from '../constants';
-import { ServiceDetail } from '../types';
+import { SERVICE_DETAILS } from '../../constants';
+import { ServiceDetail } from '../../types';
 
 const LeadForm: React.FC = () => {
   const [formData, setFormData] = useState({
@@ -14,14 +14,14 @@ const LeadForm: React.FC = () => {
     interest: 'consulting', // Default interest
     message: ''
   });
-  
+
   const [status, setStatus] = useState<'idle' | 'submitting' | 'success'>('idle');
   const [selectedServiceModal, setSelectedServiceModal] = useState<ServiceDetail | null>(null);
 
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
     setStatus('submitting');
-    
+
     // Simulate Backend API call for Email and WhatsApp automation
     setTimeout(() => {
       setStatus('success');
@@ -52,7 +52,7 @@ const LeadForm: React.FC = () => {
 
   const getWhatsAppLink = () => {
     const text = `היי אמיר, השארתי פרטים באתר בנושא ${
-      formData.interest === 'lectures' ? 'הרצאות' : 
+      formData.interest === 'lectures' ? 'הרצאות' :
       formData.interest === 'development' ? 'פיתוח סוכנים' : 'ייעוץ'
     }. אשמח לשמוע פרטים נוספים.`;
     return `https://wa.me/972536576136?text=${encodeURIComponent(text)}`;
@@ -66,13 +66,13 @@ const LeadForm: React.FC = () => {
 
         <div className="max-w-2xl w-full bg-luxury-card border border-luxury-gold/20 rounded-3xl p-12 text-center shadow-[0_0_80px_rgba(197,160,89,0.15)] relative z-10 animate-fade-in-up">
           <div className="absolute top-0 left-0 w-full h-1 bg-gradient-to-r from-transparent via-luxury-gold to-transparent"></div>
-          
+
           <div className="w-24 h-24 bg-gradient-to-br from-luxury-gold to-yellow-600 text-black rounded-full flex items-center justify-center mx-auto mb-8 shadow-lg animate-float">
             <CheckCircle size={48} />
           </div>
-          
+
           <h3 className="text-4xl font-black text-white mb-6">הפרטים נקלטו בהצלחה</h3>
-          
+
           <div className="bg-white/5 rounded-2xl p-6 mb-8 border border-white/5">
             <p className="text-lg text-gray-300 font-light leading-relaxed">
               תודה <span className="text-luxury-gold font-bold">{formData.name}</span>, <br/>
@@ -84,7 +84,7 @@ const LeadForm: React.FC = () => {
           </div>
 
           <div className="flex flex-col sm:flex-row gap-4 justify-center">
-            <a 
+            <a
               href={getWhatsAppLink()}
               target="_blank"
               rel="noopener noreferrer"
@@ -93,8 +93,8 @@ const LeadForm: React.FC = () => {
               <MessageSquare size={20} />
               המשך שיחה ב-WhatsApp
             </a>
-            
-            <button 
+
+            <button
               onClick={() => {
                 setStatus('idle');
                 setFormData({ name: '', email: '', phone: '', company: '', interest: 'consulting', message: '' });
@@ -111,13 +111,13 @@ const LeadForm: React.FC = () => {
 
   return (
     <>
-      <ServiceModal 
+      <ServiceModal
         isOpen={!!selectedServiceModal}
         onClose={() => setSelectedServiceModal(null)}
         service={selectedServiceModal}
         onSelect={handleServiceSelectFromModal}
       />
-      
+
       <div className="bg-[#050505] py-24 relative overflow-hidden">
         {/* Decorative Lights */}
         <div className="absolute top-0 right-0 w-[500px] h-[500px] bg-luxury-gold/5 rounded-full blur-[120px] pointer-events-none"></div>
@@ -125,31 +125,31 @@ const LeadForm: React.FC = () => {
 
         <div className="container mx-auto px-6 relative z-10">
           <div className="flex flex-col lg:flex-row gap-16 items-start">
-            
+
             {/* Left Side: Call to Action */}
             <div className="lg:w-5/12 pt-10">
               <div className="flex items-center gap-2 mb-6">
                 <Crown className="text-luxury-gold w-6 h-6" />
                 <span className="text-luxury-gold uppercase tracking-widest text-sm font-bold">Premium Services</span>
               </div>
-              
+
               <h2 className="text-5xl font-black text-white mb-8 leading-[1.1]">
                 הצעד הבא <br/>
                 <span className="text-transparent bg-clip-text bg-gradient-to-r from-white via-gray-400 to-gray-600">של הארגון שלך.</span>
               </h2>
-              
+
               <p className="text-xl text-gray-400 mb-12 leading-relaxed font-light">
                 הצטרף לנבחרת הארגונים המובילים שכבר הטמיעו פתרונות AI מתקדמים. לחץ על כרטיס שירות לפרטים נוספים.
               </p>
-              
+
               <div className="space-y-6">
                 {[
                   { key: 'lectures', icon: Mic, title: "הרצאות Executive", text: "תוכן אסטרטגי להנהלה בכירה" },
                   { key: 'development', icon: Code, title: "פיתוח סוכני עילית", text: "ארכיטקטורת Custom Made" },
                   { key: 'consulting', icon: Lightbulb, title: "ייעוץ אסטרטגי", text: "בניית מפת דרכים טכנולוגית" }
                 ].map((item, idx) => (
-                  <div 
-                    key={idx} 
+                  <div
+                    key={idx}
                     onClick={() => openServiceModal(item.key)}
                     className="flex items-center gap-6 p-6 bg-white/5 rounded-2xl hover:bg-white/10 transition-colors border border-transparent hover:border-luxury-gold/30 cursor-pointer group animate-fade-in-up"
                     style={{ animationDelay: `${idx * 150}ms` }}
@@ -171,10 +171,10 @@ const LeadForm: React.FC = () => {
             <div className="lg:w-7/12 w-full" id="contact-form-inputs">
               <form onSubmit={handleSubmit} className="bg-luxury-card/40 backdrop-blur-xl p-8 md:p-12 rounded-[2rem] shadow-2xl border border-white/5 relative group hover:border-luxury-gold/20 transition-colors duration-500">
                 <div className="absolute top-0 left-0 w-full h-1 bg-gradient-to-r from-luxury-gold/0 via-luxury-gold/50 to-luxury-gold/0"></div>
-                
+
                 <h3 className="text-3xl font-bold text-white mb-2">תיאום שיחת אפיון</h3>
                 <p className="text-gray-500 mb-8 text-sm">מלא את הפרטים ואנו נדאג לשאר.</p>
-                
+
                 <div className="grid grid-cols-1 md:grid-cols-2 gap-8 mb-8">
                   <div>
                     <label className="block text-xs font-bold text-luxury-gold uppercase tracking-wider mb-3">שם מלא</label>
@@ -233,8 +233,8 @@ const LeadForm: React.FC = () => {
                   <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
                     {['lectures', 'development', 'consulting'].map((opt) => (
                       <label key={opt} className={`cursor-pointer border rounded-xl p-4 text-center transition-all ${
-                        formData.interest === opt 
-                          ? 'bg-luxury-gold text-black font-bold border-luxury-gold shadow-[0_0_15px_rgba(197,160,89,0.4)] transform -translate-y-1' 
+                        formData.interest === opt
+                          ? 'bg-luxury-gold text-black font-bold border-luxury-gold shadow-[0_0_15px_rgba(197,160,89,0.4)] transform -translate-y-1'
                           : 'bg-black/30 border-white/10 text-gray-400 hover:bg-white/5 hover:text-white'
                       }`}>
                         <input type="radio" name="interest" value={opt} className="hidden" checked={formData.interest === opt} onChange={handleChange} />

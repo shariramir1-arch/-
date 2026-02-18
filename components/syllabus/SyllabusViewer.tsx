@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import { SLIDES_DATA } from '../constants';
+import { SLIDES_DATA } from '../../constants';
 import { ChevronRight, ChevronLeft, Maximize2, X, Brain, Database, Server, Zap, Bot, ShieldAlert, Award, Boxes } from 'lucide-react';
 
 const IconMap: Record<string, React.ElementType> = {
@@ -21,8 +21,8 @@ const SyllabusViewer: React.FC = () => {
     if (currentIndex > 0) setCurrentIndex(prev => prev - 1);
   };
 
-  const containerClass = isFullScreen 
-    ? "fixed inset-0 z-50 bg-[#050505] text-white flex items-center justify-center p-4 md:p-10" 
+  const containerClass = isFullScreen
+    ? "fixed inset-0 z-50 bg-[#050505] text-white flex items-center justify-center p-4 md:p-10"
     : "relative bg-luxury-card/60 backdrop-blur-sm rounded-3xl shadow-2xl overflow-hidden border border-white/10 aspect-video flex flex-col";
 
   return (
@@ -36,8 +36,8 @@ const SyllabusViewer: React.FC = () => {
         <div className={containerClass}>
           {/* Controls Overlay */}
           <div className="absolute top-6 left-6 z-20 flex gap-2">
-            <button 
-              onClick={() => setIsFullScreen(!isFullScreen)} 
+            <button
+              onClick={() => setIsFullScreen(!isFullScreen)}
               className="p-3 bg-black/40 hover:bg-black/60 border border-white/10 rounded-full text-white backdrop-blur transition"
             >
               {isFullScreen ? <X size={20} /> : <Maximize2 size={20} />}
@@ -109,7 +109,7 @@ const SyllabusViewer: React.FC = () => {
 
           {/* Navigation Bar */}
           <div className="p-6 flex justify-between items-center bg-black/20 backdrop-blur border-t border-white/5">
-            <button 
+            <button
               onClick={prevSlide}
               disabled={currentIndex === 0}
               className="flex items-center gap-2 px-6 py-3 rounded-full bg-white/5 text-white disabled:opacity-30 hover:bg-white/10 hover:border-luxury-gold/50 border border-transparent transition-all"
@@ -118,18 +118,18 @@ const SyllabusViewer: React.FC = () => {
             </button>
             <div className="flex gap-2">
               {SLIDES_DATA.map((_, idx) => (
-                <div 
+                <div
                   key={idx}
                   className={`h-1.5 rounded-full transition-all duration-500 ${
-                    idx === currentIndex 
-                      ? 'w-10 bg-luxury-gold shadow-[0_0_10px_rgba(197,160,89,0.5)]' 
+                    idx === currentIndex
+                      ? 'w-10 bg-luxury-gold shadow-[0_0_10px_rgba(197,160,89,0.5)]'
                       : 'w-2 bg-white/20 cursor-pointer hover:bg-white/40'
                   }`}
                   onClick={() => setCurrentIndex(idx)}
                 />
               ))}
             </div>
-            <button 
+            <button
               onClick={nextSlide}
               disabled={currentIndex === SLIDES_DATA.length - 1}
               className="flex items-center gap-2 px-6 py-3 rounded-full bg-white text-black disabled:opacity-30 hover:bg-luxury-gold hover:text-black font-bold transition-all shadow-lg"

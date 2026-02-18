@@ -1,10 +1,10 @@
 
 import React, { useState } from 'react';
-import { ADVANCED_CASES } from '../constants';
-import { 
-  MessageSquare, Eye, Workflow, Activity, ShoppingCart, Boxes, ArrowUpRight, Star 
+import { ADVANCED_CASES } from '../../constants';
+import {
+  MessageSquare, Eye, Workflow, Activity, ShoppingCart, Boxes, ArrowUpRight, Star
 } from 'lucide-react';
-import { AdvancedUseCase } from '../types';
+import { AdvancedUseCase } from '../../types';
 import UseCaseModal from './UseCaseModal';
 
 const IconMap: Record<string, React.ElementType> = {
@@ -16,10 +16,10 @@ const AdvancedShowcase: React.FC = () => {
 
   return (
     <div className="py-24 bg-luxury-black relative overflow-hidden">
-      <UseCaseModal 
-        isOpen={!!selectedCase} 
-        onClose={() => setSelectedCase(null)} 
-        useCase={selectedCase} 
+      <UseCaseModal
+        isOpen={!!selectedCase}
+        onClose={() => setSelectedCase(null)}
+        useCase={selectedCase}
       />
 
       {/* Background decoration */}
@@ -43,14 +43,14 @@ const AdvancedShowcase: React.FC = () => {
           {ADVANCED_CASES.map((useCase) => {
             const Icon = IconMap[useCase.icon] || Boxes;
             return (
-              <div 
+              <div
                 key={useCase.id}
                 onClick={() => setSelectedCase(useCase)}
                 className="group relative bg-luxury-card/50 backdrop-blur-sm border border-white/5 rounded-2xl p-8 hover:border-luxury-gold/50 transition-all duration-500 hover:shadow-[0_0_40px_rgba(197,160,89,0.15)] overflow-hidden cursor-pointer transform hover:-translate-y-2"
               >
                 {/* Hover Gradient */}
                 <div className="absolute inset-0 bg-gradient-to-br from-luxury-gold/5 to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-500"></div>
-                
+
                 <div className="relative z-10">
                     <div className="flex justify-between items-start mb-8">
                     <div className="p-4 bg-white/5 rounded-xl border border-white/10 group-hover:border-luxury-gold/50 group-hover:bg-luxury-gold/10 transition-colors shadow-lg">
@@ -64,7 +64,7 @@ const AdvancedShowcase: React.FC = () => {
                     <h3 className="text-2xl font-bold text-white mb-4 group-hover:text-luxury-gold transition-colors">
                     {useCase.title}
                     </h3>
-                    
+
                     <p className="text-gray-400 mb-8 leading-relaxed font-light text-sm h-10 overflow-hidden text-ellipsis line-clamp-2">
                     {useCase.description}
                     </p>

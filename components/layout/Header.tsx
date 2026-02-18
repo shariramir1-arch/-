@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { Menu, X, Brain } from 'lucide-react';
-import { AppSection } from '../types';
+import { AppSection } from '../../types';
 
 interface HeaderProps {
   currentSection: AppSection;
@@ -32,16 +32,16 @@ const Header: React.FC<HeaderProps> = ({ currentSection, onNavigate }) => {
   };
 
   return (
-    <header 
+    <header
       className={`sticky top-0 z-50 transition-all duration-300 ${
-        scrolled 
-          ? 'bg-luxury-charcoal/90 backdrop-blur-md shadow-lg border-b border-white/5' 
+        scrolled
+          ? 'bg-luxury-charcoal/90 backdrop-blur-md shadow-lg border-b border-white/5'
           : 'bg-transparent border-b border-transparent'
       }`}
     >
       <div className="container mx-auto px-6 py-4 flex justify-between items-center">
-        <div 
-          className="flex items-center gap-2 cursor-pointer group" 
+        <div
+          className="flex items-center gap-2 cursor-pointer group"
           onClick={() => handleNav(AppSection.HOME)}
         >
           <div className="p-2 rounded-lg bg-luxury-gold/10 group-hover:bg-luxury-gold/20 transition-colors">
@@ -57,8 +57,8 @@ const Header: React.FC<HeaderProps> = ({ currentSection, onNavigate }) => {
               key={item.value}
               onClick={() => handleNav(item.value)}
               className={`text-sm font-medium tracking-wide transition-all duration-300 relative group py-2 ${
-                currentSection === item.value 
-                  ? 'text-luxury-gold' 
+                currentSection === item.value
+                  ? 'text-luxury-gold'
                   : 'text-gray-400 hover:text-white'
               }`}
             >
@@ -85,8 +85,8 @@ const Header: React.FC<HeaderProps> = ({ currentSection, onNavigate }) => {
                 key={item.value}
                 onClick={() => handleNav(item.value)}
                 className={`text-right px-4 py-3 rounded-lg border border-transparent transition-all ${
-                   currentSection === item.value 
-                   ? 'bg-luxury-gold/10 text-luxury-gold border-luxury-gold/20' 
+                   currentSection === item.value
+                   ? 'bg-luxury-gold/10 text-luxury-gold border-luxury-gold/20'
                    : 'text-gray-400 hover:text-white hover:bg-white/5'
                 }`}
               >

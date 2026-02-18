@@ -1,11 +1,11 @@
 import React, { useState, useEffect } from 'react';
-import Header from './components/Header';
-import Hero from './components/Hero';
-import SyllabusViewer from './components/SyllabusViewer';
-import AdvancedShowcase from './components/AdvancedShowcase';
-import AgentBuilder from './components/AgentBuilder';
-import LeadForm from './components/LeadForm';
-import Footer from './components/Footer';
+import Header from './components/layout/Header';
+import Hero from './components/hero/Hero';
+import SyllabusViewer from './components/syllabus/SyllabusViewer';
+import AdvancedShowcase from './components/showcase/AdvancedShowcase';
+import AgentBuilder from './components/agent/AgentBuilder';
+import LeadForm from './components/contact/LeadForm';
+import Footer from './components/layout/Footer';
 import { AppSection } from './types';
 
 const App: React.FC = () => {

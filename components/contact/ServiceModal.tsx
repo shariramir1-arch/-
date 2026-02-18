@@ -1,7 +1,7 @@
 
 import React from 'react';
 import { X, CheckCircle, ArrowLeft, Mic, Code, Lightbulb } from 'lucide-react';
-import { ServiceDetail } from '../types';
+import { ServiceDetail } from '../../types';
 
 interface ServiceModalProps {
   isOpen: boolean;
@@ -22,20 +22,20 @@ const ServiceModal: React.FC<ServiceModalProps> = ({ isOpen, onClose, service, o
   return (
     <div className="fixed inset-0 z-[60] flex items-center justify-center p-4">
       {/* Backdrop with blur */}
-      <div 
+      <div
         className="absolute inset-0 bg-black/80 backdrop-blur-sm transition-opacity duration-300"
         onClick={onClose}
       ></div>
 
       {/* Modal Content */}
       <div className="relative bg-luxury-charcoal w-full max-w-2xl rounded-3xl border border-luxury-gold/30 shadow-[0_0_50px_rgba(197,160,89,0.2)] overflow-hidden flex flex-col max-h-[90vh] animate-fade-in-up">
-        
+
         {/* Decorative Header Background */}
         <div className="absolute top-0 left-0 w-full h-32 bg-gradient-to-b from-luxury-gold/10 to-transparent pointer-events-none"></div>
         <div className="absolute top-[-50px] right-[-50px] w-40 h-40 bg-luxury-gold/20 rounded-full blur-[60px] pointer-events-none"></div>
 
         {/* Close Button */}
-        <button 
+        <button
           onClick={onClose}
           className="absolute top-4 left-4 p-2 bg-black/40 rounded-full text-gray-400 hover:text-white hover:bg-white/10 transition-colors z-20 border border-white/5"
         >
@@ -43,7 +43,7 @@ const ServiceModal: React.FC<ServiceModalProps> = ({ isOpen, onClose, service, o
         </button>
 
         <div className="p-8 md:p-10 overflow-y-auto custom-scrollbar relative z-10">
-          
+
           {/* Header Section */}
           <div className="flex items-start gap-6 mb-8">
             <div className="p-5 bg-black border border-luxury-gold/40 rounded-2xl shadow-lg shrink-0">
@@ -80,7 +80,7 @@ const ServiceModal: React.FC<ServiceModalProps> = ({ isOpen, onClose, service, o
           </div>
 
           {/* Action Button */}
-          <button 
+          <button
             onClick={() => onSelect(service.id)}
             className="w-full py-4 bg-luxury-gold hover:bg-[#b8860b] text-black font-bold text-lg rounded-xl shadow-[0_0_20px_rgba(197,160,89,0.3)] transition-all transform hover:-translate-y-1 flex items-center justify-center gap-2 group"
           >

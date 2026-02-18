@@ -1,6 +1,6 @@
 import React, { useState, useRef, useEffect } from 'react';
-import { generateAgentResponse } from '../services/geminiService';
-import { ChatMessage } from '../types';
+import { generateAgentResponse } from '../../services/geminiService';
+import { ChatMessage } from '../../types';
 import { Send, Bot, User, RefreshCw, Loader2, Sparkles, Terminal } from 'lucide-react';
 
 const AgentBuilder: React.FC = () => {
@@ -32,7 +32,7 @@ const AgentBuilder: React.FC = () => {
     setIsLoading(true);
 
     const responseText = await generateAgentResponse(userMsg.text, messages.map(m => ({ role: m.role, text: m.text })));
-    
+
     const botMsg: ChatMessage = { role: 'model', text: responseText, timestamp: new Date() };
     setMessages(prev => [...prev, botMsg]);
     setIsLoading(false);
@@ -48,10 +48,10 @@ const AgentBuilder: React.FC = () => {
   return (
     <div className="bg-[#050505] py-24 text-white relative">
       <div className="absolute inset-0 bg-[url('https://www.transparenttextures.com/patterns/dark-matter.png')] opacity-30"></div>
-      
+
       <div className="container mx-auto px-6 relative z-10">
         <div className="flex flex-col lg:flex-row gap-12">
-          
+
           {/* Info Side */}
           <div className="lg:w-1/3 pt-10">
             <div className="flex items-center gap-2 text-luxury-gold mb-4 animate-pulse-slow">
@@ -64,7 +64,7 @@ const AgentBuilder: React.FC = () => {
             <p className="text-gray-400 text-lg mb-10 font-light leading-relaxed">
               התנסה באפיון סוכן חכם בזמן אמת. תאר את הצורך העסקי, והארכיטקט הווירטואלי יבנה עבורך מפרט טכני יוקרתי ומדויק.
             </p>
-            
+
             <div className="bg-luxury-card/50 p-8 rounded-2xl backdrop-blur-md border border-white/10 shadow-2xl relative overflow-hidden">
                <div className="absolute top-0 left-0 w-1 h-full bg-luxury-gold"></div>
               <h4 className="font-bold text-xl mb-6 flex items-center gap-3 text-white">
@@ -98,9 +98,9 @@ const AgentBuilder: React.FC = () => {
                 </div>
                 <span className="font-mono text-xs text-luxury-gold tracking-widest">ARCHITECT_AI // ONLINE</span>
               </div>
-              <button 
+              <button
                 onClick={() => setMessages([messages[0]])}
-                className="text-gray-500 hover:text-white transition p-2 hover:bg-white/5 rounded-full" 
+                className="text-gray-500 hover:text-white transition p-2 hover:bg-white/5 rounded-full"
                 title="אפס שיחה"
               >
                 <RefreshCw size={16} />
@@ -117,8 +117,8 @@ const AgentBuilder: React.FC = () => {
                     {msg.role === 'user' ? <User size={18} /> : <Bot size={18} />}
                   </div>
                   <div className={`max-w-[80%] p-6 rounded-2xl shadow-lg relative ${
-                    msg.role === 'user' 
-                      ? 'bg-luxury-gold/10 text-white rounded-tr-none border border-luxury-gold/20' 
+                    msg.role === 'user'
+                      ? 'bg-luxury-gold/10 text-white rounded-tr-none border border-luxury-gold/20'
                       : 'bg-white/5 text-gray-200 rounded-tl-none border border-white/5'
                   }`}>
                     <p className="whitespace-pre-wrap leading-relaxed text-sm md:text-base">{msg.text}</p>
@@ -157,7 +157,7 @@ const AgentBuilder: React.FC = () => {
                   className="w-full bg-luxury-charcoal/50 text-white p-5 pr-14 rounded-2xl border border-white/10 focus:border-luxury-gold/50 focus:ring-1 focus:ring-luxury-gold/50 outline-none transition-all placeholder-gray-600 shadow-inner"
                   disabled={isLoading}
                 />
-                <button 
+                <button
                   onClick={handleSend}
                   disabled={!input.trim() || isLoading}
                   className="absolute left-3 top-1/2 -translate-y-1/2 p-3 bg-luxury-gold text-black rounded-xl hover:bg-white hover:shadow-[0_0_15px_rgba(255,255,255,0.4)] disabled:opacity-0 disabled:scale-75 transition-all duration-300"
