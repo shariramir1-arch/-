@@ -6,6 +6,7 @@ import AdvancedShowcase from './components/AdvancedShowcase';
 import AgentBuilder from './components/AgentBuilder';
 import LeadForm from './components/LeadForm';
 import Footer from './components/Footer';
+import Dashboard from './components/Dashboard';
 import { AppSection } from './types';
 
 const App: React.FC = () => {
@@ -13,6 +14,7 @@ const App: React.FC = () => {
 
   // Smooth scroll logic when section changes
   useEffect(() => {
+    if (currentSection === AppSection.DASHBOARD) return;
     if (currentSection === AppSection.HOME) {
       window.scrollTo({ top: 0, behavior: 'smooth' });
     } else {
@@ -23,14 +25,19 @@ const App: React.FC = () => {
     }
   }, [currentSection]);
 
+  // Dashboard view
+  if (currentSection === AppSection.DASHBOARD) {
+    return <Dashboard onBack={() => setCurrentSection(AppSection.HOME)} />;
+  }
+
   return (
     <div className="min-h-screen flex flex-col">
       <Header currentSection={currentSection} onNavigate={setCurrentSection} />
-      
+
       <main className="flex-grow">
         <div id={AppSection.HOME}>
-          <Hero 
-            onStart={() => setCurrentSection(AppSection.AGENT_BUILDER)} 
+          <Hero
+            onStart={() => setCurrentSection(AppSection.AGENT_BUILDER)}
             onContact={() => setCurrentSection(AppSection.CONTACT)}
           />
         </div>

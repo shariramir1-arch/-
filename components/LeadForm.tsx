@@ -4,6 +4,7 @@ import { Send, CheckCircle, Loader2, MessageSquare, Mic, Code, Lightbulb, Crown,
 import ServiceModal from './ServiceModal';
 import { SERVICE_DETAILS } from '../constants';
 import { ServiceDetail } from '../types';
+import { saveLead } from '../services/leadsService';
 
 const LeadForm: React.FC = () => {
   const [formData, setFormData] = useState({
@@ -21,13 +22,13 @@ const LeadForm: React.FC = () => {
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
     setStatus('submitting');
-    
+
+    // Save lead to localStorage
+    saveLead(formData);
+
     // Simulate Backend API call for Email and WhatsApp automation
     setTimeout(() => {
       setStatus('success');
-      // In a real backend environment, here we would call:
-      // await sendEmail({ to: formData.email, subject: "ברוכים הבאים - שריר אמיר" });
-      // await sendWhatsApp({ to: formData.phone, message: "תודה שפנית אלינו..." });
     }, 2000);
   };
 

@@ -44,5 +44,28 @@ export enum AppSection {
   SYLLABUS = 'syllabus',
   AGENT_BUILDER = 'agent-builder',
   ADVANCED_AI = 'advanced-ai',
-  CONTACT = 'contact'
+  CONTACT = 'contact',
+  DASHBOARD = 'dashboard'
+}
+
+export enum LeadStatus {
+  NEW = 'new',
+  CONTACTED = 'contacted',
+  IN_PROGRESS = 'in_progress',
+  CLOSED_WON = 'closed_won',
+  CLOSED_LOST = 'closed_lost'
+}
+
+export interface Lead {
+  id: string;
+  name: string;
+  email: string;
+  phone: string;
+  company: string;
+  interest: 'lectures' | 'development' | 'consulting';
+  message: string;
+  status: LeadStatus;
+  createdAt: string;
+  updatedAt: string;
+  notes: string;
 }

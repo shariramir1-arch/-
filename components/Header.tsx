@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import { Menu, X, Brain } from 'lucide-react';
+import { Menu, X, Brain, LayoutDashboard } from 'lucide-react';
 import { AppSection } from '../types';
 
 interface HeaderProps {
@@ -70,10 +70,20 @@ const Header: React.FC<HeaderProps> = ({ currentSection, onNavigate }) => {
           ))}
         </nav>
 
-        {/* Mobile Menu Button */}
-        <button className="md:hidden text-white" onClick={() => setIsOpen(!isOpen)}>
-          {isOpen ? <X /> : <Menu />}
-        </button>
+        {/* Dashboard + Mobile Menu Button */}
+        <div className="flex items-center gap-3">
+          <button
+            onClick={() => handleNav(AppSection.DASHBOARD)}
+            className="flex items-center gap-2 px-3 py-2 rounded-xl text-xs font-bold border border-luxury-gold/20 bg-luxury-gold/5 text-luxury-gold hover:bg-luxury-gold/15 transition-colors"
+            title="דשבורד ניהול"
+          >
+            <LayoutDashboard size={16} />
+            <span className="hidden sm:inline">דשבורד</span>
+          </button>
+          <button className="md:hidden text-white" onClick={() => setIsOpen(!isOpen)}>
+            {isOpen ? <X /> : <Menu />}
+          </button>
+        </div>
       </div>
 
       {/* Mobile Nav */}
