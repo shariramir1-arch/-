@@ -2,6 +2,7 @@
 מודול ד: יצירת וידאו
 יוצר סרטון עם רקע, כתוביות, וקריינות
 """
+import platform
 import textwrap
 from pathlib import Path
 
@@ -15,6 +16,42 @@ from core.database import Database
 from core.models import Video
 from core.logger import log_action
 from core.retry import retry_operation
+
+
+def _find_font(bold: bool = False) -> str:
+    """מוצא פונט מתאים בהתאם למערכת ההפעלה"""
+    system = platform.system()
+
+    if system == "Windows":
+        fonts_dir = Path("C:/Windows/Fonts")
+        if bold:
+            candidates = ["arialbd.ttf", "arial.ttf", "tahoma.ttf"]
+        else:
+            candidates = ["arial.ttf", "tahoma.ttf"]
+        for font_name in candidates:
+            font_path = fonts_dir / font_name
+            if font_path.exists():
+                return str(font_path)
+        return "Arial"
+    elif system == "Darwin":  # macOS
+        if bold:
+            return "/System/Library/Fonts/Supplemental/Arial Bold.ttf"
+        return "/System/Library/Fonts/Supplemental/Arial.ttf"
+    else:  # Linux
+        if bold:
+            candidates = [
+                "/usr/share/fonts/truetype/dejavu/DejaVuSans-Bold.ttf",
+                "/usr/share/fonts/TTF/DejaVuSans-Bold.ttf",
+            ]
+        else:
+            candidates = [
+                "/usr/share/fonts/truetype/dejavu/DejaVuSans.ttf",
+                "/usr/share/fonts/TTF/DejaVuSans.ttf",
+            ]
+        for path in candidates:
+            if Path(path).exists():
+                return path
+        return "DejaVu-Sans-Bold" if bold else "DejaVu-Sans"
 
 
 class VideoGenerator:
@@ -98,7 +135,7 @@ class VideoGenerator:
             text=video.title,
             font_size=TITLE_FONT_SIZE,
             color="#60A5FA",
-            font="DejaVu-Sans-Bold",
+            font=_find_font(bold=True),
             size=(VIDEO_WIDTH - 200, None),
             method="caption",
             text_align="center",
@@ -114,7 +151,7 @@ class VideoGenerator:
                 text=seg["text"],
                 font_size=SUBTITLE_FONT_SIZE,
                 color=SUBTITLE_COLOR,
-                font="DejaVu-Sans",
+                font=_find_font(bold=False),
                 size=(VIDEO_WIDTH - 200, None),
                 method="caption",
                 text_align="center",
@@ -168,8 +205,8 @@ class VideoGenerator:
 
         # ניסיון טעינת פונט
         try:
-            font = ImageFont.truetype("/usr/share/fonts/truetype/dejavu/DejaVuSans-Bold.ttf", 48)
-            small_font = ImageFont.truetype("/usr/share/fonts/truetype/dejavu/DejaVuSans.ttf", 32)
+            font = ImageFont.truetype(_find_font(bold=True), 48)
+            small_font = ImageFont.truetype(_find_font(bold=False), 32)
         except (OSError, IOError):
             font = ImageFont.load_default()
             small_font = font
