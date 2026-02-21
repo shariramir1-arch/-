@@ -116,14 +116,14 @@ class ScriptGenerator:
 
             client = genai.Client(api_key=self.api_key)
             response = client.models.generate_content(
-                model="gemini-2.0-flash",
+                model="gemini-2.5-flash",
                 contents=prompt,
             )
             return response.text
         except ImportError:
             # Fallback: שימוש ב-requests ישירות
             import requests
-            url = f"https://generativelanguage.googleapis.com/v1beta/models/gemini-2.0-flash:generateContent?key={self.api_key}"
+            url = f"https://generativelanguage.googleapis.com/v1beta/models/gemini-2.5-flash:generateContent?key={self.api_key}"
             payload = {
                 "contents": [{"parts": [{"text": prompt}]}],
                 "generationConfig": {
