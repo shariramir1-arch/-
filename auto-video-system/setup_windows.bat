@@ -13,14 +13,15 @@ pip install --upgrade pip
 pip install -r requirements.txt
 
 REM הגדרת מפתח API
-set GEMINI_API_KEY=AIzaSyAexfrE6NnY7bjb-3pID5VzbSUPxkIX7t4
+REM צור מפתח חינמי ב: https://console.groq.com/keys
+set GROQ_API_KEY=your-groq-api-key-here
 
 echo.
 echo === ההתקנה הושלמה ===
 echo.
 echo להרצה מלאה:
 echo   venv\Scripts\activate.bat
-echo   set GEMINI_API_KEY=AIzaSyAexfrE6NnY7bjb-3pID5VzbSUPxkIX7t4
+echo   set GROQ_API_KEY=your-groq-api-key-here
 echo   python main.py run-once
 echo.
 echo לממשק אישור:

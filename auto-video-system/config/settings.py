@@ -15,8 +15,8 @@ LOGS_DIR = OUTPUT_DIR / "logs"
 CONFIG_DIR = BASE_DIR / "config"
 DB_PATH = BASE_DIR / "data" / "videos.db"
 
-# === Google Gemini API ===
-GEMINI_API_KEY = os.environ.get("GEMINI_API_KEY", "")
+# === Groq API ===
+GROQ_API_KEY = os.environ.get("GROQ_API_KEY", "")
 
 # === YouTube API ===
 YOUTUBE_CLIENT_SECRETS_FILE = CONFIG_DIR / "client_secrets.json"

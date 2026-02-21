@@ -1,6 +1,6 @@
 """
 מודול ב: מחולל תסריטים
-יוצר תסריטים לפי סוג הסרטון באמצעות Gemini AI
+יוצר תסריטים לפי סוג הסרטון באמצעות Groq AI
 """
 import json
 import os
@@ -8,7 +8,7 @@ from datetime import datetime
 from pathlib import Path
 
 from config.settings import (
-    GEMINI_API_KEY, VideoStatus, VideoType,
+    GROQ_API_KEY, VideoStatus, VideoType,
     SCRIPTS_DIR, ensure_directories,
 )
 from core.database import Database
@@ -103,42 +103,46 @@ RESPONSE_FORMAT = """
 
 
 class ScriptGenerator:
-    """מחולל תסריטים באמצעות Gemini AI"""
+    """מחולל תסריטים באמצעות Groq AI"""
 
     def __init__(self, db: Database = None):
         self.db = db or Database()
-        self.api_key = GEMINI_API_KEY
+        self.api_key = GROQ_API_KEY
 
-    def _call_gemini(self, prompt: str) -> str:
-        """קורא ל-Gemini API ומחזיר תשובה"""
+    def _call_llm(self, prompt: str) -> str:
+        """קורא ל-Groq API ומחזיר תשובה"""
         try:
-            from google import genai
+            from groq import Groq
 
-            client = genai.Client(api_key=self.api_key)
-            response = client.models.generate_content(
-                model="gemini-2.5-flash",
-                contents=prompt,
+            client = Groq(api_key=self.api_key)
+            response = client.chat.completions.create(
+                model="llama-3.3-70b-versatile",
+                messages=[{"role": "user", "content": prompt}],
+                temperature=0.8,
+                max_tokens=4096,
             )
-            return response.text
+            return response.choices[0].message.content
         except ImportError:
             # Fallback: שימוש ב-requests ישירות
             import requests
-            url = f"https://generativelanguage.googleapis.com/v1beta/models/gemini-2.5-flash:generateContent?key={self.api_key}"
-            payload = {
-                "contents": [{"parts": [{"text": prompt}]}],
-                "generationConfig": {
-                    "temperature": 0.8,
-                    "maxOutputTokens": 4096,
-                }
+            url = "https://api.groq.com/openai/v1/chat/completions"
+            headers = {
+                "Authorization": f"Bearer {self.api_key}",
+                "Content-Type": "application/json",
             }
-            resp = requests.post(url, json=payload, timeout=60)
+            payload = {
+                "model": "llama-3.3-70b-versatile",
+                "messages": [{"role": "user", "content": prompt}],
+                "temperature": 0.8,
+                "max_tokens": 4096,
+            }
+            resp = requests.post(url, json=payload, headers=headers, timeout=60)
             resp.raise_for_status()
             data = resp.json()
-            return data["candidates"][0]["content"]["parts"][0]["text"]
+            return data["choices"][0]["message"]["content"]
 
     def _parse_response(self, response_text: str) -> dict:
         """מפרסר את התשובה מ-JSON"""
-        # ניקוי - לפעמים Gemini מחזיר עם markdown
         text = response_text.strip()
         if text.startswith("```"):
             # הסרת markdown code blocks
@@ -162,7 +166,7 @@ class ScriptGenerator:
         מחזיר dict עם: script, title, description, tags
         """
         if not self.api_key:
-            raise ValueError("GEMINI_API_KEY לא מוגדר. הגדר את המשתנה בסביבה.")
+            raise ValueError("GROQ_API_KEY לא מוגדר. הגדר את המשתנה בסביבה.")
 
         template = SCRIPT_TEMPLATES.get(video.video_type)
         if not template:
@@ -177,7 +181,7 @@ class ScriptGenerator:
 
         log_action("יצירת תסריט", f"סוג: {video.video_type}", video_id=video.id)
 
-        response_text = self._call_gemini(prompt)
+        response_text = self._call_llm(prompt)
         result = self._parse_response(response_text)
 
         return result

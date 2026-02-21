@@ -49,11 +49,12 @@ mkdir -p config
 
 # בדיקת משתנה סביבה
 echo ""
-if [ -z "$GEMINI_API_KEY" ]; then
-    echo "אזהרה: GEMINI_API_KEY לא מוגדר!"
-    echo "הגדר אותו עם: export GEMINI_API_KEY='your-api-key'"
+if [ -z "$GROQ_API_KEY" ]; then
+    echo "אזהרה: GROQ_API_KEY לא מוגדר!"
+    echo "צור מפתח חינמי ב: https://console.groq.com/keys"
+    echo "הגדר אותו עם: export GROQ_API_KEY='your-api-key'"
 else
-    echo "GEMINI_API_KEY מוגדר."
+    echo "GROQ_API_KEY מוגדר."
 fi
 
 echo ""
@@ -61,7 +62,7 @@ echo "=== ההתקנה הושלמה ==="
 echo ""
 echo "שימוש:"
 echo "  source venv/bin/activate           # הפעלת סביבה וירטואלית"
-echo "  export GEMINI_API_KEY='your-key'   # הגדרת מפתח API"
+echo "  export GROQ_API_KEY='your-key'     # הגדרת מפתח API (https://console.groq.com/keys)"
 echo "  python main.py create              # יצירת תוכן שבועי"
 echo "  python main.py produce             # הפקת סרטונים"
 echo "  python main.py approve             # ממשק אישור"
