@@ -1,0 +1,146 @@
+{% extends "base.html" %}
+{% block title %}{{ video.title }} - מערכת סרטונים{% endblock %}
+
+{% block content %}
+<div class="video-detail">
+    <div class="detail-header">
+        <h1>{{ video.title }}</h1>
+        <span class="badge badge-large badge-{{ video.status|replace(' ', '-') }}">{{ video.status }}</span>
+    </div>
+
+    <div class="detail-meta">
+        <span>שבוע {{ video.week_number }}</span>
+        <span>|</span>
+        <span>נושא: {{ video.weekly_topic }}</span>
+        <span>|</span>
+        <span>סוג: {{ video.video_type }}</span>
+        <span>|</span>
+        <span>קהל: {{ video.target_audience }}</span>
+    </div>
+
+    <div class="detail-grid">
+        <!-- עמודה שמאלית: וידאו ופעולות -->
+        <div class="detail-main">
+            {% if video.video_path %}
+            <div class="video-player">
+                <h3>צפייה בסרטון</h3>
+                <video controls width="100%">
+                    <source src="{{ url_for('stream_video', video_id=video.id) }}" type="video/mp4">
+                    הדפדפן לא תומך בניגון וידאו
+                </video>
+            </div>
+            {% endif %}
+
+            <!-- כפתורי פעולה -->
+            {% if video.status == 'ממתין לאישור' %}
+            <div class="action-buttons">
+                <form method="POST" action="{{ url_for('approve_video', video_id=video.id) }}" class="inline-form">
+                    <div class="form-group">
+                        <label>תאריך תזמון (אופציונלי):</label>
+                        <input type="datetime-local" name="scheduled_date" class="form-control">
+                    </div>
+                    <button type="submit" class="btn btn-success btn-large">אישור להעלאה</button>
+                </form>
+
+                <form method="POST" action="{{ url_for('reject_video', video_id=video.id) }}" class="inline-form">
+                    <div class="form-group">
+                        <label>סיבת החזרה:</label>
+                        <input type="text" name="reason" placeholder="מדוע להחזיר לעריכה?" class="form-control">
+                    </div>
+                    <button type="submit" class="btn btn-warning btn-large">החזר לעריכה</button>
+                </form>
+
+                <form method="POST" action="{{ url_for('pause_video', video_id=video.id) }}" class="inline-form">
+                    <div class="form-group">
+                        <label>סיבת עצירה:</label>
+                        <input type="text" name="reason" placeholder="מדוע לעצור?" class="form-control">
+                    </div>
+                    <button type="submit" class="btn btn-danger btn-large">עצור / השהה</button>
+                </form>
+            </div>
+            {% endif %}
+
+            {% if video.youtube_url %}
+            <div class="youtube-link">
+                <h3>קישור ליוטיוב</h3>
+                <a href="{{ video.youtube_url }}" target="_blank" class="btn btn-youtube">
+                    צפייה ביוטיוב: {{ video.youtube_url }}
+                </a>
+            </div>
+            {% endif %}
+
+            {% if video.error_message %}
+            <div class="error-box">
+                <h3>הודעת שגיאה</h3>
+                <p>{{ video.error_message }}</p>
+            </div>
+            {% endif %}
+        </div>
+
+        <!-- עמודה ימנית: פרטים -->
+        <div class="detail-sidebar">
+            <div class="info-card">
+                <h3>תסריט</h3>
+                <div class="script-content">{{ video.script or 'אין תסריט עדיין' }}</div>
+            </div>
+
+            <div class="info-card">
+                <h3>תיאור ליוטיוב</h3>
+                <p>{{ video.description or 'אין תיאור עדיין' }}</p>
+            </div>
+
+            <div class="info-card">
+                <h3>תגיות</h3>
+                <div class="tags">
+                    {% if video.tags %}
+                        {% for tag in video.tags.split(',') %}
+                            <span class="tag">{{ tag.strip() }}</span>
+                        {% endfor %}
+                    {% else %}
+                        <span>אין תגיות עדיין</span>
+                    {% endif %}
+                </div>
+            </div>
+
+            <div class="info-card">
+                <h3>מטרה עסקית</h3>
+                <p>{{ video.business_goal }}</p>
+            </div>
+
+            <div class="info-card">
+                <h3>מידע נוסף</h3>
+                <ul class="info-list">
+                    <li>נוצר: {{ video.created_at[:16] }}</li>
+                    <li>עודכן: {{ video.updated_at[:16] }}</li>
+                    <li>מזהה: #{{ video.id }}</li>
+                </ul>
+            </div>
+        </div>
+    </div>
+
+    <!-- יומן פעילות -->
+    <section class="section">
+        <h3>יומן פעילות</h3>
+        <table class="table table-sm">
+            <thead>
+                <tr>
+                    <th>זמן</th>
+                    <th>פעולה</th>
+                    <th>פרטים</th>
+                    <th>סטטוס</th>
+                </tr>
+            </thead>
+            <tbody>
+                {% for log in activity %}
+                <tr class="{{ 'error-row' if not log.success else '' }}">
+                    <td>{{ log.timestamp[:16] }}</td>
+                    <td>{{ log.action }}</td>
+                    <td>{{ log.details }}</td>
+                    <td>{{ 'הצלחה' if log.success else 'שגיאה: ' + log.error_message }}</td>
+                </tr>
+                {% endfor %}
+            </tbody>
+        </table>
+    </section>
+</div>
+{% endblock %}

@@ -1,0 +1,419 @@
+/* === CSS למערכת אישור סרטונים - RTL עברית === */
+
+:root {
+    --bg-primary: #0f172a;
+    --bg-secondary: #1e293b;
+    --bg-card: #1e293b;
+    --text-primary: #f1f5f9;
+    --text-secondary: #94a3b8;
+    --accent: #60a5fa;
+    --success: #34d399;
+    --warning: #fbbf24;
+    --danger: #f87171;
+    --border: #334155;
+}
+
+* {
+    margin: 0;
+    padding: 0;
+    box-sizing: border-box;
+}
+
+body {
+    font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+    background-color: var(--bg-primary);
+    color: var(--text-primary);
+    line-height: 1.6;
+    direction: rtl;
+}
+
+/* === ניווט === */
+.navbar {
+    background-color: var(--bg-secondary);
+    padding: 1rem 2rem;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    border-bottom: 1px solid var(--border);
+    position: sticky;
+    top: 0;
+    z-index: 100;
+}
+
+.nav-brand {
+    font-size: 1.4rem;
+    font-weight: bold;
+    color: var(--accent);
+}
+
+.nav-links {
+    display: flex;
+    gap: 1.5rem;
+}
+
+.nav-link {
+    color: var(--text-secondary);
+    text-decoration: none;
+    transition: color 0.2s;
+}
+
+.nav-link:hover {
+    color: var(--accent);
+}
+
+/* === מיכל ראשי === */
+.container {
+    max-width: 1400px;
+    margin: 0 auto;
+    padding: 2rem;
+}
+
+/* === כותרות === */
+h1 {
+    font-size: 2rem;
+    margin-bottom: 1.5rem;
+    color: var(--text-primary);
+}
+
+h2 {
+    font-size: 1.5rem;
+    margin-bottom: 1rem;
+    color: var(--accent);
+}
+
+h3 {
+    font-size: 1.2rem;
+    margin-bottom: 0.75rem;
+    color: var(--text-primary);
+}
+
+/* === סטטיסטיקות === */
+.stats-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(180px, 1fr));
+    gap: 1rem;
+    margin-bottom: 2rem;
+}
+
+.stat-card {
+    background: var(--bg-card);
+    border-radius: 12px;
+    padding: 1.5rem;
+    text-align: center;
+    border: 1px solid var(--border);
+}
+
+.stat-number {
+    font-size: 2.5rem;
+    font-weight: bold;
+    color: var(--accent);
+}
+
+.stat-pending .stat-number { color: var(--warning); }
+.stat-approved .stat-number { color: var(--success); }
+.stat-uploaded .stat-number { color: #818cf8; }
+.stat-error .stat-number { color: var(--danger); }
+
+.stat-label {
+    color: var(--text-secondary);
+    font-size: 0.9rem;
+    margin-top: 0.25rem;
+}
+
+/* === כרטיסי סרטונים === */
+.video-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(320px, 1fr));
+    gap: 1.5rem;
+    margin-bottom: 2rem;
+}
+
+.video-card {
+    background: var(--bg-card);
+    border-radius: 12px;
+    padding: 1.5rem;
+    border: 1px solid var(--border);
+    transition: border-color 0.2s;
+}
+
+.video-card:hover {
+    border-color: var(--accent);
+}
+
+.video-card.pending {
+    border-right: 4px solid var(--warning);
+}
+
+.video-card-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 0.75rem;
+}
+
+.video-type {
+    color: var(--text-secondary);
+    font-size: 0.85rem;
+}
+
+.video-topic {
+    color: var(--text-secondary);
+    font-size: 0.9rem;
+    margin: 0.5rem 0 1rem;
+}
+
+/* === תגיות סטטוס === */
+.badge {
+    display: inline-block;
+    padding: 0.25rem 0.75rem;
+    border-radius: 20px;
+    font-size: 0.8rem;
+    font-weight: 500;
+}
+
+.badge-large {
+    font-size: 1rem;
+    padding: 0.5rem 1rem;
+}
+
+.badge-success, .badge-הועלה { background: rgba(52, 211, 153, 0.2); color: var(--success); }
+.badge-pending, .badge-ממתין-לאישור { background: rgba(251, 191, 36, 0.2); color: var(--warning); }
+.badge-error, .badge-שגיאה { background: rgba(248, 113, 113, 0.2); color: var(--danger); }
+.badge-רעיון { background: rgba(96, 165, 250, 0.2); color: var(--accent); }
+.badge-תסריט-מוכן { background: rgba(129, 140, 248, 0.2); color: #818cf8; }
+.badge-בהפקה { background: rgba(251, 146, 60, 0.2); color: #fb923c; }
+.badge-וידאו-מוכן { background: rgba(45, 212, 191, 0.2); color: #2dd4bf; }
+.badge-מאושר { background: rgba(52, 211, 153, 0.2); color: var(--success); }
+.badge-מתוזמן { background: rgba(167, 139, 250, 0.2); color: #a78bfa; }
+
+/* === כפתורים === */
+.btn {
+    display: inline-block;
+    padding: 0.5rem 1.25rem;
+    border-radius: 8px;
+    border: none;
+    cursor: pointer;
+    font-size: 0.9rem;
+    text-decoration: none;
+    transition: opacity 0.2s;
+    color: white;
+    background: var(--accent);
+}
+
+.btn:hover { opacity: 0.85; }
+
+.btn-primary { background: var(--accent); }
+.btn-success { background: var(--success); color: #0f172a; }
+.btn-warning { background: var(--warning); color: #0f172a; }
+.btn-danger { background: var(--danger); }
+.btn-youtube { background: #ff0000; }
+.btn-sm { padding: 0.3rem 0.75rem; font-size: 0.8rem; }
+.btn-large { padding: 0.75rem 2rem; font-size: 1.1rem; }
+
+/* === טבלאות === */
+.table {
+    width: 100%;
+    border-collapse: collapse;
+    background: var(--bg-card);
+    border-radius: 12px;
+    overflow: hidden;
+}
+
+.table th,
+.table td {
+    padding: 0.75rem 1rem;
+    text-align: right;
+    border-bottom: 1px solid var(--border);
+}
+
+.table th {
+    background: rgba(96, 165, 250, 0.1);
+    color: var(--accent);
+    font-weight: 600;
+}
+
+.table tr:hover {
+    background: rgba(96, 165, 250, 0.05);
+}
+
+.table-sm th, .table-sm td {
+    padding: 0.5rem 0.75rem;
+    font-size: 0.85rem;
+}
+
+.error-row {
+    background: rgba(248, 113, 113, 0.05);
+}
+
+/* === דף פרטי סרטון === */
+.video-detail {
+    max-width: 1200px;
+}
+
+.detail-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 0.5rem;
+}
+
+.detail-meta {
+    color: var(--text-secondary);
+    margin-bottom: 2rem;
+    display: flex;
+    gap: 0.5rem;
+    flex-wrap: wrap;
+}
+
+.detail-grid {
+    display: grid;
+    grid-template-columns: 1fr 400px;
+    gap: 2rem;
+    margin-bottom: 2rem;
+}
+
+@media (max-width: 900px) {
+    .detail-grid {
+        grid-template-columns: 1fr;
+    }
+}
+
+.detail-main, .detail-sidebar {
+    display: flex;
+    flex-direction: column;
+    gap: 1.5rem;
+}
+
+/* === נגן וידאו === */
+.video-player {
+    background: var(--bg-card);
+    border-radius: 12px;
+    padding: 1.5rem;
+    border: 1px solid var(--border);
+}
+
+.video-player video {
+    border-radius: 8px;
+    margin-top: 0.5rem;
+}
+
+/* === כפתורי פעולה === */
+.action-buttons {
+    display: flex;
+    flex-direction: column;
+    gap: 1rem;
+}
+
+.inline-form {
+    background: var(--bg-card);
+    border-radius: 12px;
+    padding: 1.25rem;
+    border: 1px solid var(--border);
+}
+
+.form-group {
+    margin-bottom: 0.75rem;
+}
+
+.form-group label {
+    display: block;
+    margin-bottom: 0.25rem;
+    color: var(--text-secondary);
+    font-size: 0.85rem;
+}
+
+.form-control {
+    width: 100%;
+    padding: 0.5rem 0.75rem;
+    border-radius: 8px;
+    border: 1px solid var(--border);
+    background: var(--bg-primary);
+    color: var(--text-primary);
+    font-size: 0.9rem;
+}
+
+/* === כרטיסי מידע === */
+.info-card {
+    background: var(--bg-card);
+    border-radius: 12px;
+    padding: 1.25rem;
+    border: 1px solid var(--border);
+}
+
+.script-content {
+    white-space: pre-wrap;
+    font-size: 0.9rem;
+    line-height: 1.8;
+    max-height: 400px;
+    overflow-y: auto;
+    color: var(--text-secondary);
+}
+
+.tags {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 0.5rem;
+}
+
+.tag {
+    background: rgba(96, 165, 250, 0.15);
+    color: var(--accent);
+    padding: 0.25rem 0.75rem;
+    border-radius: 20px;
+    font-size: 0.8rem;
+}
+
+.info-list {
+    list-style: none;
+    color: var(--text-secondary);
+}
+
+.info-list li {
+    padding: 0.25rem 0;
+}
+
+/* === קישור יוטיוב === */
+.youtube-link {
+    background: var(--bg-card);
+    border-radius: 12px;
+    padding: 1.25rem;
+    border: 1px solid var(--border);
+}
+
+/* === תיבת שגיאה === */
+.error-box {
+    background: rgba(248, 113, 113, 0.1);
+    border: 1px solid var(--danger);
+    border-radius: 12px;
+    padding: 1.25rem;
+}
+
+.error-box p {
+    color: var(--danger);
+}
+
+/* === התראות === */
+.alert {
+    padding: 1rem 1.5rem;
+    border-radius: 8px;
+    margin-bottom: 1rem;
+}
+
+.alert-success { background: rgba(52, 211, 153, 0.15); border: 1px solid var(--success); color: var(--success); }
+.alert-error { background: rgba(248, 113, 113, 0.15); border: 1px solid var(--danger); color: var(--danger); }
+.alert-warning { background: rgba(251, 191, 36, 0.15); border: 1px solid var(--warning); color: var(--warning); }
+.alert-info { background: rgba(96, 165, 250, 0.15); border: 1px solid var(--accent); color: var(--accent); }
+
+/* === סקשנים === */
+.section {
+    margin-bottom: 2.5rem;
+}
+
+/* === פוטר === */
+.footer {
+    text-align: center;
+    padding: 2rem;
+    color: var(--text-secondary);
+    border-top: 1px solid var(--border);
+    margin-top: 3rem;
+}

@@ -1,0 +1,45 @@
+{% extends "base.html" %}
+{% block title %}יומן פעילות - מערכת סרטונים{% endblock %}
+
+{% block content %}
+<h1>יומן פעילות</h1>
+
+<table class="table">
+    <thead>
+        <tr>
+            <th>#</th>
+            <th>זמן</th>
+            <th>סרטון</th>
+            <th>פעולה</th>
+            <th>פרטים</th>
+            <th>סטטוס</th>
+            <th>שגיאה</th>
+        </tr>
+    </thead>
+    <tbody>
+        {% for log in logs %}
+        <tr class="{{ 'error-row' if not log.success else '' }}">
+            <td>{{ log.id }}</td>
+            <td>{{ log.timestamp[:19] }}</td>
+            <td>
+                {% if log.video_id %}
+                    <a href="{{ url_for('video_detail', video_id=log.video_id) }}">#{{ log.video_id }}</a>
+                {% else %}
+                    -
+                {% endif %}
+            </td>
+            <td>{{ log.action }}</td>
+            <td>{{ log.details }}</td>
+            <td>
+                {% if log.success %}
+                    <span class="badge badge-success">הצלחה</span>
+                {% else %}
+                    <span class="badge badge-error">שגיאה</span>
+                {% endif %}
+            </td>
+            <td>{{ log.error_message if log.error_message else '-' }}</td>
+        </tr>
+        {% endfor %}
+    </tbody>
+</table>
+{% endblock %}

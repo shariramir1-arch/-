@@ -1,0 +1,23 @@
+# === מערכת סרטונים אוטומטית - תלויות ===
+
+# AI - יצירת תסריטים
+google-genai>=1.0.0
+requests>=2.31.0
+
+# TTS - טקסט לדיבור
+edge-tts>=6.1.0
+
+# וידאו - יצירת סרטונים
+moviepy>=2.0.0
+Pillow>=10.0.0
+
+# שמע - בדיקת משך
+mutagen>=1.47.0
+
+# שרת אישורים
+Flask>=3.0.0
+
+# העלאה ליוטיוב
+google-api-python-client>=2.100.0
+google-auth-oauthlib>=1.1.0
+google-auth-httplib2>=0.2.0

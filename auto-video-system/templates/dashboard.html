@@ -1,0 +1,83 @@
+{% extends "base.html" %}
+{% block title %}דשבורד - מערכת סרטונים{% endblock %}
+
+{% block content %}
+<h1>דשבורד</h1>
+
+<!-- סטטיסטיקות -->
+<div class="stats-grid">
+    <div class="stat-card">
+        <div class="stat-number">{{ stats.total }}</div>
+        <div class="stat-label">סה"כ סרטונים</div>
+    </div>
+    <div class="stat-card stat-pending">
+        <div class="stat-number">{{ stats.pending }}</div>
+        <div class="stat-label">ממתינים לאישור</div>
+    </div>
+    <div class="stat-card stat-approved">
+        <div class="stat-number">{{ stats.approved }}</div>
+        <div class="stat-label">מאושרים</div>
+    </div>
+    <div class="stat-card stat-uploaded">
+        <div class="stat-number">{{ stats.uploaded }}</div>
+        <div class="stat-label">הועלו</div>
+    </div>
+    <div class="stat-card stat-error">
+        <div class="stat-number">{{ stats.errors }}</div>
+        <div class="stat-label">שגיאות</div>
+    </div>
+</div>
+
+<!-- סרטונים ממתינים לאישור -->
+{% if pending %}
+<section class="section">
+    <h2>ממתינים לאישור ({{ pending|length }})</h2>
+    <div class="video-grid">
+        {% for video in pending %}
+        <div class="video-card pending">
+            <div class="video-card-header">
+                <span class="badge badge-pending">ממתין לאישור</span>
+                <span class="video-type">{{ video.video_type }}</span>
+            </div>
+            <h3>{{ video.title }}</h3>
+            <p class="video-topic">{{ video.weekly_topic }} | שבוע {{ video.week_number }}</p>
+            <a href="{{ url_for('video_detail', video_id=video.id) }}" class="btn btn-primary">צפייה ואישור</a>
+        </div>
+        {% endfor %}
+    </div>
+</section>
+{% endif %}
+
+<!-- כל הסרטונים -->
+<section class="section">
+    <h2>כל הסרטונים</h2>
+    <table class="table">
+        <thead>
+            <tr>
+                <th>#</th>
+                <th>שבוע</th>
+                <th>נושא</th>
+                <th>סוג</th>
+                <th>כותרת</th>
+                <th>סטטוס</th>
+                <th>עדכון אחרון</th>
+                <th>פעולות</th>
+            </tr>
+        </thead>
+        <tbody>
+            {% for video in videos %}
+            <tr>
+                <td>{{ video.id }}</td>
+                <td>{{ video.week_number }}</td>
+                <td>{{ video.weekly_topic }}</td>
+                <td>{{ video.video_type }}</td>
+                <td>{{ video.title[:40] }}{% if video.title|length > 40 %}...{% endif %}</td>
+                <td><span class="badge badge-{{ video.status|replace(' ', '-') }}">{{ video.status }}</span></td>
+                <td>{{ video.updated_at[:16] }}</td>
+                <td><a href="{{ url_for('video_detail', video_id=video.id) }}" class="btn btn-sm">צפייה</a></td>
+            </tr>
+            {% endfor %}
+        </tbody>
+    </table>
+</section>
+{% endblock %}
