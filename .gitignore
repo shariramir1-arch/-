@@ -1,24 +1,22 @@
-# Logs
-logs
-*.log
-npm-debug.log*
-yarn-debug.log*
-yarn-error.log*
-pnpm-debug.log*
-lerna-debug.log*
-
 node_modules
 dist
-dist-ssr
-*.local
 
-# Editor directories and files
+# Secrets
+data/.secrets
+secrets/
+
+# Generated video files
+data/weeks/**/voice.mp3
+data/weeks/**/draft.mp4
+data/weeks/**/captions.srt
+
+# Logs
+*.log
+npm-debug.log*
+
+# Editor
 .vscode/*
 !.vscode/extensions.json
 .idea
 .DS_Store
-*.suo
-*.ntvs*
-*.njsproj
-*.sln
 *.sw?

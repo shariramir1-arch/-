@@ -1,0 +1,13 @@
+{
+  "channel": "auto-video-system",
+  "defaultWeek": null,
+  "ffmpegPath": "ffmpeg",
+  "pythonPath": "python",
+  "serverPort": 3210,
+  "videoWidth": 1920,
+  "videoHeight": 1080,
+  "videoDurationSec": 10,
+  "fontSize": 48,
+  "fontColor": "white",
+  "bgColor": "#1a1a2e"
+}
