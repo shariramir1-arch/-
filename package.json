@@ -1,18 +1,23 @@
 {
-  "name": "ai-systems-architect-&-implementer",
+  "name": "auto-video-system",
   "private": true,
-  "version": "0.0.0",
+  "version": "1.0.0",
   "type": "module",
   "scripts": {
     "dev": "vite",
     "build": "vite build",
-    "preview": "vite preview"
+    "preview": "vite preview",
+    "approve": "node src/server.js",
+    "upload": "node src/cli/upload.js",
+    "produce": "node src/cli/produce.js"
   },
   "dependencies": {
     "lucide-react": "^0.555.0",
     "@google/genai": "^1.30.0",
     "react": "^19.2.0",
-    "react-dom": "^19.2.0"
+    "react-dom": "^19.2.0",
+    "express": "^4.21.0",
+    "googleapis": "^144.0.0"
   },
   "devDependencies": {
     "@types/node": "^22.14.0",
