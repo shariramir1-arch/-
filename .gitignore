@@ -22,3 +22,14 @@ dist-ssr
 *.njsproj
 *.sln
 *.sw?
+
+# Secrets — never commit tokens
+secrets/token.json
+
+# Video files
+videos/*.mp4
+videos/*.mov
+videos/*.avi
+
+# Plan data
+data/
