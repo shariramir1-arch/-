@@ -18,3 +18,14 @@ View your app in AI Studio: https://ai.studio/apps/drive/1GM5JXo1nDWKEyb8zXgL7u2
 2. Set the `GEMINI_API_KEY` in [.env.local](.env.local) to your Gemini API key
 3. Run the app:
    `npm run dev`
+
+## אוטומציית לידים לקליניקה
+
+מימוש עצמאי של צינור ניהול הלידים (וואטסאפ / אינסטגרם / טופס → סיווג AI →
+גיליון → מעקב וקביעת תור) נמצא ב-[`automations/clinic-leads`](automations/clinic-leads).
+הוא אינו חלק מאפליקציית ה-Vite ואינו נבנה איתה.
+
+```bash
+npm test                   # בדיקות הלוגיקה של האוטומציה
+npm run build:automation   # בנייה מחדש של ה-workflows ל-n8n
+```

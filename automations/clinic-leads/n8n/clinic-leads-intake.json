@@ -1,0 +1,545 @@
+{
+  "name": "קליניקה — קליטת לידים",
+  "nodes": [
+    {
+      "parameters": {
+        "httpMethod": "POST",
+        "path": "clinic-leads",
+        "responseMode": "lastNode",
+        "options": {}
+      },
+      "id": "node-001",
+      "name": "Webhook — קליטת לידים",
+      "type": "n8n-nodes-base.webhook",
+      "typeVersion": 2,
+      "position": [
+        -820,
+        300
+      ],
+      "webhookId": "clinic-leads-intake"
+    },
+    {
+      "parameters": {
+        "mode": "runOnceForAllItems",
+        "jsCode": "// ---- lib/config.js ----\n/**\n * כל הפרמטרים התפעוליים במקום אחד. שינוי כאן משנה גם את ה-workflows של n8n\n * (הם נבנים מהקוד הזה דרך scripts/build-n8n.mjs).\n */\n\nconst CONFIG = {\n  /** אזור זמן לתצוגה ולחישוב תזכורות. */\n  timezone: 'Asia/Jerusalem',\n\n  /** קידומת מדינה יחידה שאליה מנרמלים כל טלפון. */\n  countryCode: '972',\n\n  /** כמה שעות אחרי יצירת הליד נבדק המעקב הראשון. */\n  followupHours: 24,\n\n  /** מספר תזכורות אוטומטיות מקסימלי לפני סגירת הליד. */\n  maxFollowupAttempts: 2,\n\n  /** כמה שעות לפני התור נשלחת תזכורת ללקוח. */\n  appointmentReminderHours: 24,\n\n  /** מתחת לסף הזה סיווג ה-AI נחשב לא בטוח והליד עובר לאדם. */\n  minClassificationConfidence: 0.7,\n\n  /** אורך מינימלי של הודעה שנחשבת פנייה אמיתית. */\n  minMessageLength: 2,\n\n  /** ערוצים שבהם טלפון הוא שדה חובה (באינסטגרם הוא לא מגיע ב-webhook). */\n  phoneRequiredChannels: ['whatsapp', 'form'],\n\n  /** ערוצים נתמכים. */\n  channels: ['whatsapp', 'instagram', 'form'],\n\n  /** תוויות הערוצים בגיליון. */\n  channelLabels: {\n    whatsapp: 'וואטסאפ',\n    instagram: 'אינסטגרם',\n    form: 'טופס',\n  },\n\n  /** דפוסי ספאם — פנייה שתואמת אותם מתויגת \"לא רלוונטי\" ללא מענה אוטומטי. */\n  spamPatterns: [\n    /\\b(?:bitcoin|crypto|forex|casino|viagra|seo services|backlinks)\\b/i,\n    /https?:\\/\\/(?:bit\\.ly|tinyurl\\.com|t\\.me)\\//i,\n    /הלוואה מיידית|הימורים|הגדלת תנועה לאתר/,\n  ],\n};\n\nconst ESCALATION_REASON = {\n  MEDICAL: 'medical',\n  COMPLAINT: 'complaint',\n  PRICE_NEGOTIATION: 'price_negotiation',\n  CANCELLATION_REFUND: 'cancellation_refund',\n  PROBLEMATIC_HISTORY: 'problematic_history',\n  LOW_CONFIDENCE: 'low_confidence',\n};\n\n/** תיאור קריא לכל סיבת הסלמה — נכנס להערות ולהתראה למזכירה. */\nconst ESCALATION_REASON_LABEL = {\n  [ESCALATION_REASON.MEDICAL]: 'שאלה רפואית',\n  [ESCALATION_REASON.COMPLAINT]: 'תלונה או חוסר שביעות רצון',\n  [ESCALATION_REASON.PRICE_NEGOTIATION]: 'מחיר/הנחה/משא ומתן',\n  [ESCALATION_REASON.CANCELLATION_REFUND]: 'ביטול או החזר',\n  [ESCALATION_REASON.PROBLEMATIC_HISTORY]: 'ליד חוזר עם היסטוריה בעייתית',\n  [ESCALATION_REASON.LOW_CONFIDENCE]: 'ה-AI לא בטוח בסיווג',\n};\n\n// ---- lib/statuses.js ----\n/**\n * סטטוסים ומעברים חוקיים בצינור הלידים של הקליניקה.\n * מקור אמת יחיד — גם האוטומציה וגם הגיליון משתמשים במחרוזות האלה בדיוק.\n */\n\nconst STATUS = {\n  NEW: 'חדש',\n  CONTACTED: 'נוצר קשר',\n  AWAITING_REPLY: 'ממתין לתשובה',\n  BOOKED: 'נקבע תור',\n  IRRELEVANT: 'לא רלוונטי',\n  HANDED_TO_HUMAN: 'הועבר לאדם',\n};\n\nconst ALL_STATUSES = Object.values(STATUS);\n\n/** סטטוסים סופיים — אין עליהם מעקב אוטומטי. */\nconst TERMINAL_STATUSES = [STATUS.BOOKED, STATUS.IRRELEVANT];\n\n/** סטטוסים שבהם המעקב האוטומטי פעיל. */\nconst FOLLOWUP_STATUSES = [STATUS.CONTACTED, STATUS.AWAITING_REPLY];\n\nconst TRANSITIONS = {\n  [STATUS.NEW]: [STATUS.CONTACTED, STATUS.IRRELEVANT, STATUS.HANDED_TO_HUMAN],\n  [STATUS.CONTACTED]: [STATUS.AWAITING_REPLY, STATUS.BOOKED, STATUS.IRRELEVANT, STATUS.HANDED_TO_HUMAN],\n  [STATUS.AWAITING_REPLY]: [STATUS.CONTACTED, STATUS.BOOKED, STATUS.IRRELEVANT, STATUS.HANDED_TO_HUMAN],\n  // ליד שנסגר יכול להיפתח מחדש כשמגיעה הודעה חדשה מאותו טלפון\n  [STATUS.IRRELEVANT]: [STATUS.CONTACTED, STATUS.HANDED_TO_HUMAN],\n  [STATUS.HANDED_TO_HUMAN]: [STATUS.BOOKED, STATUS.IRRELEVANT, STATUS.CONTACTED],\n  [STATUS.BOOKED]: [STATUS.HANDED_TO_HUMAN, STATUS.IRRELEVANT],\n};\n\nfunction isValidStatus(status) {\n  return ALL_STATUSES.includes(status);\n}\n\nfunction canTransition(from, to) {\n  if (from === to) return true;\n  return (TRANSITIONS[from] || []).includes(to);\n}\n\nfunction isFollowupStatus(status) {\n  return FOLLOWUP_STATUSES.includes(status);\n}\n\n// ---- lib/phone.js ----\n/**\n * נרמול טלפון למפתח ייחודי אחד (E.164).\n * כל מקור מגיע בפורמט אחר: וואטסאפ שולח \"972501234567@c.us\",\n * אינסטגרם לא שולח טלפון בכלל, וטופס שולח מה שהמשתמש הקליד.\n */\n\nconst IL_MOBILE = /^0(?:5\\d|7[2-9])\\d{7}$/;\nconst IL_LANDLINE = /^0[23489]\\d{7}$/;\n\nfunction digitsOnly(value) {\n  return String(value).replace(/\\D/g, '');\n}\n\n/**\n * @param {string|number|null|undefined} raw\n * @returns {{ok: true, e164: string, national: string|null, isIsraeli: boolean, type: 'mobile'|'landline'|'unknown'}\n *          |{ok: false, reason: string}}\n */\nfunction normalizePhone(raw) {\n  if (raw === null || raw === undefined) return { ok: false, reason: 'missing' };\n\n  const input = String(raw).trim();\n  if (!input) return { ok: false, reason: 'missing' };\n\n  // מזהי וואטסאפ/מטא מגיעים כ-\"972501234567@c.us\" או \"972501234567@s.whatsapp.net\"\n  const stripped = input.split('@')[0].trim();\n  const hadInternationalPrefix = stripped.startsWith('+') || /^00\\d/.test(stripped.replace(/[\\s-]/g, ''));\n\n  let digits = digitsOnly(stripped);\n  if (!digits) return { ok: false, reason: 'no_digits' };\n\n  if (digits.startsWith('00')) digits = digits.slice(2);\n\n  const cc = CONFIG.countryCode;\n  let national = null;\n\n  if (digits.startsWith(cc) && digits.length > cc.length) {\n    national = '0' + digits.slice(cc.length);\n  } else if (digits.startsWith('0')) {\n    national = digits;\n  } else if (!hadInternationalPrefix && digits.length >= 8 && digits.length <= 9) {\n    // מספר ישראלי שנכתב בלי אפס מוביל: \"501234567\"\n    national = '0' + digits;\n  }\n\n  if (national && (IL_MOBILE.test(national) || IL_LANDLINE.test(national))) {\n    return {\n      ok: true,\n      e164: `+${cc}${national.slice(1)}`,\n      national,\n      isIsraeli: true,\n      type: IL_MOBILE.test(national) ? 'mobile' : 'landline',\n    };\n  }\n\n  // מספר ישראלי שלא עומד בתבנית — נפסל, אין טעם לשלוח אליו הודעה\n  if (national) return { ok: false, reason: 'invalid_israeli_number' };\n\n  // מספר זר תקין באורכו — נשמר כמו שהוא, מסומן כלא-ישראלי\n  if (digits.length >= 8 && digits.length <= 15) {\n    return { ok: true, e164: `+${digits}`, national: null, isIsraeli: false, type: 'unknown' };\n  }\n\n  return { ok: false, reason: 'invalid_length' };\n}\n\n/** נוח לשימוש בביטויי n8n: מחזיר מחרוזת או null. */\nfunction toE164(raw) {\n  const result = normalizePhone(raw);\n  return result.ok ? result.e164 : null;\n}\n\nfunction isValidPhone(raw) {\n  return normalizePhone(raw).ok;\n}\n\n/** תצוגה ידידותית למזכירה בהתראות. */\nfunction formatForDisplay(e164) {\n  const result = normalizePhone(e164);\n  if (!result.ok) return String(e164 ?? '');\n  if (!result.national) return result.e164;\n  return result.type === 'mobile'\n    ? `${result.national.slice(0, 3)}-${result.national.slice(3)}`\n    : `${result.national.slice(0, 2)}-${result.national.slice(2)}`;\n}\n\n// ---- lib/normalize.js ----\n/**\n * שלב 1 בצינור — קליטה.\n * שלושת המקורות מגיעים במבנים שונים לחלוטין; כאן הם הופכים למבנה אחיד אחד\n * שכל שאר השלבים מכירים.\n *\n * @typedef {Object} InboundLead\n * @property {'whatsapp'|'instagram'|'form'} channel\n * @property {string} channelLabel  תווית המקור בגיליון\n * @property {string|null} externalId  מזהה ההודעה במקור — לחסימת כפילויות webhook\n * @property {string} fullName\n * @property {string|null} phone  מנורמל ל-E.164, null אם אין/לא תקין\n * @property {string} phoneRaw\n * @property {string} messageText  תוכן הפנייה המקורי\n * @property {string|null} treatmentHint  טיפול שנבחר מראש (טופס בלבד)\n * @property {string} receivedAt  ISO-8601\n * @property {string|null} senderHandle  מזהה לתשובה בערוץ (IGSID / שם משתמש)\n * @property {{channel: string, address: string|null}} replyTo\n * @property {Object} raw\n */\n\nfunction iso(value, fallbackNow) {\n  const now = fallbackNow ? new Date(fallbackNow) : new Date();\n  if (value === null || value === undefined || value === '') return now.toISOString();\n  // חותמות של מטא/טוויליו מגיעות בשניות, לפעמים כמחרוזת\n  const numeric = Number(value);\n  if (Number.isFinite(numeric) && numeric > 0) {\n    const ms = numeric > 1e11 ? numeric : numeric * 1000;\n    return new Date(ms).toISOString();\n  }\n  const parsed = new Date(value);\n  return Number.isNaN(parsed.getTime()) ? now.toISOString() : parsed.toISOString();\n}\n\nfunction clean(value) {\n  return String(value ?? '').replace(/\\s+/g, ' ').trim();\n}\n\n/** זיהוי המקור לפי מבנה ה-payload, כדי ש-webhook אחד יוכל לשרת את שלושתם. */\nfunction detectSource(payload = {}) {\n  if (payload.object === 'whatsapp_business_account') return 'meta_whatsapp';\n  if (payload.object === 'instagram' || payload.object === 'page') return 'meta_instagram';\n  if (payload.MessageSid || payload.SmsMessageSid) return 'twilio_whatsapp';\n  if (payload.source === 'form' || payload.formId || payload.form_id) return 'form';\n  if (payload.channel && CONFIG.channels.includes(payload.channel)) return 'generic';\n  return 'unknown';\n}\n\nfunction fromMetaWhatsapp(payload, options) {\n  const value = payload?.entry?.[0]?.changes?.[0]?.value ?? {};\n  const message = value.messages?.[0] ?? {};\n  const contact = value.contacts?.[0] ?? {};\n  const text =\n    message.text?.body ??\n    message.button?.text ??\n    message.interactive?.list_reply?.title ??\n    message.interactive?.button_reply?.title ??\n    '';\n  return {\n    channel: 'whatsapp',\n    externalId: message.id ?? null,\n    fullName: clean(contact.profile?.name),\n    phoneRaw: clean(message.from ?? contact.wa_id),\n    messageText: clean(text),\n    treatmentHint: null,\n    receivedAt: iso(message.timestamp, options.now),\n    senderHandle: message.from ?? null,\n  };\n}\n\nfunction fromTwilioWhatsapp(payload, options) {\n  return {\n    channel: 'whatsapp',\n    externalId: payload.MessageSid ?? payload.SmsMessageSid ?? null,\n    fullName: clean(payload.ProfileName),\n    phoneRaw: clean(String(payload.From ?? '').replace(/^whatsapp:/, '')),\n    messageText: clean(payload.Body),\n    treatmentHint: null,\n    receivedAt: iso(payload.Timestamp ?? payload.DateSent, options.now),\n    senderHandle: clean(String(payload.From ?? '')) || null,\n  };\n}\n\nfunction fromMetaInstagram(payload, options) {\n  const entry = payload?.entry?.[0] ?? {};\n  const messaging = entry.messaging?.[0];\n\n  if (messaging) {\n    // הודעה פרטית (DM)\n    return {\n      channel: 'instagram',\n      externalId: messaging.message?.mid ?? null,\n      fullName: clean(messaging.sender?.username),\n      phoneRaw: '',\n      messageText: clean(messaging.message?.text),\n      treatmentHint: null,\n      receivedAt: iso(messaging.timestamp ?? entry.time, options.now),\n      senderHandle: messaging.sender?.id ?? messaging.sender?.username ?? null,\n    };\n  }\n\n  // תגובה לפוסט\n  const comment = entry.changes?.[0]?.value ?? {};\n  return {\n    channel: 'instagram',\n    externalId: comment.id ?? null,\n    fullName: clean(comment.from?.username ?? comment.username),\n    phoneRaw: '',\n    messageText: clean(comment.text),\n    treatmentHint: null,\n    receivedAt: iso(comment.timestamp ?? entry.time, options.now),\n    senderHandle: comment.from?.id ?? comment.from?.username ?? comment.username ?? null,\n  };\n}\n\nfunction fromForm(payload, options) {\n  return {\n    channel: 'form',\n    externalId: clean(payload.submissionId ?? payload.submission_id ?? payload.id) || null,\n    fullName: clean(payload.name ?? payload.fullName ?? payload.full_name),\n    phoneRaw: clean(payload.phone ?? payload.tel ?? payload.mobile),\n    messageText: clean(payload.message ?? payload.notes ?? payload.text),\n    treatmentHint: clean(payload.treatment ?? payload.interest ?? payload.service) || null,\n    receivedAt: iso(payload.submittedAt ?? payload.submitted_at ?? payload.createdAt, options.now),\n    senderHandle: clean(payload.email) || null,\n  };\n}\n\nfunction fromGeneric(payload, options) {\n  return {\n    channel: payload.channel,\n    externalId: clean(payload.externalId) || null,\n    fullName: clean(payload.fullName ?? payload.name),\n    phoneRaw: clean(payload.phone),\n    messageText: clean(payload.messageText ?? payload.message),\n    treatmentHint: clean(payload.treatment) || null,\n    receivedAt: iso(payload.receivedAt, options.now),\n    senderHandle: clean(payload.senderHandle) || null,\n  };\n}\n\nconst PARSERS = {\n  meta_whatsapp: fromMetaWhatsapp,\n  twilio_whatsapp: fromTwilioWhatsapp,\n  meta_instagram: fromMetaInstagram,\n  form: fromForm,\n  generic: fromGeneric,\n};\n\n/**\n * לאן נשלחת התשובה.\n * באינסטגרם אין טלפון — עונים דרך מזהה השולח. בטופס אין ערוץ לענות בו,\n * ולכן התשובה יוצאת בוואטסאפ לטלפון שנמסר, ובאימייל אם אין טלפון.\n */\nfunction replyRoute(parsed, phoneResult) {\n  const phone = phoneResult.ok ? phoneResult.e164 : null;\n  if (parsed.channel === 'instagram') return { channel: 'instagram', address: parsed.senderHandle ?? null };\n  if (parsed.channel === 'form') {\n    return phone\n      ? { channel: 'whatsapp', address: phone }\n      : { channel: 'email', address: parsed.senderHandle ?? null };\n  }\n  return { channel: parsed.channel, address: phone };\n}\n\n/**\n * @param {Object} payload  גוף ה-webhook הגולמי\n * @param {{source?: string, now?: string}} [options]\n * @returns {InboundLead}\n */\nfunction normalizeInbound(payload = {}, options = {}) {\n  const source = options.source ?? detectSource(payload);\n  const parse = PARSERS[source];\n\n  if (!parse) {\n    return {\n      channel: 'unknown',\n      channelLabel: 'לא ידוע',\n      externalId: null,\n      fullName: '',\n      phone: null,\n      phoneRaw: '',\n      messageText: '',\n      treatmentHint: null,\n      receivedAt: iso(null, options.now),\n      senderHandle: null,\n      replyTo: { channel: 'unknown', address: null },\n      source,\n      raw: payload,\n    };\n  }\n\n  const parsed = parse(payload, options);\n  const phoneResult = normalizePhone(parsed.phoneRaw);\n\n  return {\n    ...parsed,\n    fullName: parsed.fullName || 'ללא שם',\n    phone: phoneResult.ok ? phoneResult.e164 : null,\n    channelLabel: CONFIG.channelLabels[parsed.channel] ?? parsed.channel,\n    replyTo: replyRoute(parsed, phoneResult),\n    source,\n    raw: payload,\n  };\n}\n\n// ---- lib/validate.js ----\n/**\n * שלב 2 בצינור — בדיקת תקינות.\n * פנייה שלא עוברת את הבדיקה מתויגת \"לא רלוונטי\" ומקבלת התראה קצרה למזכירה,\n * בלי מענה אוטומטי ללקוח.\n *\n * הערה: באינסטגרם אין טלפון ב-webhook. לכן טלפון נדרש רק בערוצים שבהם הוא\n * אמור להגיע (וואטסאפ/טופס); בליד מאינסטגרם הטלפון נאסף בשיחה הראשונה.\n */\n\nconst REJECTION = {\n  UNKNOWN_CHANNEL: 'unknown_channel',\n  EMPTY_MESSAGE: 'empty_message',\n  MISSING_PHONE: 'missing_phone',\n  INVALID_PHONE: 'invalid_phone',\n  SPAM: 'spam',\n};\n\nconst REJECTION_LABEL = {\n  [REJECTION.UNKNOWN_CHANNEL]: 'מקור פנייה לא מזוהה',\n  [REJECTION.EMPTY_MESSAGE]: 'פנייה ריקה',\n  [REJECTION.MISSING_PHONE]: 'חסר טלפון',\n  [REJECTION.INVALID_PHONE]: 'טלפון לא תקין',\n  [REJECTION.SPAM]: 'ספאם',\n};\n\nfunction isSpam(text = '') {\n  return CONFIG.spamPatterns.some((pattern) => pattern.test(text));\n}\n\n/**\n * @param {import('./normalize.js').InboundLead} lead\n * @returns {{valid: boolean, reasons: string[], labels: string[]}}\n */\nfunction validateInbound(lead) {\n  const reasons = [];\n\n  if (!CONFIG.channels.includes(lead?.channel)) {\n    reasons.push(REJECTION.UNKNOWN_CHANNEL);\n  }\n\n  const text = String(lead?.messageText ?? '').trim();\n  if (text.length < CONFIG.minMessageLength && !lead?.treatmentHint) {\n    reasons.push(REJECTION.EMPTY_MESSAGE);\n  }\n\n  if (isSpam(text)) {\n    reasons.push(REJECTION.SPAM);\n  }\n\n  const phoneRaw = String(lead?.phoneRaw ?? '').trim();\n  if (phoneRaw) {\n    if (!normalizePhone(phoneRaw).ok) reasons.push(REJECTION.INVALID_PHONE);\n  } else if (CONFIG.phoneRequiredChannels.includes(lead?.channel)) {\n    reasons.push(REJECTION.MISSING_PHONE);\n  }\n\n  return {\n    valid: reasons.length === 0,\n    reasons,\n    labels: reasons.map((reason) => REJECTION_LABEL[reason] ?? reason),\n  };\n}\n\n// ---- lib/classify.js ----\n/**\n * שלב 4 בצינור — סיווג.\n *\n * עיקרון: ה-AI ממיין, מסכם ומנסח — לא מייעץ.\n * לכן ההסלמה לא נשענת רק על שיקול דעת של המודל: יש כאן שכבת כללים\n * דטרמיניסטית שרצה לפני ואחרי ה-AI. גם אם המודל יחליט שהכול תקין,\n * מילה כמו \"בהריון\" או \"החזר כספי\" מעבירה את הליד לאדם.\n */\n\n/** רשימת הטיפולים שהקליניקה מציעה — לעריכה לפי הקליניקה בפועל. */\nconst TREATMENTS = [\n  'בוטוקס',\n  'חומצה היאלורונית',\n  'מילוי שפתיים',\n  'לייזר להסרת שיער',\n  'טיפולי פנים',\n  'פילינג',\n  'מזותרפיה',\n  'הסרת קעקועים',\n  'טיפול אקנה',\n  'אחר',\n];\n\nconst URGENCY = ['נמוכה', 'בינונית', 'גבוהה'];\n\n/** דפוסים שמחייבים העברה לאדם, ללא קשר לדעת המודל. */\nconst ESCALATION_PATTERNS = [\n  {\n    reason: ESCALATION_REASON.MEDICAL,\n    pattern:\n      /בהריון|הריון|מניקה|הנקה|תרופ|אנטיביוטי|רואקוטן|איזוטרטינואין|מדלל(?:י)? דם|תופעות לוואי|אלרגי|סוכרת|יתר לחץ דם|אוטואימונ|מחלת עור|זיהום|כוויה|קוצב לב|ניתוח|מתאים לי|האם מותר|בטוח לי|סיכון|לאחר לידה|מחלה/,\n  },\n  {\n    reason: ESCALATION_REASON.COMPLAINT,\n    pattern: /תלונה|לא מרוצ|לא הייתי מרוצ|מאוכזב|גרוע|נזק|התוצאה לא|החמיר|טעות שלכם|כאב לי מאז|לא עבד/,\n  },\n  {\n    reason: ESCALATION_REASON.PRICE_NEGOTIATION,\n    pattern: /הנחה|יקר מדי|להוזיל|לשלם פחות|משא ומתן|מחיר מיוחד|תשלומים|מבצע מיוחד|הצעה טובה יותר/,\n  },\n  {\n    reason: ESCALATION_REASON.CANCELLATION_REFUND,\n    pattern: /לבטל|ביטול|החזר כספי|כסף בחזרה|זיכוי|לדחות את התור/,\n  },\n];\n\n/** שאלת מחיר \"רגילה\" — לא מסלימה, אבל ה-AI לא נוקב במחיר והמזכירה מקבלת ציון לכך. */\nconst PRICE_QUESTION = /כמה עולה|מה המחיר|מחירון|עלות|כמה זה/;\n\n/**\n * כללים שרצים על הטקסט בלבד.\n * @param {string} text\n * @returns {string[]} סיבות הסלמה\n */\nfunction detectEscalationInText(text = '') {\n  const value = String(text);\n  return ESCALATION_PATTERNS.filter(({ pattern }) => pattern.test(value)).map(({ reason }) => reason);\n}\n\nfunction mentionsPrice(text = '') {\n  return PRICE_QUESTION.test(String(text));\n}\n\n/** סכמת הפלט של המודל — JSON בלבד, ללא טקסט חופשי. */\nconst CLASSIFICATION_SCHEMA = {\n  type: 'object',\n  properties: {\n    requestedTreatment: { type: 'string', enum: TREATMENTS, description: 'הטיפול המבוקש' },\n    urgency: { type: 'string', enum: URGENCY },\n    requiresHuman: { type: 'boolean', description: 'האם נדרש טיפול של אדם' },\n    escalationReasons: {\n      type: 'array',\n      items: { type: 'string', enum: Object.values(ESCALATION_REASON) },\n    },\n    summary: { type: 'string', description: 'סיכום הפנייה במשפט אחד, ללא פרשנות רפואית' },\n    confidence: { type: 'number', description: 'ביטחון בסיווג, 0 עד 1' },\n  },\n  required: ['requestedTreatment', 'urgency', 'requiresHuman', 'escalationReasons', 'summary', 'confidence'],\n};\n\nconst CLASSIFIER_SYSTEM_PROMPT = `אתה מסווג פניות עבור קליניקה לרפואה אסתטית.\nתפקידך: למיין, לסכם ולחלץ מידע — לא לייעץ ולא לענות ללקוח.\n\nחוקים מוחלטים:\n1. אינך נותן מידע רפואי, אינך קובע התאמה לטיפול ואינך מעריך תוצאה צפויה.\n2. אינך נוקב במחירים, בהנחות או בתנאי תשלום.\n3. בכל אחד מהמקרים הבאים requiresHuman=true והסיבה נרשמת ב-escalationReasons:\n   - medical: שאלה רפואית כלשהי — התאמה לטיפול, תופעות לוואי, הריון/הנקה, תרופות, מחלות רקע.\n   - complaint: תלונה או חוסר שביעות רצון מטיפול קודם.\n   - price_negotiation: בקשת הנחה, משא ומתן או בקשת מחיר חריגה.\n   - cancellation_refund: בקשת ביטול או החזר.\n   - problematic_history: הפנייה מציינת היסטוריה בעייתית מול הקליניקה.\n   - low_confidence: אינך בטוח בסיווג.\n4. אם אינך בטוח — confidence נמוך מ-0.7 ו-requiresHuman=true. עדיף להעביר לאדם מאשר לנחש.\n5. requestedTreatment חייב להיות אחד מהערכים המותרים; אם לא ברור, בחר \"אחר\".\n6. summary הוא משפט אחד ענייני בעברית, ללא אבחנה ובלי המלצה.\n\nהחזר JSON תקין בלבד, ללא טקסט לפניו או אחריו, ללא סימוני קוד.`;\n\n/**\n * בניית ההודעה למודל.\n * @param {import('./normalize.js').InboundLead} lead\n * @param {{isReturning?: boolean, previousNotes?: string}} [context]\n */\nfunction buildClassifierPrompt(lead, context = {}) {\n  const lines = [\n    `מקור הפנייה: ${lead.channelLabel ?? lead.channel}`,\n    `שם: ${lead.fullName || 'לא ידוע'}`,\n    lead.treatmentHint ? `טיפול שנבחר בטופס: ${lead.treatmentHint}` : null,\n    context.isReturning ? 'זהו ליד קיים שפנה שוב.' : null,\n    context.previousNotes ? `הערות קודמות: ${context.previousNotes}` : null,\n    '',\n    'תוכן הפנייה:',\n    `\"\"\"${lead.messageText ?? ''}\"\"\"`,\n    '',\n    `ערכים מותרים ל-requestedTreatment: ${TREATMENTS.join(' | ')}`,\n    `ערכים מותרים ל-urgency: ${URGENCY.join(' | ')}`,\n  ].filter((line) => line !== null);\n\n  return {\n    system: CLASSIFIER_SYSTEM_PROMPT,\n    user: lines.join('\\n'),\n    schema: CLASSIFICATION_SCHEMA,\n  };\n}\n\n/** המודל עלול להחזיר ```json ...``` למרות ההוראה — כאן מנקים ומפענחים. */\nfunction parseClassifierOutput(raw) {\n  if (raw && typeof raw === 'object') return raw;\n  const text = String(raw ?? '').trim();\n  if (!text) return null;\n  const withoutFence = text.replace(/^```(?:json)?\\s*/i, '').replace(/\\s*```$/, '');\n  const start = withoutFence.indexOf('{');\n  const end = withoutFence.lastIndexOf('}');\n  if (start === -1 || end === -1 || end < start) return null;\n  try {\n    return JSON.parse(withoutFence.slice(start, end + 1));\n  } catch {\n    return null;\n  }\n}\n\nfunction sanitizeTreatment(value, hint) {\n  if (TREATMENTS.includes(value)) return value;\n  if (hint && TREATMENTS.includes(hint)) return hint;\n  return 'אחר';\n}\n\n/**\n * מיזוג פלט ה-AI עם הכללים הדטרמיניסטיים. זו הפונקציה שמכריעה.\n *\n * @param {Object|string|null} aiOutput  פלט גולמי מהמודל (או null אם הקריאה נכשלה)\n * @param {import('./normalize.js').InboundLead} lead\n * @param {{problematicHistory?: boolean}} [context]\n * @returns {{requestedTreatment: string, urgency: string, requiresHuman: boolean,\n *            escalationReasons: string[], confidence: number, summary: string,\n *            mentionsPrice: boolean, aiFailed: boolean}}\n */\nfunction resolveClassification(aiOutput, lead, context = {}) {\n  const parsed = parseClassifierOutput(aiOutput);\n  const aiFailed = parsed === null;\n\n  const text = `${lead?.messageText ?? ''} ${lead?.treatmentHint ?? ''}`;\n  const reasons = new Set(detectEscalationInText(text));\n\n  for (const reason of parsed?.escalationReasons ?? []) {\n    if (Object.values(ESCALATION_REASON).includes(reason)) reasons.add(reason);\n  }\n\n  if (context.problematicHistory) reasons.add(ESCALATION_REASON.PROBLEMATIC_HISTORY);\n\n  const rawConfidence = Number(parsed?.confidence);\n  const confidence = aiFailed || !Number.isFinite(rawConfidence)\n    ? 0\n    : Math.min(Math.max(rawConfidence, 0), 1);\n\n  if (aiFailed || confidence < CONFIG.minClassificationConfidence) {\n    reasons.add(ESCALATION_REASON.LOW_CONFIDENCE);\n  }\n\n  const escalationReasons = [...reasons];\n\n  return {\n    requestedTreatment: sanitizeTreatment(parsed?.requestedTreatment, lead?.treatmentHint),\n    urgency: URGENCY.includes(parsed?.urgency) ? parsed.urgency : 'בינונית',\n    requiresHuman: escalationReasons.length > 0 || parsed?.requiresHuman === true,\n    escalationReasons,\n    confidence,\n    summary: String(parsed?.summary ?? '').trim() || String(lead?.messageText ?? '').slice(0, 140),\n    mentionsPrice: mentionsPrice(text),\n    aiFailed,\n  };\n}\n\n// ---- lib/record.js ----\n/**\n * מבנה הרשומה בגיליון/CRM ותרגום בין רשומה לשורה.\n * סדר העמודות כאן הוא סדר העמודות בגיליון — אל תשנו אחד בלי השני.\n */\n\nconst COLUMNS = [\n  { key: 'leadKey', header: 'מפתח ליד' },\n  { key: 'fullName', header: 'שם מלא' },\n  { key: 'phone', header: 'טלפון' },\n  { key: 'source', header: 'מקור הפנייה' },\n  { key: 'requestedTreatment', header: 'טיפול מבוקש' },\n  { key: 'originalMessage', header: 'תוכן הפנייה המקורי' },\n  { key: 'receivedAt', header: 'תאריך ושעת פנייה' },\n  { key: 'status', header: 'סטטוס' },\n  { key: 'nextFollowupAt', header: 'מועד מעקב הבא' },\n  { key: 'followupAttempts', header: 'ניסיונות מעקב' },\n  { key: 'owner', header: 'מי מטפל' },\n  { key: 'appointmentAt', header: 'תאריך תור' },\n  { key: 'notes', header: 'הערות' },\n  { key: 'updatedAt', header: 'עדכון אחרון' },\n  // עמודות תפעוליות שהאוטומציה צריכה ואינן חלק מהמינימום שהוגדר\n  { key: 'urgency', header: 'דחיפות' },\n  { key: 'escalationReasons', header: 'סיבות הסלמה' },\n  { key: 'confidence', header: 'ביטחון סיווג' },\n  { key: 'channelHandle', header: 'מזהה בערוץ' },\n  { key: 'lastExternalId', header: 'מזהה הודעה אחרונה' },\n  { key: 'problematicHistory', header: 'היסטוריה בעייתית' },\n  { key: 'appointmentReminderAt', header: 'מועד תזכורת תור' },\n  { key: 'appointmentReminderSent', header: 'תזכורת תור נשלחה' },\n];\n\nconst HEADERS = COLUMNS.map((column) => column.header);\n\nconst OWNER = { AI: 'AI', SECRETARY: 'מזכירה' };\n\n/** מפתח ייחודי לליד. טלפון כשיש; באינסטגרם לפני איסוף טלפון — מזהה השולח. */\nfunction leadKey(lead) {\n  if (lead?.phone) return lead.phone;\n  if (lead?.senderHandle) return `${lead.channel}:${lead.senderHandle}`;\n  return null;\n}\n\nfunction addHours(isoString, hours) {\n  return new Date(new Date(isoString).getTime() + hours * 3600 * 1000).toISOString();\n}\n\n/** הוספת שורה להערות בלי לדרוס את מה שהיה. */\nfunction appendNote(existingNotes, entry, at) {\n  const stamp = new Intl.DateTimeFormat('he-IL', {\n    timeZone: CONFIG.timezone,\n    dateStyle: 'short',\n    timeStyle: 'short',\n  }).format(new Date(at));\n  const line = `[${stamp}] ${entry}`;\n  const previous = String(existingNotes ?? '').trim();\n  return previous ? `${previous}\\n${line}` : line;\n}\n\n/**\n * בניית רשומה חדשה מליד מנורמל + סיווג.\n * @returns {Object} רשומה מוכנה לכתיבה לגיליון\n */\nfunction buildLeadRecord(lead, classification, now) {\n  const createdAt = now ?? new Date().toISOString();\n  const requiresHuman = classification.requiresHuman;\n\n  return {\n    leadKey: leadKey(lead),\n    fullName: lead.fullName || 'ללא שם',\n    phone: lead.phone ?? '',\n    source: lead.channelLabel ?? CONFIG.channelLabels[lead.channel] ?? lead.channel,\n    requestedTreatment: classification.requestedTreatment,\n    originalMessage: lead.messageText ?? '',\n    receivedAt: lead.receivedAt ?? createdAt,\n    status: STATUS.NEW,\n    nextFollowupAt: addHours(createdAt, CONFIG.followupHours),\n    followupAttempts: 0,\n    owner: requiresHuman ? OWNER.SECRETARY : OWNER.AI,\n    appointmentAt: '',\n    notes: appendNote('', `נקלט מ${lead.channelLabel ?? lead.channel}: ${classification.summary}`, createdAt),\n    updatedAt: createdAt,\n    urgency: classification.urgency,\n    escalationReasons: (classification.escalationReasons ?? []).join(','),\n    confidence: classification.confidence,\n    channelHandle: lead.senderHandle ?? '',\n    lastExternalId: lead.externalId ?? '',\n    problematicHistory: false,\n    appointmentReminderAt: '',\n    appointmentReminderSent: false,\n  };\n}\n\nfunction toSheetRow(record) {\n  return COLUMNS.map(({ key }) => {\n    const value = record[key];\n    if (value === null || value === undefined) return '';\n    if (typeof value === 'boolean') return value ? 'TRUE' : 'FALSE';\n    return String(value);\n  });\n}\n\nfunction fromSheetRow(row) {\n  const record = {};\n  COLUMNS.forEach(({ key }, index) => {\n    record[key] = row?.[index] ?? '';\n  });\n  record.followupAttempts = Number(record.followupAttempts) || 0;\n  record.confidence = Number(record.confidence) || 0;\n  record.problematicHistory = String(record.problematicHistory).toUpperCase() === 'TRUE';\n  record.appointmentReminderSent = String(record.appointmentReminderSent).toUpperCase() === 'TRUE';\n  return record;\n}\n\n/** המרה מאובייקט בשם-עמודה (כפי שנוד Google Sheets ב-n8n מחזיר) לרשומה. */\nfunction fromSheetObject(object = {}) {\n  const record = {};\n  for (const { key, header } of COLUMNS) {\n    record[key] = object[header] ?? object[key] ?? '';\n  }\n  record.followupAttempts = Number(record.followupAttempts) || 0;\n  record.confidence = Number(record.confidence) || 0;\n  record.problematicHistory = String(record.problematicHistory).toUpperCase() === 'TRUE';\n  record.appointmentReminderSent = String(record.appointmentReminderSent).toUpperCase() === 'TRUE';\n  return record;\n}\n\n/** המרה חזרה למפתחות בעברית לכתיבה לגיליון. */\nfunction toSheetObject(record) {\n  const object = {};\n  for (const { key, header } of COLUMNS) {\n    if (record[key] === undefined) continue;\n    const value = record[key];\n    object[header] = typeof value === 'boolean' ? (value ? 'TRUE' : 'FALSE') : value ?? '';\n  }\n  return object;\n}\n\n// ---- lib/messages.js ----\n/**\n * כל הטקסטים שנשלחים החוצה.\n * כלל מחייב: אין מחירים, אין מידע רפואי, אין הבטחת תוצאה — בשום תבנית.\n * מי שרוצה לשנות נוסח, משנה כאן ולא בתוך ה-workflow.\n */\n\nconst firstName = (fullName) => String(fullName ?? '').trim().split(' ')[0] || '';\n\nfunction dateInTimezone(isoString, options) {\n  return new Intl.DateTimeFormat('he-IL', { timeZone: CONFIG.timezone, ...options }).format(new Date(isoString));\n}\n\n/** \"יום ראשון, 20 בספטמבר, 10:30\" */\nfunction formatAppointment(isoString) {\n  return dateInTimezone(isoString, {\n    weekday: 'long',\n    day: 'numeric',\n    month: 'long',\n    hour: '2-digit',\n    minute: '2-digit',\n  });\n}\n\n/** תגובה ראשונית — אישור קבלה + שאלה אחת לתיאום. */\nfunction greeting(lead) {\n  const name = firstName(lead.fullName);\n  const hello = name ? `היי ${name},` : 'היי,';\n  const treatment = lead.requestedTreatment && lead.requestedTreatment !== 'לא ידוע'\n    ? ` בנוגע ל${lead.requestedTreatment}`\n    : '';\n  const askPhone = lead.channel === 'instagram' && !lead.phone\n    ? '\\nכדי שנוכל לתאם, אפשר להשאיר כאן מספר טלפון?'\n    : '';\n  return (\n    `${hello} קיבלנו את הפנייה שלך${treatment} 🙏\\n` +\n    'נשמח לתאם לך פגישת ייעוץ בקליניקה.\\n' +\n    'מתי נוח לך שנחזור אליך — בוקר, צהריים או ערב?' +\n    askPhone\n  );\n}\n\n/** מענה יחיד כשהליד מועבר לאדם — ה-AI לא עונה לגופו של עניין. */\nfunction handoffToHuman() {\n  return 'תודה על הפנייה 🙏 מישהו מהצוות יחזור אליך בהקדם.';\n}\n\n/** תזכורת מעקב ללקוח שלא ענה. */\nfunction followupReminder(lead, attempt) {\n  const name = firstName(lead.fullName);\n  const hello = name ? `היי ${name},` : 'היי,';\n  if (attempt <= 1) {\n    return `${hello} רק מוודאים שההודעה שלנו הגיעה 🙂\\nעדיין מעוניינים שנתאם פגישת ייעוץ? מתי נוח לך?`;\n  }\n  return (\n    `${hello} זו תזכורת אחרונה מצדנו.\\n` +\n    'אם תרצו לתאם פגישת ייעוץ, פשוט השיבו להודעה הזו ונשמח לחזור אליכם.'\n  );\n}\n\n/** אישור קביעת תור. */\nfunction appointmentConfirmation(lead) {\n  const name = firstName(lead.fullName);\n  const hello = name ? `היי ${name},` : 'היי,';\n  return `${hello} התור שלך נקבע ל${formatAppointment(lead.appointmentAt)} ✅\\nנשמח לראותך. לשינוי או ביטול — השיבו להודעה הזו.`;\n}\n\n/** תזכורת יום לפני התור. */\nfunction appointmentReminder(lead) {\n  const name = firstName(lead.fullName);\n  const hello = name ? `היי ${name},` : 'היי,';\n  return `${hello} תזכורת לתור שלך מחר, ${formatAppointment(lead.appointmentAt)} 🗓️\\nאם צריך לשנות — השיבו להודעה הזו.`;\n}\n\n/* ---------- התראות פנימיות למזכירה ---------- */\n\nfunction leadLine(lead, sheetUrl) {\n  const phone = lead.phone ? formatForDisplay(lead.phone) : 'אין טלפון';\n  return [\n    `שם: ${lead.fullName || 'ללא שם'}`,\n    `טלפון: ${phone}`,\n    `טיפול: ${lead.requestedTreatment || 'לא ידוע'}`,\n    `מקור: ${lead.sourceLabel || CONFIG.channelLabels[lead.channel] || lead.channel}`,\n    sheetUrl ? `שורה: ${sheetUrl}` : null,\n  ].filter(Boolean).join('\\n');\n}\n\nfunction newLeadAlert(lead, sheetUrl) {\n  return `🆕 ליד חדש\\n${leadLine(lead, sheetUrl)}`;\n}\n\nfunction handoffAlert(lead, sheetUrl) {\n  const reasons = (lead.escalationReasons ?? [])\n    .map((reason) => ESCALATION_REASON_LABEL[reason] ?? reason)\n    .join(', ');\n  return (\n    `🔴 דורש טיפול אנושי${reasons ? ` — ${reasons}` : ''}\\n` +\n    `${leadLine(lead, sheetUrl)}\\n` +\n    `הודעת הלקוח: \"${lead.originalMessage ?? ''}\"`\n  );\n}\n\nfunction invalidLeadAlert(lead, labels, sheetUrl) {\n  return `⚠️ פנייה לא תקינה (${labels.join(', ')})\\n${leadLine(lead, sheetUrl)}`;\n}\n\nfunction noAnswerAlert(lead, sheetUrl) {\n  return `⏳ ${CONFIG.maxFollowupAttempts} ניסיונות מעקב ללא מענה — הליד נסגר כ\"לא רלוונטי\"\\n${leadLine(lead, sheetUrl)}`;\n}\n\nfunction returningLeadAlert(lead, sheetUrl) {\n  return `🔁 פנייה חוזרת מליד קיים\\n${leadLine(lead, sheetUrl)}\\nההודעה החדשה: \"${lead.originalMessage ?? ''}\"`;\n}\n\n// ---- lib/pipeline.js ----\n/**\n * שלבים 1–7 בצינור, כפונקציה טהורה אחת.\n * הפונקציה לא מדברת עם אף שירות — היא מקבלת מצב ומחזירה רשימת פעולות,\n * ו-n8n/Make מבצע אותן. כך אפשר לבדוק את כל ההיגיון בלי webhooks.\n */\n\nconst ACTION = {\n  CREATE_RECORD: 'create_record',\n  UPDATE_RECORD: 'update_record',\n  SEND_MESSAGE: 'send_message',\n  NOTIFY_STAFF: 'notify_staff',\n};\n\nconst OUTCOME = {\n  INVALID: 'invalid',\n  DUPLICATE_WEBHOOK: 'duplicate_webhook',\n  EXISTING_UPDATED: 'existing_updated',\n  CREATED: 'created',\n};\n\nconst sendMessage = (lead, text, kind) => ({\n  type: ACTION.SEND_MESSAGE,\n  kind,\n  channel: lead.replyTo?.channel ?? lead.channel,\n  to: lead.replyTo?.address ?? lead.phone ?? null,\n  text,\n});\n\nconst notify = (text, severity = 'info') => ({ type: ACTION.NOTIFY_STAFF, severity, text });\n\n/**\n * @param {Object} input\n * @param {Object} input.payload  גוף ה-webhook הגולמי\n * @param {string} [input.source]  דריסת זיהוי המקור\n * @param {Object|null} [input.existingRecord]  הרשומה הקיימת לאותו מפתח, אם נמצאה\n * @param {Object|string|null} [input.aiOutput]  פלט הסיווג של המודל\n * @param {string} [input.now]  ISO — מוזרק בבדיקות\n * @param {string} [input.sheetUrl]  קישור לשורה, נכנס להתראות\n */\nfunction processInbound({ payload, source, existingRecord = null, aiOutput = null, now, sheetUrl } = {}) {\n  const at = now ?? new Date().toISOString();\n  const lead = normalizeInbound(payload, { source, now: at });\n  const validation = validateInbound(lead);\n  const key = leadKey(lead);\n\n  // webhook שנשלח פעמיים — אותו מזהה הודעה, לא עושים כלום\n  if (lead.externalId && existingRecord && existingRecord.lastExternalId === lead.externalId) {\n    return { outcome: OUTCOME.DUPLICATE_WEBHOOK, lead, validation, actions: [] };\n  }\n\n  if (!validation.valid) {\n    const actions = [];\n    const summary = validation.labels.join(', ');\n\n    if (existingRecord) {\n      actions.push({\n        type: ACTION.UPDATE_RECORD,\n        key: existingRecord.leadKey ?? key,\n        updates: {\n          notes: appendNote(existingRecord.notes, `פנייה שנפסלה (${summary}): ${lead.messageText}`, at),\n          lastExternalId: lead.externalId ?? existingRecord.lastExternalId ?? '',\n          updatedAt: at,\n        },\n      });\n    } else if (key) {\n      const record = buildLeadRecord(lead, {\n        requestedTreatment: 'אחר',\n        urgency: 'נמוכה',\n        escalationReasons: [],\n        requiresHuman: false,\n        confidence: 0,\n        summary: `פנייה שנפסלה: ${summary}`,\n      }, at);\n      record.status = STATUS.IRRELEVANT;\n      record.owner = OWNER.SECRETARY;\n      record.nextFollowupAt = '';\n      actions.push({ type: ACTION.CREATE_RECORD, record });\n    }\n\n    // אין מענה אוטומטי לפנייה שנפסלה — רק התראה קצרה\n    actions.push(notify(messages.invalidLeadAlert(lead, validation.labels, sheetUrl), 'warning'));\n    return { outcome: OUTCOME.INVALID, lead, validation, actions };\n  }\n\n  const classification = resolveClassification(aiOutput, lead, {\n    problematicHistory: Boolean(existingRecord?.problematicHistory),\n  });\n\n  return existingRecord\n    ? updateExisting({ lead, existingRecord, classification, at, sheetUrl, validation })\n    : createNew({ lead, classification, at, sheetUrl, validation });\n}\n\nfunction createNew({ lead, classification, at, sheetUrl, validation }) {\n  const record = buildLeadRecord(lead, classification, at);\n  const actions = [{ type: ACTION.CREATE_RECORD, record }];\n\n  const alertLead = {\n    ...record,\n    channel: lead.channel,\n    sourceLabel: record.source,\n    escalationReasons: classification.escalationReasons,\n    originalMessage: lead.messageText,\n  };\n\n  if (classification.requiresHuman) {\n    // ה-AI לא עונה לגופו של עניין — רק מודיע שמישהו יחזור\n    actions.push(sendMessage(lead, messages.handoffToHuman(), 'handoff'));\n    actions.push({\n      type: ACTION.UPDATE_RECORD,\n      key: record.leadKey,\n      updates: {\n        status: STATUS.HANDED_TO_HUMAN,\n        owner: OWNER.SECRETARY,\n        nextFollowupAt: '',\n        updatedAt: at,\n      },\n    });\n    actions.push(notify(messages.handoffAlert(alertLead, sheetUrl), 'critical'));\n    return { outcome: OUTCOME.CREATED, lead, classification, validation, record, actions };\n  }\n\n  actions.push(sendMessage(lead, messages.greeting({ ...lead, requestedTreatment: classification.requestedTreatment }), 'greeting'));\n  actions.push({\n    type: ACTION.UPDATE_RECORD,\n    key: record.leadKey,\n    updates: { status: STATUS.CONTACTED, updatedAt: at },\n  });\n\n  const priceNote = classification.mentionsPrice ? '\\n(הלקוח שאל על מחיר — ה-AI לא נוקב במחירים)' : '';\n  actions.push(notify(messages.newLeadAlert(alertLead, sheetUrl) + priceNote, 'info'));\n\n  return { outcome: OUTCOME.CREATED, lead, classification, validation, record, actions };\n}\n\nfunction updateExisting({ lead, existingRecord, classification, at, sheetUrl, validation }) {\n  const updates = {\n    notes: appendNote(existingRecord.notes, `פנייה חוזרת מ${lead.channelLabel}: ${lead.messageText}`, at),\n    lastExternalId: lead.externalId ?? existingRecord.lastExternalId ?? '',\n    updatedAt: at,\n  };\n\n  // טלפון שהגיע רק עכשיו (למשל ליד מאינסטגרם שהשאיר מספר) משלים את הרשומה\n  if (!existingRecord.phone && lead.phone) updates.phone = lead.phone;\n  if ((!existingRecord.fullName || existingRecord.fullName === 'ללא שם') && lead.fullName !== 'ללא שם') {\n    updates.fullName = lead.fullName;\n  }\n\n  const actions = [];\n  const alertLead = {\n    ...existingRecord,\n    ...updates,\n    channel: lead.channel,\n    sourceLabel: existingRecord.source,\n    requestedTreatment: existingRecord.requestedTreatment || classification.requestedTreatment,\n    escalationReasons: classification.escalationReasons,\n    originalMessage: lead.messageText,\n  };\n\n  if (classification.requiresHuman && existingRecord.status !== STATUS.HANDED_TO_HUMAN) {\n    if (canTransition(existingRecord.status, STATUS.HANDED_TO_HUMAN)) {\n      updates.status = STATUS.HANDED_TO_HUMAN;\n      updates.owner = OWNER.SECRETARY;\n      updates.nextFollowupAt = '';\n      updates.escalationReasons = classification.escalationReasons.join(',');\n    }\n    actions.push({ type: ACTION.UPDATE_RECORD, key: existingRecord.leadKey, updates });\n    actions.push(sendMessage(lead, messages.handoffToHuman(), 'handoff'));\n    actions.push(notify(messages.handoffAlert(alertLead, sheetUrl), 'critical'));\n    return { outcome: OUTCOME.EXISTING_UPDATED, lead, classification, validation, updates, actions };\n  }\n\n  // הלקוח הגיב — המעקב מתאפס, אבל לא נשלחת שוב הודעת פתיחה\n  const reopenable = [STATUS.AWAITING_REPLY, STATUS.IRRELEVANT];\n  if (reopenable.includes(existingRecord.status) && canTransition(existingRecord.status, STATUS.CONTACTED)) {\n    updates.status = STATUS.CONTACTED;\n    updates.followupAttempts = 0;\n    updates.nextFollowupAt = addHours(at, CONFIG.followupHours);\n  }\n\n  actions.push({ type: ACTION.UPDATE_RECORD, key: existingRecord.leadKey, updates });\n  actions.push(notify(messages.returningLeadAlert(alertLead, sheetUrl), 'info'));\n\n  return { outcome: OUTCOME.EXISTING_UPDATED, lead, classification, validation, updates, actions };\n}\n\n// ---- lib/followup.js ----\n/**\n * שלבים 8–9 בצינור: המעקב השעתי וקביעת התור.\n * גם כאן — פונקציות טהורות שמחזירות פעולות, בלי קריאות רשת.\n */\n\nconst isDue = (isoString, now) => {\n  if (!isoString) return false;\n  const due = new Date(isoString).getTime();\n  return Number.isFinite(due) && due <= new Date(now).getTime();\n};\n\n/** לאן שולחים הודעה ללקוח קיים, לפי מה ששמור ברשומה. */\nfunction replyTargetForRecord(record) {\n  if (record.phone) return { channel: 'whatsapp', address: record.phone };\n  if (record.source === CONFIG.channelLabels.instagram && record.channelHandle) {\n    return { channel: 'instagram', address: record.channelHandle };\n  }\n  return { channel: 'unknown', address: null };\n}\n\nfunction messageAction(record, text, kind) {\n  const target = replyTargetForRecord(record);\n  return { type: ACTION.SEND_MESSAGE, kind, channel: target.channel, to: target.address, text };\n}\n\n/**\n * מה לעשות עם ליד אחד בסריקה השעתית.\n * @param {Object} record  רשומה מהגיליון\n * @param {string} now  ISO\n * @param {string} [sheetUrl]\n * @returns {{due: boolean, reason: string, actions: Array}}\n */\nfunction planFollowup(record, now, sheetUrl) {\n  if (!isFollowupStatus(record.status)) {\n    return { due: false, reason: 'status_not_eligible', actions: [] };\n  }\n  if (!isDue(record.nextFollowupAt, now)) {\n    return { due: false, reason: 'not_due', actions: [] };\n  }\n\n  const attempts = Number(record.followupAttempts) || 0;\n\n  // מיצינו את הניסיונות — סוגרים ומודיעים למזכירה, בלי עוד הודעות ללקוח\n  if (attempts >= CONFIG.maxFollowupAttempts) {\n    return {\n      due: true,\n      reason: 'closed_no_answer',\n      actions: [\n        {\n          type: ACTION.UPDATE_RECORD,\n          key: record.leadKey,\n          updates: {\n            status: STATUS.IRRELEVANT,\n            owner: OWNER.SECRETARY,\n            nextFollowupAt: '',\n            notes: appendNote(record.notes, `נסגר אוטומטית אחרי ${attempts} ניסיונות מעקב ללא מענה`, now),\n            updatedAt: now,\n          },\n        },\n        { type: ACTION.NOTIFY_STAFF, severity: 'warning', text: messages.noAnswerAlert(record, sheetUrl) },\n      ],\n    };\n  }\n\n  const attempt = attempts + 1;\n  return {\n    due: true,\n    reason: 'reminder_sent',\n    actions: [\n      messageAction(record, messages.followupReminder(record, attempt), 'followup'),\n      {\n        type: ACTION.UPDATE_RECORD,\n        key: record.leadKey,\n        updates: {\n          status: STATUS.AWAITING_REPLY,\n          followupAttempts: attempt,\n          nextFollowupAt: addHours(now, CONFIG.followupHours),\n          notes: appendNote(record.notes, `נשלחה תזכורת מעקב (${attempt}/${CONFIG.maxFollowupAttempts})`, now),\n          updatedAt: now,\n        },\n      },\n    ],\n  };\n}\n\n/**\n * הופעל כשהמזכירה (או אינטגרציה ליומן) סימנה \"נקבע תור\".\n * מבטל מעקבים, שולח אישור, ומתזמן תזכורת יום לפני.\n */\nfunction planAppointmentBooked(record, now, sheetUrl) {\n  if (record.status !== STATUS.BOOKED) {\n    return { ok: false, reason: 'status_not_booked', actions: [] };\n  }\n  const appointmentAt = record.appointmentAt ? new Date(record.appointmentAt) : null;\n  if (!appointmentAt || Number.isNaN(appointmentAt.getTime())) {\n    return {\n      ok: false,\n      reason: 'missing_appointment_date',\n      actions: [{\n        type: ACTION.NOTIFY_STAFF,\n        severity: 'warning',\n        text: `⚠️ הליד סומן \"נקבע תור\" בלי תאריך תור — ${record.fullName} (${record.phone || 'אין טלפון'})`,\n      }],\n    };\n  }\n\n  const reminderAt = addHours(appointmentAt.toISOString(), -CONFIG.appointmentReminderHours);\n  const alreadyPast = new Date(reminderAt).getTime() <= new Date(now).getTime();\n\n  return {\n    ok: true,\n    reason: 'confirmation_sent',\n    actions: [\n      messageAction(record, messages.appointmentConfirmation(record), 'appointment_confirmation'),\n      {\n        type: ACTION.UPDATE_RECORD,\n        key: record.leadKey,\n        updates: {\n          owner: OWNER.SECRETARY,\n          nextFollowupAt: '', // ביטול כל מעקב תלוי\n          followupAttempts: 0,\n          // תור שנקבע לפחות מ-24 שעות מראש לא מקבל תזכורת נפרדת\n          appointmentReminderAt: alreadyPast ? '' : reminderAt,\n          appointmentReminderSent: alreadyPast,\n          notes: appendNote(record.notes, `נקבע תור ל-${messages.formatAppointment(record.appointmentAt)}, נשלח אישור`, now),\n          updatedAt: now,\n        },\n      },\n    ],\n  };\n}\n\n/** תזכורת יום לפני התור — נבדקת באותה סריקה שעתית. */\nfunction planAppointmentReminder(record, now) {\n  if (record.status !== STATUS.BOOKED) return { due: false, reason: 'status_not_booked', actions: [] };\n  if (record.appointmentReminderSent === true) return { due: false, reason: 'already_sent', actions: [] };\n  if (!isDue(record.appointmentReminderAt, now)) return { due: false, reason: 'not_due', actions: [] };\n  if (new Date(record.appointmentAt).getTime() <= new Date(now).getTime()) {\n    return { due: false, reason: 'appointment_passed', actions: [] };\n  }\n\n  return {\n    due: true,\n    reason: 'reminder_sent',\n    actions: [\n      messageAction(record, messages.appointmentReminder(record), 'appointment_reminder'),\n      {\n        type: ACTION.UPDATE_RECORD,\n        key: record.leadKey,\n        updates: {\n          appointmentReminderSent: true,\n          appointmentReminderAt: '',\n          notes: appendNote(record.notes, 'נשלחה תזכורת יום לפני התור', now),\n          updatedAt: now,\n        },\n      },\n    ],\n  };\n}\n\n/**\n * הסריקה השעתית על כל הגיליון.\n * @param {Object[]} records\n * @param {string} now\n * @returns {{actions: Array, summary: Object}}\n */\nfunction planHourlyScan(records = [], now, sheetUrl) {\n  const actions = [];\n  const summary = { scanned: records.length, reminders: 0, closed: 0, appointmentReminders: 0 };\n\n  for (const record of records) {\n    const followup = planFollowup(record, now, sheetUrl);\n    if (followup.due) {\n      actions.push(...followup.actions);\n      if (followup.reason === 'reminder_sent') summary.reminders += 1;\n      if (followup.reason === 'closed_no_answer') summary.closed += 1;\n      continue;\n    }\n\n    const reminder = planAppointmentReminder(record, now);\n    if (reminder.due) {\n      actions.push(...reminder.actions);\n      summary.appointmentReminders += 1;\n    }\n  }\n\n  return { actions, summary };\n}\n\n// ---- מרחב השמות messages ----\nconst messages = { formatAppointment, greeting, handoffToHuman, followupReminder, appointmentConfirmation, appointmentReminder, newLeadAlert, handoffAlert, invalidLeadAlert, noAnswerAlert, returningLeadAlert };\n\n// ---- הכנה — נרמול, תקינות ופרומפט ----\nconst payload = $input.first().json.body ?? $input.first().json;\nconst now = new Date().toISOString();\nconst lead = normalizeInbound(payload, { now });\nconst validation = validateInbound(lead);\nconst prompt = buildClassifierPrompt(lead);\n\nreturn [{ json: { payload, lead, validation, prompt, leadKey: leadKey(lead), now } }];"
+      },
+      "id": "node-002",
+      "name": "הכנה — נרמול, תקינות ופרומפט",
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        -600,
+        300
+      ]
+    },
+    {
+      "parameters": {
+        "operation": "read",
+        "documentId": "={{ $env.CLINIC_LEADS_SHEET_ID }}",
+        "sheetName": "={{ $env.CLINIC_LEADS_SHEET_NAME || \"לידים\" }}",
+        "filtersUI": {
+          "values": [
+            {
+              "lookupColumn": "מפתח ליד",
+              "lookupValue": "={{ $json.leadKey }}"
+            }
+          ]
+        },
+        "options": {
+          "returnAllMatches": false
+        }
+      },
+      "id": "node-003",
+      "name": "חיפוש ליד קיים לפי מפתח",
+      "type": "n8n-nodes-base.googleSheets",
+      "typeVersion": 4.5,
+      "position": [
+        -380,
+        300
+      ],
+      "alwaysOutputData": true,
+      "onError": "continueRegularOutput"
+    },
+    {
+      "parameters": {
+        "conditions": {
+          "options": {
+            "caseSensitive": true,
+            "version": 2
+          },
+          "conditions": [
+            {
+              "leftValue": "={{ $('הכנה — נרמול, תקינות ופרומפט').first().json.validation.valid }}",
+              "rightValue": true,
+              "operator": {
+                "type": "boolean",
+                "operation": "true",
+                "singleValue": true
+              }
+            }
+          ],
+          "combinator": "and"
+        },
+        "options": {}
+      },
+      "id": "node-004",
+      "name": "פנייה תקינה?",
+      "type": "n8n-nodes-base.if",
+      "typeVersion": 2,
+      "position": [
+        -160,
+        300
+      ]
+    },
+    {
+      "parameters": {
+        "method": "POST",
+        "url": "=https://generativelanguage.googleapis.com/v1beta/models/{{ $env.CLINIC_AI_MODEL || \"gemini-2.5-flash\" }}:generateContent",
+        "authentication": "genericCredentialType",
+        "genericAuthType": "httpHeaderAuth",
+        "sendBody": true,
+        "specifyBody": "json",
+        "jsonBody": "={{ JSON.stringify({\n      system_instruction: { parts: [{ text: $('הכנה — נרמול, תקינות ופרומפט').first().json.prompt.system }] },\n      contents: [{ role: \"user\", parts: [{ text: $('הכנה — נרמול, תקינות ופרומפט').first().json.prompt.user }] }],\n      generationConfig: { temperature: 0.1, responseMimeType: \"application/json\" }\n    }) }}",
+        "options": {
+          "timeout": 20000
+        }
+      },
+      "id": "node-005",
+      "name": "סיווג AI (JSON בלבד)",
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.2,
+      "position": [
+        60,
+        200
+      ],
+      "onError": "continueRegularOutput"
+    },
+    {
+      "parameters": {
+        "mode": "runOnceForAllItems",
+        "jsCode": "// ---- lib/config.js ----\n/**\n * כל הפרמטרים התפעוליים במקום אחד. שינוי כאן משנה גם את ה-workflows של n8n\n * (הם נבנים מהקוד הזה דרך scripts/build-n8n.mjs).\n */\n\nconst CONFIG = {\n  /** אזור זמן לתצוגה ולחישוב תזכורות. */\n  timezone: 'Asia/Jerusalem',\n\n  /** קידומת מדינה יחידה שאליה מנרמלים כל טלפון. */\n  countryCode: '972',\n\n  /** כמה שעות אחרי יצירת הליד נבדק המעקב הראשון. */\n  followupHours: 24,\n\n  /** מספר תזכורות אוטומטיות מקסימלי לפני סגירת הליד. */\n  maxFollowupAttempts: 2,\n\n  /** כמה שעות לפני התור נשלחת תזכורת ללקוח. */\n  appointmentReminderHours: 24,\n\n  /** מתחת לסף הזה סיווג ה-AI נחשב לא בטוח והליד עובר לאדם. */\n  minClassificationConfidence: 0.7,\n\n  /** אורך מינימלי של הודעה שנחשבת פנייה אמיתית. */\n  minMessageLength: 2,\n\n  /** ערוצים שבהם טלפון הוא שדה חובה (באינסטגרם הוא לא מגיע ב-webhook). */\n  phoneRequiredChannels: ['whatsapp', 'form'],\n\n  /** ערוצים נתמכים. */\n  channels: ['whatsapp', 'instagram', 'form'],\n\n  /** תוויות הערוצים בגיליון. */\n  channelLabels: {\n    whatsapp: 'וואטסאפ',\n    instagram: 'אינסטגרם',\n    form: 'טופס',\n  },\n\n  /** דפוסי ספאם — פנייה שתואמת אותם מתויגת \"לא רלוונטי\" ללא מענה אוטומטי. */\n  spamPatterns: [\n    /\\b(?:bitcoin|crypto|forex|casino|viagra|seo services|backlinks)\\b/i,\n    /https?:\\/\\/(?:bit\\.ly|tinyurl\\.com|t\\.me)\\//i,\n    /הלוואה מיידית|הימורים|הגדלת תנועה לאתר/,\n  ],\n};\n\nconst ESCALATION_REASON = {\n  MEDICAL: 'medical',\n  COMPLAINT: 'complaint',\n  PRICE_NEGOTIATION: 'price_negotiation',\n  CANCELLATION_REFUND: 'cancellation_refund',\n  PROBLEMATIC_HISTORY: 'problematic_history',\n  LOW_CONFIDENCE: 'low_confidence',\n};\n\n/** תיאור קריא לכל סיבת הסלמה — נכנס להערות ולהתראה למזכירה. */\nconst ESCALATION_REASON_LABEL = {\n  [ESCALATION_REASON.MEDICAL]: 'שאלה רפואית',\n  [ESCALATION_REASON.COMPLAINT]: 'תלונה או חוסר שביעות רצון',\n  [ESCALATION_REASON.PRICE_NEGOTIATION]: 'מחיר/הנחה/משא ומתן',\n  [ESCALATION_REASON.CANCELLATION_REFUND]: 'ביטול או החזר',\n  [ESCALATION_REASON.PROBLEMATIC_HISTORY]: 'ליד חוזר עם היסטוריה בעייתית',\n  [ESCALATION_REASON.LOW_CONFIDENCE]: 'ה-AI לא בטוח בסיווג',\n};\n\n// ---- lib/statuses.js ----\n/**\n * סטטוסים ומעברים חוקיים בצינור הלידים של הקליניקה.\n * מקור אמת יחיד — גם האוטומציה וגם הגיליון משתמשים במחרוזות האלה בדיוק.\n */\n\nconst STATUS = {\n  NEW: 'חדש',\n  CONTACTED: 'נוצר קשר',\n  AWAITING_REPLY: 'ממתין לתשובה',\n  BOOKED: 'נקבע תור',\n  IRRELEVANT: 'לא רלוונטי',\n  HANDED_TO_HUMAN: 'הועבר לאדם',\n};\n\nconst ALL_STATUSES = Object.values(STATUS);\n\n/** סטטוסים סופיים — אין עליהם מעקב אוטומטי. */\nconst TERMINAL_STATUSES = [STATUS.BOOKED, STATUS.IRRELEVANT];\n\n/** סטטוסים שבהם המעקב האוטומטי פעיל. */\nconst FOLLOWUP_STATUSES = [STATUS.CONTACTED, STATUS.AWAITING_REPLY];\n\nconst TRANSITIONS = {\n  [STATUS.NEW]: [STATUS.CONTACTED, STATUS.IRRELEVANT, STATUS.HANDED_TO_HUMAN],\n  [STATUS.CONTACTED]: [STATUS.AWAITING_REPLY, STATUS.BOOKED, STATUS.IRRELEVANT, STATUS.HANDED_TO_HUMAN],\n  [STATUS.AWAITING_REPLY]: [STATUS.CONTACTED, STATUS.BOOKED, STATUS.IRRELEVANT, STATUS.HANDED_TO_HUMAN],\n  // ליד שנסגר יכול להיפתח מחדש כשמגיעה הודעה חדשה מאותו טלפון\n  [STATUS.IRRELEVANT]: [STATUS.CONTACTED, STATUS.HANDED_TO_HUMAN],\n  [STATUS.HANDED_TO_HUMAN]: [STATUS.BOOKED, STATUS.IRRELEVANT, STATUS.CONTACTED],\n  [STATUS.BOOKED]: [STATUS.HANDED_TO_HUMAN, STATUS.IRRELEVANT],\n};\n\nfunction isValidStatus(status) {\n  return ALL_STATUSES.includes(status);\n}\n\nfunction canTransition(from, to) {\n  if (from === to) return true;\n  return (TRANSITIONS[from] || []).includes(to);\n}\n\nfunction isFollowupStatus(status) {\n  return FOLLOWUP_STATUSES.includes(status);\n}\n\n// ---- lib/phone.js ----\n/**\n * נרמול טלפון למפתח ייחודי אחד (E.164).\n * כל מקור מגיע בפורמט אחר: וואטסאפ שולח \"972501234567@c.us\",\n * אינסטגרם לא שולח טלפון בכלל, וטופס שולח מה שהמשתמש הקליד.\n */\n\nconst IL_MOBILE = /^0(?:5\\d|7[2-9])\\d{7}$/;\nconst IL_LANDLINE = /^0[23489]\\d{7}$/;\n\nfunction digitsOnly(value) {\n  return String(value).replace(/\\D/g, '');\n}\n\n/**\n * @param {string|number|null|undefined} raw\n * @returns {{ok: true, e164: string, national: string|null, isIsraeli: boolean, type: 'mobile'|'landline'|'unknown'}\n *          |{ok: false, reason: string}}\n */\nfunction normalizePhone(raw) {\n  if (raw === null || raw === undefined) return { ok: false, reason: 'missing' };\n\n  const input = String(raw).trim();\n  if (!input) return { ok: false, reason: 'missing' };\n\n  // מזהי וואטסאפ/מטא מגיעים כ-\"972501234567@c.us\" או \"972501234567@s.whatsapp.net\"\n  const stripped = input.split('@')[0].trim();\n  const hadInternationalPrefix = stripped.startsWith('+') || /^00\\d/.test(stripped.replace(/[\\s-]/g, ''));\n\n  let digits = digitsOnly(stripped);\n  if (!digits) return { ok: false, reason: 'no_digits' };\n\n  if (digits.startsWith('00')) digits = digits.slice(2);\n\n  const cc = CONFIG.countryCode;\n  let national = null;\n\n  if (digits.startsWith(cc) && digits.length > cc.length) {\n    national = '0' + digits.slice(cc.length);\n  } else if (digits.startsWith('0')) {\n    national = digits;\n  } else if (!hadInternationalPrefix && digits.length >= 8 && digits.length <= 9) {\n    // מספר ישראלי שנכתב בלי אפס מוביל: \"501234567\"\n    national = '0' + digits;\n  }\n\n  if (national && (IL_MOBILE.test(national) || IL_LANDLINE.test(national))) {\n    return {\n      ok: true,\n      e164: `+${cc}${national.slice(1)}`,\n      national,\n      isIsraeli: true,\n      type: IL_MOBILE.test(national) ? 'mobile' : 'landline',\n    };\n  }\n\n  // מספר ישראלי שלא עומד בתבנית — נפסל, אין טעם לשלוח אליו הודעה\n  if (national) return { ok: false, reason: 'invalid_israeli_number' };\n\n  // מספר זר תקין באורכו — נשמר כמו שהוא, מסומן כלא-ישראלי\n  if (digits.length >= 8 && digits.length <= 15) {\n    return { ok: true, e164: `+${digits}`, national: null, isIsraeli: false, type: 'unknown' };\n  }\n\n  return { ok: false, reason: 'invalid_length' };\n}\n\n/** נוח לשימוש בביטויי n8n: מחזיר מחרוזת או null. */\nfunction toE164(raw) {\n  const result = normalizePhone(raw);\n  return result.ok ? result.e164 : null;\n}\n\nfunction isValidPhone(raw) {\n  return normalizePhone(raw).ok;\n}\n\n/** תצוגה ידידותית למזכירה בהתראות. */\nfunction formatForDisplay(e164) {\n  const result = normalizePhone(e164);\n  if (!result.ok) return String(e164 ?? '');\n  if (!result.national) return result.e164;\n  return result.type === 'mobile'\n    ? `${result.national.slice(0, 3)}-${result.national.slice(3)}`\n    : `${result.national.slice(0, 2)}-${result.national.slice(2)}`;\n}\n\n// ---- lib/normalize.js ----\n/**\n * שלב 1 בצינור — קליטה.\n * שלושת המקורות מגיעים במבנים שונים לחלוטין; כאן הם הופכים למבנה אחיד אחד\n * שכל שאר השלבים מכירים.\n *\n * @typedef {Object} InboundLead\n * @property {'whatsapp'|'instagram'|'form'} channel\n * @property {string} channelLabel  תווית המקור בגיליון\n * @property {string|null} externalId  מזהה ההודעה במקור — לחסימת כפילויות webhook\n * @property {string} fullName\n * @property {string|null} phone  מנורמל ל-E.164, null אם אין/לא תקין\n * @property {string} phoneRaw\n * @property {string} messageText  תוכן הפנייה המקורי\n * @property {string|null} treatmentHint  טיפול שנבחר מראש (טופס בלבד)\n * @property {string} receivedAt  ISO-8601\n * @property {string|null} senderHandle  מזהה לתשובה בערוץ (IGSID / שם משתמש)\n * @property {{channel: string, address: string|null}} replyTo\n * @property {Object} raw\n */\n\nfunction iso(value, fallbackNow) {\n  const now = fallbackNow ? new Date(fallbackNow) : new Date();\n  if (value === null || value === undefined || value === '') return now.toISOString();\n  // חותמות של מטא/טוויליו מגיעות בשניות, לפעמים כמחרוזת\n  const numeric = Number(value);\n  if (Number.isFinite(numeric) && numeric > 0) {\n    const ms = numeric > 1e11 ? numeric : numeric * 1000;\n    return new Date(ms).toISOString();\n  }\n  const parsed = new Date(value);\n  return Number.isNaN(parsed.getTime()) ? now.toISOString() : parsed.toISOString();\n}\n\nfunction clean(value) {\n  return String(value ?? '').replace(/\\s+/g, ' ').trim();\n}\n\n/** זיהוי המקור לפי מבנה ה-payload, כדי ש-webhook אחד יוכל לשרת את שלושתם. */\nfunction detectSource(payload = {}) {\n  if (payload.object === 'whatsapp_business_account') return 'meta_whatsapp';\n  if (payload.object === 'instagram' || payload.object === 'page') return 'meta_instagram';\n  if (payload.MessageSid || payload.SmsMessageSid) return 'twilio_whatsapp';\n  if (payload.source === 'form' || payload.formId || payload.form_id) return 'form';\n  if (payload.channel && CONFIG.channels.includes(payload.channel)) return 'generic';\n  return 'unknown';\n}\n\nfunction fromMetaWhatsapp(payload, options) {\n  const value = payload?.entry?.[0]?.changes?.[0]?.value ?? {};\n  const message = value.messages?.[0] ?? {};\n  const contact = value.contacts?.[0] ?? {};\n  const text =\n    message.text?.body ??\n    message.button?.text ??\n    message.interactive?.list_reply?.title ??\n    message.interactive?.button_reply?.title ??\n    '';\n  return {\n    channel: 'whatsapp',\n    externalId: message.id ?? null,\n    fullName: clean(contact.profile?.name),\n    phoneRaw: clean(message.from ?? contact.wa_id),\n    messageText: clean(text),\n    treatmentHint: null,\n    receivedAt: iso(message.timestamp, options.now),\n    senderHandle: message.from ?? null,\n  };\n}\n\nfunction fromTwilioWhatsapp(payload, options) {\n  return {\n    channel: 'whatsapp',\n    externalId: payload.MessageSid ?? payload.SmsMessageSid ?? null,\n    fullName: clean(payload.ProfileName),\n    phoneRaw: clean(String(payload.From ?? '').replace(/^whatsapp:/, '')),\n    messageText: clean(payload.Body),\n    treatmentHint: null,\n    receivedAt: iso(payload.Timestamp ?? payload.DateSent, options.now),\n    senderHandle: clean(String(payload.From ?? '')) || null,\n  };\n}\n\nfunction fromMetaInstagram(payload, options) {\n  const entry = payload?.entry?.[0] ?? {};\n  const messaging = entry.messaging?.[0];\n\n  if (messaging) {\n    // הודעה פרטית (DM)\n    return {\n      channel: 'instagram',\n      externalId: messaging.message?.mid ?? null,\n      fullName: clean(messaging.sender?.username),\n      phoneRaw: '',\n      messageText: clean(messaging.message?.text),\n      treatmentHint: null,\n      receivedAt: iso(messaging.timestamp ?? entry.time, options.now),\n      senderHandle: messaging.sender?.id ?? messaging.sender?.username ?? null,\n    };\n  }\n\n  // תגובה לפוסט\n  const comment = entry.changes?.[0]?.value ?? {};\n  return {\n    channel: 'instagram',\n    externalId: comment.id ?? null,\n    fullName: clean(comment.from?.username ?? comment.username),\n    phoneRaw: '',\n    messageText: clean(comment.text),\n    treatmentHint: null,\n    receivedAt: iso(comment.timestamp ?? entry.time, options.now),\n    senderHandle: comment.from?.id ?? comment.from?.username ?? comment.username ?? null,\n  };\n}\n\nfunction fromForm(payload, options) {\n  return {\n    channel: 'form',\n    externalId: clean(payload.submissionId ?? payload.submission_id ?? payload.id) || null,\n    fullName: clean(payload.name ?? payload.fullName ?? payload.full_name),\n    phoneRaw: clean(payload.phone ?? payload.tel ?? payload.mobile),\n    messageText: clean(payload.message ?? payload.notes ?? payload.text),\n    treatmentHint: clean(payload.treatment ?? payload.interest ?? payload.service) || null,\n    receivedAt: iso(payload.submittedAt ?? payload.submitted_at ?? payload.createdAt, options.now),\n    senderHandle: clean(payload.email) || null,\n  };\n}\n\nfunction fromGeneric(payload, options) {\n  return {\n    channel: payload.channel,\n    externalId: clean(payload.externalId) || null,\n    fullName: clean(payload.fullName ?? payload.name),\n    phoneRaw: clean(payload.phone),\n    messageText: clean(payload.messageText ?? payload.message),\n    treatmentHint: clean(payload.treatment) || null,\n    receivedAt: iso(payload.receivedAt, options.now),\n    senderHandle: clean(payload.senderHandle) || null,\n  };\n}\n\nconst PARSERS = {\n  meta_whatsapp: fromMetaWhatsapp,\n  twilio_whatsapp: fromTwilioWhatsapp,\n  meta_instagram: fromMetaInstagram,\n  form: fromForm,\n  generic: fromGeneric,\n};\n\n/**\n * לאן נשלחת התשובה.\n * באינסטגרם אין טלפון — עונים דרך מזהה השולח. בטופס אין ערוץ לענות בו,\n * ולכן התשובה יוצאת בוואטסאפ לטלפון שנמסר, ובאימייל אם אין טלפון.\n */\nfunction replyRoute(parsed, phoneResult) {\n  const phone = phoneResult.ok ? phoneResult.e164 : null;\n  if (parsed.channel === 'instagram') return { channel: 'instagram', address: parsed.senderHandle ?? null };\n  if (parsed.channel === 'form') {\n    return phone\n      ? { channel: 'whatsapp', address: phone }\n      : { channel: 'email', address: parsed.senderHandle ?? null };\n  }\n  return { channel: parsed.channel, address: phone };\n}\n\n/**\n * @param {Object} payload  גוף ה-webhook הגולמי\n * @param {{source?: string, now?: string}} [options]\n * @returns {InboundLead}\n */\nfunction normalizeInbound(payload = {}, options = {}) {\n  const source = options.source ?? detectSource(payload);\n  const parse = PARSERS[source];\n\n  if (!parse) {\n    return {\n      channel: 'unknown',\n      channelLabel: 'לא ידוע',\n      externalId: null,\n      fullName: '',\n      phone: null,\n      phoneRaw: '',\n      messageText: '',\n      treatmentHint: null,\n      receivedAt: iso(null, options.now),\n      senderHandle: null,\n      replyTo: { channel: 'unknown', address: null },\n      source,\n      raw: payload,\n    };\n  }\n\n  const parsed = parse(payload, options);\n  const phoneResult = normalizePhone(parsed.phoneRaw);\n\n  return {\n    ...parsed,\n    fullName: parsed.fullName || 'ללא שם',\n    phone: phoneResult.ok ? phoneResult.e164 : null,\n    channelLabel: CONFIG.channelLabels[parsed.channel] ?? parsed.channel,\n    replyTo: replyRoute(parsed, phoneResult),\n    source,\n    raw: payload,\n  };\n}\n\n// ---- lib/validate.js ----\n/**\n * שלב 2 בצינור — בדיקת תקינות.\n * פנייה שלא עוברת את הבדיקה מתויגת \"לא רלוונטי\" ומקבלת התראה קצרה למזכירה,\n * בלי מענה אוטומטי ללקוח.\n *\n * הערה: באינסטגרם אין טלפון ב-webhook. לכן טלפון נדרש רק בערוצים שבהם הוא\n * אמור להגיע (וואטסאפ/טופס); בליד מאינסטגרם הטלפון נאסף בשיחה הראשונה.\n */\n\nconst REJECTION = {\n  UNKNOWN_CHANNEL: 'unknown_channel',\n  EMPTY_MESSAGE: 'empty_message',\n  MISSING_PHONE: 'missing_phone',\n  INVALID_PHONE: 'invalid_phone',\n  SPAM: 'spam',\n};\n\nconst REJECTION_LABEL = {\n  [REJECTION.UNKNOWN_CHANNEL]: 'מקור פנייה לא מזוהה',\n  [REJECTION.EMPTY_MESSAGE]: 'פנייה ריקה',\n  [REJECTION.MISSING_PHONE]: 'חסר טלפון',\n  [REJECTION.INVALID_PHONE]: 'טלפון לא תקין',\n  [REJECTION.SPAM]: 'ספאם',\n};\n\nfunction isSpam(text = '') {\n  return CONFIG.spamPatterns.some((pattern) => pattern.test(text));\n}\n\n/**\n * @param {import('./normalize.js').InboundLead} lead\n * @returns {{valid: boolean, reasons: string[], labels: string[]}}\n */\nfunction validateInbound(lead) {\n  const reasons = [];\n\n  if (!CONFIG.channels.includes(lead?.channel)) {\n    reasons.push(REJECTION.UNKNOWN_CHANNEL);\n  }\n\n  const text = String(lead?.messageText ?? '').trim();\n  if (text.length < CONFIG.minMessageLength && !lead?.treatmentHint) {\n    reasons.push(REJECTION.EMPTY_MESSAGE);\n  }\n\n  if (isSpam(text)) {\n    reasons.push(REJECTION.SPAM);\n  }\n\n  const phoneRaw = String(lead?.phoneRaw ?? '').trim();\n  if (phoneRaw) {\n    if (!normalizePhone(phoneRaw).ok) reasons.push(REJECTION.INVALID_PHONE);\n  } else if (CONFIG.phoneRequiredChannels.includes(lead?.channel)) {\n    reasons.push(REJECTION.MISSING_PHONE);\n  }\n\n  return {\n    valid: reasons.length === 0,\n    reasons,\n    labels: reasons.map((reason) => REJECTION_LABEL[reason] ?? reason),\n  };\n}\n\n// ---- lib/classify.js ----\n/**\n * שלב 4 בצינור — סיווג.\n *\n * עיקרון: ה-AI ממיין, מסכם ומנסח — לא מייעץ.\n * לכן ההסלמה לא נשענת רק על שיקול דעת של המודל: יש כאן שכבת כללים\n * דטרמיניסטית שרצה לפני ואחרי ה-AI. גם אם המודל יחליט שהכול תקין,\n * מילה כמו \"בהריון\" או \"החזר כספי\" מעבירה את הליד לאדם.\n */\n\n/** רשימת הטיפולים שהקליניקה מציעה — לעריכה לפי הקליניקה בפועל. */\nconst TREATMENTS = [\n  'בוטוקס',\n  'חומצה היאלורונית',\n  'מילוי שפתיים',\n  'לייזר להסרת שיער',\n  'טיפולי פנים',\n  'פילינג',\n  'מזותרפיה',\n  'הסרת קעקועים',\n  'טיפול אקנה',\n  'אחר',\n];\n\nconst URGENCY = ['נמוכה', 'בינונית', 'גבוהה'];\n\n/** דפוסים שמחייבים העברה לאדם, ללא קשר לדעת המודל. */\nconst ESCALATION_PATTERNS = [\n  {\n    reason: ESCALATION_REASON.MEDICAL,\n    pattern:\n      /בהריון|הריון|מניקה|הנקה|תרופ|אנטיביוטי|רואקוטן|איזוטרטינואין|מדלל(?:י)? דם|תופעות לוואי|אלרגי|סוכרת|יתר לחץ דם|אוטואימונ|מחלת עור|זיהום|כוויה|קוצב לב|ניתוח|מתאים לי|האם מותר|בטוח לי|סיכון|לאחר לידה|מחלה/,\n  },\n  {\n    reason: ESCALATION_REASON.COMPLAINT,\n    pattern: /תלונה|לא מרוצ|לא הייתי מרוצ|מאוכזב|גרוע|נזק|התוצאה לא|החמיר|טעות שלכם|כאב לי מאז|לא עבד/,\n  },\n  {\n    reason: ESCALATION_REASON.PRICE_NEGOTIATION,\n    pattern: /הנחה|יקר מדי|להוזיל|לשלם פחות|משא ומתן|מחיר מיוחד|תשלומים|מבצע מיוחד|הצעה טובה יותר/,\n  },\n  {\n    reason: ESCALATION_REASON.CANCELLATION_REFUND,\n    pattern: /לבטל|ביטול|החזר כספי|כסף בחזרה|זיכוי|לדחות את התור/,\n  },\n];\n\n/** שאלת מחיר \"רגילה\" — לא מסלימה, אבל ה-AI לא נוקב במחיר והמזכירה מקבלת ציון לכך. */\nconst PRICE_QUESTION = /כמה עולה|מה המחיר|מחירון|עלות|כמה זה/;\n\n/**\n * כללים שרצים על הטקסט בלבד.\n * @param {string} text\n * @returns {string[]} סיבות הסלמה\n */\nfunction detectEscalationInText(text = '') {\n  const value = String(text);\n  return ESCALATION_PATTERNS.filter(({ pattern }) => pattern.test(value)).map(({ reason }) => reason);\n}\n\nfunction mentionsPrice(text = '') {\n  return PRICE_QUESTION.test(String(text));\n}\n\n/** סכמת הפלט של המודל — JSON בלבד, ללא טקסט חופשי. */\nconst CLASSIFICATION_SCHEMA = {\n  type: 'object',\n  properties: {\n    requestedTreatment: { type: 'string', enum: TREATMENTS, description: 'הטיפול המבוקש' },\n    urgency: { type: 'string', enum: URGENCY },\n    requiresHuman: { type: 'boolean', description: 'האם נדרש טיפול של אדם' },\n    escalationReasons: {\n      type: 'array',\n      items: { type: 'string', enum: Object.values(ESCALATION_REASON) },\n    },\n    summary: { type: 'string', description: 'סיכום הפנייה במשפט אחד, ללא פרשנות רפואית' },\n    confidence: { type: 'number', description: 'ביטחון בסיווג, 0 עד 1' },\n  },\n  required: ['requestedTreatment', 'urgency', 'requiresHuman', 'escalationReasons', 'summary', 'confidence'],\n};\n\nconst CLASSIFIER_SYSTEM_PROMPT = `אתה מסווג פניות עבור קליניקה לרפואה אסתטית.\nתפקידך: למיין, לסכם ולחלץ מידע — לא לייעץ ולא לענות ללקוח.\n\nחוקים מוחלטים:\n1. אינך נותן מידע רפואי, אינך קובע התאמה לטיפול ואינך מעריך תוצאה צפויה.\n2. אינך נוקב במחירים, בהנחות או בתנאי תשלום.\n3. בכל אחד מהמקרים הבאים requiresHuman=true והסיבה נרשמת ב-escalationReasons:\n   - medical: שאלה רפואית כלשהי — התאמה לטיפול, תופעות לוואי, הריון/הנקה, תרופות, מחלות רקע.\n   - complaint: תלונה או חוסר שביעות רצון מטיפול קודם.\n   - price_negotiation: בקשת הנחה, משא ומתן או בקשת מחיר חריגה.\n   - cancellation_refund: בקשת ביטול או החזר.\n   - problematic_history: הפנייה מציינת היסטוריה בעייתית מול הקליניקה.\n   - low_confidence: אינך בטוח בסיווג.\n4. אם אינך בטוח — confidence נמוך מ-0.7 ו-requiresHuman=true. עדיף להעביר לאדם מאשר לנחש.\n5. requestedTreatment חייב להיות אחד מהערכים המותרים; אם לא ברור, בחר \"אחר\".\n6. summary הוא משפט אחד ענייני בעברית, ללא אבחנה ובלי המלצה.\n\nהחזר JSON תקין בלבד, ללא טקסט לפניו או אחריו, ללא סימוני קוד.`;\n\n/**\n * בניית ההודעה למודל.\n * @param {import('./normalize.js').InboundLead} lead\n * @param {{isReturning?: boolean, previousNotes?: string}} [context]\n */\nfunction buildClassifierPrompt(lead, context = {}) {\n  const lines = [\n    `מקור הפנייה: ${lead.channelLabel ?? lead.channel}`,\n    `שם: ${lead.fullName || 'לא ידוע'}`,\n    lead.treatmentHint ? `טיפול שנבחר בטופס: ${lead.treatmentHint}` : null,\n    context.isReturning ? 'זהו ליד קיים שפנה שוב.' : null,\n    context.previousNotes ? `הערות קודמות: ${context.previousNotes}` : null,\n    '',\n    'תוכן הפנייה:',\n    `\"\"\"${lead.messageText ?? ''}\"\"\"`,\n    '',\n    `ערכים מותרים ל-requestedTreatment: ${TREATMENTS.join(' | ')}`,\n    `ערכים מותרים ל-urgency: ${URGENCY.join(' | ')}`,\n  ].filter((line) => line !== null);\n\n  return {\n    system: CLASSIFIER_SYSTEM_PROMPT,\n    user: lines.join('\\n'),\n    schema: CLASSIFICATION_SCHEMA,\n  };\n}\n\n/** המודל עלול להחזיר ```json ...``` למרות ההוראה — כאן מנקים ומפענחים. */\nfunction parseClassifierOutput(raw) {\n  if (raw && typeof raw === 'object') return raw;\n  const text = String(raw ?? '').trim();\n  if (!text) return null;\n  const withoutFence = text.replace(/^```(?:json)?\\s*/i, '').replace(/\\s*```$/, '');\n  const start = withoutFence.indexOf('{');\n  const end = withoutFence.lastIndexOf('}');\n  if (start === -1 || end === -1 || end < start) return null;\n  try {\n    return JSON.parse(withoutFence.slice(start, end + 1));\n  } catch {\n    return null;\n  }\n}\n\nfunction sanitizeTreatment(value, hint) {\n  if (TREATMENTS.includes(value)) return value;\n  if (hint && TREATMENTS.includes(hint)) return hint;\n  return 'אחר';\n}\n\n/**\n * מיזוג פלט ה-AI עם הכללים הדטרמיניסטיים. זו הפונקציה שמכריעה.\n *\n * @param {Object|string|null} aiOutput  פלט גולמי מהמודל (או null אם הקריאה נכשלה)\n * @param {import('./normalize.js').InboundLead} lead\n * @param {{problematicHistory?: boolean}} [context]\n * @returns {{requestedTreatment: string, urgency: string, requiresHuman: boolean,\n *            escalationReasons: string[], confidence: number, summary: string,\n *            mentionsPrice: boolean, aiFailed: boolean}}\n */\nfunction resolveClassification(aiOutput, lead, context = {}) {\n  const parsed = parseClassifierOutput(aiOutput);\n  const aiFailed = parsed === null;\n\n  const text = `${lead?.messageText ?? ''} ${lead?.treatmentHint ?? ''}`;\n  const reasons = new Set(detectEscalationInText(text));\n\n  for (const reason of parsed?.escalationReasons ?? []) {\n    if (Object.values(ESCALATION_REASON).includes(reason)) reasons.add(reason);\n  }\n\n  if (context.problematicHistory) reasons.add(ESCALATION_REASON.PROBLEMATIC_HISTORY);\n\n  const rawConfidence = Number(parsed?.confidence);\n  const confidence = aiFailed || !Number.isFinite(rawConfidence)\n    ? 0\n    : Math.min(Math.max(rawConfidence, 0), 1);\n\n  if (aiFailed || confidence < CONFIG.minClassificationConfidence) {\n    reasons.add(ESCALATION_REASON.LOW_CONFIDENCE);\n  }\n\n  const escalationReasons = [...reasons];\n\n  return {\n    requestedTreatment: sanitizeTreatment(parsed?.requestedTreatment, lead?.treatmentHint),\n    urgency: URGENCY.includes(parsed?.urgency) ? parsed.urgency : 'בינונית',\n    requiresHuman: escalationReasons.length > 0 || parsed?.requiresHuman === true,\n    escalationReasons,\n    confidence,\n    summary: String(parsed?.summary ?? '').trim() || String(lead?.messageText ?? '').slice(0, 140),\n    mentionsPrice: mentionsPrice(text),\n    aiFailed,\n  };\n}\n\n// ---- lib/record.js ----\n/**\n * מבנה הרשומה בגיליון/CRM ותרגום בין רשומה לשורה.\n * סדר העמודות כאן הוא סדר העמודות בגיליון — אל תשנו אחד בלי השני.\n */\n\nconst COLUMNS = [\n  { key: 'leadKey', header: 'מפתח ליד' },\n  { key: 'fullName', header: 'שם מלא' },\n  { key: 'phone', header: 'טלפון' },\n  { key: 'source', header: 'מקור הפנייה' },\n  { key: 'requestedTreatment', header: 'טיפול מבוקש' },\n  { key: 'originalMessage', header: 'תוכן הפנייה המקורי' },\n  { key: 'receivedAt', header: 'תאריך ושעת פנייה' },\n  { key: 'status', header: 'סטטוס' },\n  { key: 'nextFollowupAt', header: 'מועד מעקב הבא' },\n  { key: 'followupAttempts', header: 'ניסיונות מעקב' },\n  { key: 'owner', header: 'מי מטפל' },\n  { key: 'appointmentAt', header: 'תאריך תור' },\n  { key: 'notes', header: 'הערות' },\n  { key: 'updatedAt', header: 'עדכון אחרון' },\n  // עמודות תפעוליות שהאוטומציה צריכה ואינן חלק מהמינימום שהוגדר\n  { key: 'urgency', header: 'דחיפות' },\n  { key: 'escalationReasons', header: 'סיבות הסלמה' },\n  { key: 'confidence', header: 'ביטחון סיווג' },\n  { key: 'channelHandle', header: 'מזהה בערוץ' },\n  { key: 'lastExternalId', header: 'מזהה הודעה אחרונה' },\n  { key: 'problematicHistory', header: 'היסטוריה בעייתית' },\n  { key: 'appointmentReminderAt', header: 'מועד תזכורת תור' },\n  { key: 'appointmentReminderSent', header: 'תזכורת תור נשלחה' },\n];\n\nconst HEADERS = COLUMNS.map((column) => column.header);\n\nconst OWNER = { AI: 'AI', SECRETARY: 'מזכירה' };\n\n/** מפתח ייחודי לליד. טלפון כשיש; באינסטגרם לפני איסוף טלפון — מזהה השולח. */\nfunction leadKey(lead) {\n  if (lead?.phone) return lead.phone;\n  if (lead?.senderHandle) return `${lead.channel}:${lead.senderHandle}`;\n  return null;\n}\n\nfunction addHours(isoString, hours) {\n  return new Date(new Date(isoString).getTime() + hours * 3600 * 1000).toISOString();\n}\n\n/** הוספת שורה להערות בלי לדרוס את מה שהיה. */\nfunction appendNote(existingNotes, entry, at) {\n  const stamp = new Intl.DateTimeFormat('he-IL', {\n    timeZone: CONFIG.timezone,\n    dateStyle: 'short',\n    timeStyle: 'short',\n  }).format(new Date(at));\n  const line = `[${stamp}] ${entry}`;\n  const previous = String(existingNotes ?? '').trim();\n  return previous ? `${previous}\\n${line}` : line;\n}\n\n/**\n * בניית רשומה חדשה מליד מנורמל + סיווג.\n * @returns {Object} רשומה מוכנה לכתיבה לגיליון\n */\nfunction buildLeadRecord(lead, classification, now) {\n  const createdAt = now ?? new Date().toISOString();\n  const requiresHuman = classification.requiresHuman;\n\n  return {\n    leadKey: leadKey(lead),\n    fullName: lead.fullName || 'ללא שם',\n    phone: lead.phone ?? '',\n    source: lead.channelLabel ?? CONFIG.channelLabels[lead.channel] ?? lead.channel,\n    requestedTreatment: classification.requestedTreatment,\n    originalMessage: lead.messageText ?? '',\n    receivedAt: lead.receivedAt ?? createdAt,\n    status: STATUS.NEW,\n    nextFollowupAt: addHours(createdAt, CONFIG.followupHours),\n    followupAttempts: 0,\n    owner: requiresHuman ? OWNER.SECRETARY : OWNER.AI,\n    appointmentAt: '',\n    notes: appendNote('', `נקלט מ${lead.channelLabel ?? lead.channel}: ${classification.summary}`, createdAt),\n    updatedAt: createdAt,\n    urgency: classification.urgency,\n    escalationReasons: (classification.escalationReasons ?? []).join(','),\n    confidence: classification.confidence,\n    channelHandle: lead.senderHandle ?? '',\n    lastExternalId: lead.externalId ?? '',\n    problematicHistory: false,\n    appointmentReminderAt: '',\n    appointmentReminderSent: false,\n  };\n}\n\nfunction toSheetRow(record) {\n  return COLUMNS.map(({ key }) => {\n    const value = record[key];\n    if (value === null || value === undefined) return '';\n    if (typeof value === 'boolean') return value ? 'TRUE' : 'FALSE';\n    return String(value);\n  });\n}\n\nfunction fromSheetRow(row) {\n  const record = {};\n  COLUMNS.forEach(({ key }, index) => {\n    record[key] = row?.[index] ?? '';\n  });\n  record.followupAttempts = Number(record.followupAttempts) || 0;\n  record.confidence = Number(record.confidence) || 0;\n  record.problematicHistory = String(record.problematicHistory).toUpperCase() === 'TRUE';\n  record.appointmentReminderSent = String(record.appointmentReminderSent).toUpperCase() === 'TRUE';\n  return record;\n}\n\n/** המרה מאובייקט בשם-עמודה (כפי שנוד Google Sheets ב-n8n מחזיר) לרשומה. */\nfunction fromSheetObject(object = {}) {\n  const record = {};\n  for (const { key, header } of COLUMNS) {\n    record[key] = object[header] ?? object[key] ?? '';\n  }\n  record.followupAttempts = Number(record.followupAttempts) || 0;\n  record.confidence = Number(record.confidence) || 0;\n  record.problematicHistory = String(record.problematicHistory).toUpperCase() === 'TRUE';\n  record.appointmentReminderSent = String(record.appointmentReminderSent).toUpperCase() === 'TRUE';\n  return record;\n}\n\n/** המרה חזרה למפתחות בעברית לכתיבה לגיליון. */\nfunction toSheetObject(record) {\n  const object = {};\n  for (const { key, header } of COLUMNS) {\n    if (record[key] === undefined) continue;\n    const value = record[key];\n    object[header] = typeof value === 'boolean' ? (value ? 'TRUE' : 'FALSE') : value ?? '';\n  }\n  return object;\n}\n\n// ---- lib/messages.js ----\n/**\n * כל הטקסטים שנשלחים החוצה.\n * כלל מחייב: אין מחירים, אין מידע רפואי, אין הבטחת תוצאה — בשום תבנית.\n * מי שרוצה לשנות נוסח, משנה כאן ולא בתוך ה-workflow.\n */\n\nconst firstName = (fullName) => String(fullName ?? '').trim().split(' ')[0] || '';\n\nfunction dateInTimezone(isoString, options) {\n  return new Intl.DateTimeFormat('he-IL', { timeZone: CONFIG.timezone, ...options }).format(new Date(isoString));\n}\n\n/** \"יום ראשון, 20 בספטמבר, 10:30\" */\nfunction formatAppointment(isoString) {\n  return dateInTimezone(isoString, {\n    weekday: 'long',\n    day: 'numeric',\n    month: 'long',\n    hour: '2-digit',\n    minute: '2-digit',\n  });\n}\n\n/** תגובה ראשונית — אישור קבלה + שאלה אחת לתיאום. */\nfunction greeting(lead) {\n  const name = firstName(lead.fullName);\n  const hello = name ? `היי ${name},` : 'היי,';\n  const treatment = lead.requestedTreatment && lead.requestedTreatment !== 'לא ידוע'\n    ? ` בנוגע ל${lead.requestedTreatment}`\n    : '';\n  const askPhone = lead.channel === 'instagram' && !lead.phone\n    ? '\\nכדי שנוכל לתאם, אפשר להשאיר כאן מספר טלפון?'\n    : '';\n  return (\n    `${hello} קיבלנו את הפנייה שלך${treatment} 🙏\\n` +\n    'נשמח לתאם לך פגישת ייעוץ בקליניקה.\\n' +\n    'מתי נוח לך שנחזור אליך — בוקר, צהריים או ערב?' +\n    askPhone\n  );\n}\n\n/** מענה יחיד כשהליד מועבר לאדם — ה-AI לא עונה לגופו של עניין. */\nfunction handoffToHuman() {\n  return 'תודה על הפנייה 🙏 מישהו מהצוות יחזור אליך בהקדם.';\n}\n\n/** תזכורת מעקב ללקוח שלא ענה. */\nfunction followupReminder(lead, attempt) {\n  const name = firstName(lead.fullName);\n  const hello = name ? `היי ${name},` : 'היי,';\n  if (attempt <= 1) {\n    return `${hello} רק מוודאים שההודעה שלנו הגיעה 🙂\\nעדיין מעוניינים שנתאם פגישת ייעוץ? מתי נוח לך?`;\n  }\n  return (\n    `${hello} זו תזכורת אחרונה מצדנו.\\n` +\n    'אם תרצו לתאם פגישת ייעוץ, פשוט השיבו להודעה הזו ונשמח לחזור אליכם.'\n  );\n}\n\n/** אישור קביעת תור. */\nfunction appointmentConfirmation(lead) {\n  const name = firstName(lead.fullName);\n  const hello = name ? `היי ${name},` : 'היי,';\n  return `${hello} התור שלך נקבע ל${formatAppointment(lead.appointmentAt)} ✅\\nנשמח לראותך. לשינוי או ביטול — השיבו להודעה הזו.`;\n}\n\n/** תזכורת יום לפני התור. */\nfunction appointmentReminder(lead) {\n  const name = firstName(lead.fullName);\n  const hello = name ? `היי ${name},` : 'היי,';\n  return `${hello} תזכורת לתור שלך מחר, ${formatAppointment(lead.appointmentAt)} 🗓️\\nאם צריך לשנות — השיבו להודעה הזו.`;\n}\n\n/* ---------- התראות פנימיות למזכירה ---------- */\n\nfunction leadLine(lead, sheetUrl) {\n  const phone = lead.phone ? formatForDisplay(lead.phone) : 'אין טלפון';\n  return [\n    `שם: ${lead.fullName || 'ללא שם'}`,\n    `טלפון: ${phone}`,\n    `טיפול: ${lead.requestedTreatment || 'לא ידוע'}`,\n    `מקור: ${lead.sourceLabel || CONFIG.channelLabels[lead.channel] || lead.channel}`,\n    sheetUrl ? `שורה: ${sheetUrl}` : null,\n  ].filter(Boolean).join('\\n');\n}\n\nfunction newLeadAlert(lead, sheetUrl) {\n  return `🆕 ליד חדש\\n${leadLine(lead, sheetUrl)}`;\n}\n\nfunction handoffAlert(lead, sheetUrl) {\n  const reasons = (lead.escalationReasons ?? [])\n    .map((reason) => ESCALATION_REASON_LABEL[reason] ?? reason)\n    .join(', ');\n  return (\n    `🔴 דורש טיפול אנושי${reasons ? ` — ${reasons}` : ''}\\n` +\n    `${leadLine(lead, sheetUrl)}\\n` +\n    `הודעת הלקוח: \"${lead.originalMessage ?? ''}\"`\n  );\n}\n\nfunction invalidLeadAlert(lead, labels, sheetUrl) {\n  return `⚠️ פנייה לא תקינה (${labels.join(', ')})\\n${leadLine(lead, sheetUrl)}`;\n}\n\nfunction noAnswerAlert(lead, sheetUrl) {\n  return `⏳ ${CONFIG.maxFollowupAttempts} ניסיונות מעקב ללא מענה — הליד נסגר כ\"לא רלוונטי\"\\n${leadLine(lead, sheetUrl)}`;\n}\n\nfunction returningLeadAlert(lead, sheetUrl) {\n  return `🔁 פנייה חוזרת מליד קיים\\n${leadLine(lead, sheetUrl)}\\nההודעה החדשה: \"${lead.originalMessage ?? ''}\"`;\n}\n\n// ---- lib/pipeline.js ----\n/**\n * שלבים 1–7 בצינור, כפונקציה טהורה אחת.\n * הפונקציה לא מדברת עם אף שירות — היא מקבלת מצב ומחזירה רשימת פעולות,\n * ו-n8n/Make מבצע אותן. כך אפשר לבדוק את כל ההיגיון בלי webhooks.\n */\n\nconst ACTION = {\n  CREATE_RECORD: 'create_record',\n  UPDATE_RECORD: 'update_record',\n  SEND_MESSAGE: 'send_message',\n  NOTIFY_STAFF: 'notify_staff',\n};\n\nconst OUTCOME = {\n  INVALID: 'invalid',\n  DUPLICATE_WEBHOOK: 'duplicate_webhook',\n  EXISTING_UPDATED: 'existing_updated',\n  CREATED: 'created',\n};\n\nconst sendMessage = (lead, text, kind) => ({\n  type: ACTION.SEND_MESSAGE,\n  kind,\n  channel: lead.replyTo?.channel ?? lead.channel,\n  to: lead.replyTo?.address ?? lead.phone ?? null,\n  text,\n});\n\nconst notify = (text, severity = 'info') => ({ type: ACTION.NOTIFY_STAFF, severity, text });\n\n/**\n * @param {Object} input\n * @param {Object} input.payload  גוף ה-webhook הגולמי\n * @param {string} [input.source]  דריסת זיהוי המקור\n * @param {Object|null} [input.existingRecord]  הרשומה הקיימת לאותו מפתח, אם נמצאה\n * @param {Object|string|null} [input.aiOutput]  פלט הסיווג של המודל\n * @param {string} [input.now]  ISO — מוזרק בבדיקות\n * @param {string} [input.sheetUrl]  קישור לשורה, נכנס להתראות\n */\nfunction processInbound({ payload, source, existingRecord = null, aiOutput = null, now, sheetUrl } = {}) {\n  const at = now ?? new Date().toISOString();\n  const lead = normalizeInbound(payload, { source, now: at });\n  const validation = validateInbound(lead);\n  const key = leadKey(lead);\n\n  // webhook שנשלח פעמיים — אותו מזהה הודעה, לא עושים כלום\n  if (lead.externalId && existingRecord && existingRecord.lastExternalId === lead.externalId) {\n    return { outcome: OUTCOME.DUPLICATE_WEBHOOK, lead, validation, actions: [] };\n  }\n\n  if (!validation.valid) {\n    const actions = [];\n    const summary = validation.labels.join(', ');\n\n    if (existingRecord) {\n      actions.push({\n        type: ACTION.UPDATE_RECORD,\n        key: existingRecord.leadKey ?? key,\n        updates: {\n          notes: appendNote(existingRecord.notes, `פנייה שנפסלה (${summary}): ${lead.messageText}`, at),\n          lastExternalId: lead.externalId ?? existingRecord.lastExternalId ?? '',\n          updatedAt: at,\n        },\n      });\n    } else if (key) {\n      const record = buildLeadRecord(lead, {\n        requestedTreatment: 'אחר',\n        urgency: 'נמוכה',\n        escalationReasons: [],\n        requiresHuman: false,\n        confidence: 0,\n        summary: `פנייה שנפסלה: ${summary}`,\n      }, at);\n      record.status = STATUS.IRRELEVANT;\n      record.owner = OWNER.SECRETARY;\n      record.nextFollowupAt = '';\n      actions.push({ type: ACTION.CREATE_RECORD, record });\n    }\n\n    // אין מענה אוטומטי לפנייה שנפסלה — רק התראה קצרה\n    actions.push(notify(messages.invalidLeadAlert(lead, validation.labels, sheetUrl), 'warning'));\n    return { outcome: OUTCOME.INVALID, lead, validation, actions };\n  }\n\n  const classification = resolveClassification(aiOutput, lead, {\n    problematicHistory: Boolean(existingRecord?.problematicHistory),\n  });\n\n  return existingRecord\n    ? updateExisting({ lead, existingRecord, classification, at, sheetUrl, validation })\n    : createNew({ lead, classification, at, sheetUrl, validation });\n}\n\nfunction createNew({ lead, classification, at, sheetUrl, validation }) {\n  const record = buildLeadRecord(lead, classification, at);\n  const actions = [{ type: ACTION.CREATE_RECORD, record }];\n\n  const alertLead = {\n    ...record,\n    channel: lead.channel,\n    sourceLabel: record.source,\n    escalationReasons: classification.escalationReasons,\n    originalMessage: lead.messageText,\n  };\n\n  if (classification.requiresHuman) {\n    // ה-AI לא עונה לגופו של עניין — רק מודיע שמישהו יחזור\n    actions.push(sendMessage(lead, messages.handoffToHuman(), 'handoff'));\n    actions.push({\n      type: ACTION.UPDATE_RECORD,\n      key: record.leadKey,\n      updates: {\n        status: STATUS.HANDED_TO_HUMAN,\n        owner: OWNER.SECRETARY,\n        nextFollowupAt: '',\n        updatedAt: at,\n      },\n    });\n    actions.push(notify(messages.handoffAlert(alertLead, sheetUrl), 'critical'));\n    return { outcome: OUTCOME.CREATED, lead, classification, validation, record, actions };\n  }\n\n  actions.push(sendMessage(lead, messages.greeting({ ...lead, requestedTreatment: classification.requestedTreatment }), 'greeting'));\n  actions.push({\n    type: ACTION.UPDATE_RECORD,\n    key: record.leadKey,\n    updates: { status: STATUS.CONTACTED, updatedAt: at },\n  });\n\n  const priceNote = classification.mentionsPrice ? '\\n(הלקוח שאל על מחיר — ה-AI לא נוקב במחירים)' : '';\n  actions.push(notify(messages.newLeadAlert(alertLead, sheetUrl) + priceNote, 'info'));\n\n  return { outcome: OUTCOME.CREATED, lead, classification, validation, record, actions };\n}\n\nfunction updateExisting({ lead, existingRecord, classification, at, sheetUrl, validation }) {\n  const updates = {\n    notes: appendNote(existingRecord.notes, `פנייה חוזרת מ${lead.channelLabel}: ${lead.messageText}`, at),\n    lastExternalId: lead.externalId ?? existingRecord.lastExternalId ?? '',\n    updatedAt: at,\n  };\n\n  // טלפון שהגיע רק עכשיו (למשל ליד מאינסטגרם שהשאיר מספר) משלים את הרשומה\n  if (!existingRecord.phone && lead.phone) updates.phone = lead.phone;\n  if ((!existingRecord.fullName || existingRecord.fullName === 'ללא שם') && lead.fullName !== 'ללא שם') {\n    updates.fullName = lead.fullName;\n  }\n\n  const actions = [];\n  const alertLead = {\n    ...existingRecord,\n    ...updates,\n    channel: lead.channel,\n    sourceLabel: existingRecord.source,\n    requestedTreatment: existingRecord.requestedTreatment || classification.requestedTreatment,\n    escalationReasons: classification.escalationReasons,\n    originalMessage: lead.messageText,\n  };\n\n  if (classification.requiresHuman && existingRecord.status !== STATUS.HANDED_TO_HUMAN) {\n    if (canTransition(existingRecord.status, STATUS.HANDED_TO_HUMAN)) {\n      updates.status = STATUS.HANDED_TO_HUMAN;\n      updates.owner = OWNER.SECRETARY;\n      updates.nextFollowupAt = '';\n      updates.escalationReasons = classification.escalationReasons.join(',');\n    }\n    actions.push({ type: ACTION.UPDATE_RECORD, key: existingRecord.leadKey, updates });\n    actions.push(sendMessage(lead, messages.handoffToHuman(), 'handoff'));\n    actions.push(notify(messages.handoffAlert(alertLead, sheetUrl), 'critical'));\n    return { outcome: OUTCOME.EXISTING_UPDATED, lead, classification, validation, updates, actions };\n  }\n\n  // הלקוח הגיב — המעקב מתאפס, אבל לא נשלחת שוב הודעת פתיחה\n  const reopenable = [STATUS.AWAITING_REPLY, STATUS.IRRELEVANT];\n  if (reopenable.includes(existingRecord.status) && canTransition(existingRecord.status, STATUS.CONTACTED)) {\n    updates.status = STATUS.CONTACTED;\n    updates.followupAttempts = 0;\n    updates.nextFollowupAt = addHours(at, CONFIG.followupHours);\n  }\n\n  actions.push({ type: ACTION.UPDATE_RECORD, key: existingRecord.leadKey, updates });\n  actions.push(notify(messages.returningLeadAlert(alertLead, sheetUrl), 'info'));\n\n  return { outcome: OUTCOME.EXISTING_UPDATED, lead, classification, validation, updates, actions };\n}\n\n// ---- lib/followup.js ----\n/**\n * שלבים 8–9 בצינור: המעקב השעתי וקביעת התור.\n * גם כאן — פונקציות טהורות שמחזירות פעולות, בלי קריאות רשת.\n */\n\nconst isDue = (isoString, now) => {\n  if (!isoString) return false;\n  const due = new Date(isoString).getTime();\n  return Number.isFinite(due) && due <= new Date(now).getTime();\n};\n\n/** לאן שולחים הודעה ללקוח קיים, לפי מה ששמור ברשומה. */\nfunction replyTargetForRecord(record) {\n  if (record.phone) return { channel: 'whatsapp', address: record.phone };\n  if (record.source === CONFIG.channelLabels.instagram && record.channelHandle) {\n    return { channel: 'instagram', address: record.channelHandle };\n  }\n  return { channel: 'unknown', address: null };\n}\n\nfunction messageAction(record, text, kind) {\n  const target = replyTargetForRecord(record);\n  return { type: ACTION.SEND_MESSAGE, kind, channel: target.channel, to: target.address, text };\n}\n\n/**\n * מה לעשות עם ליד אחד בסריקה השעתית.\n * @param {Object} record  רשומה מהגיליון\n * @param {string} now  ISO\n * @param {string} [sheetUrl]\n * @returns {{due: boolean, reason: string, actions: Array}}\n */\nfunction planFollowup(record, now, sheetUrl) {\n  if (!isFollowupStatus(record.status)) {\n    return { due: false, reason: 'status_not_eligible', actions: [] };\n  }\n  if (!isDue(record.nextFollowupAt, now)) {\n    return { due: false, reason: 'not_due', actions: [] };\n  }\n\n  const attempts = Number(record.followupAttempts) || 0;\n\n  // מיצינו את הניסיונות — סוגרים ומודיעים למזכירה, בלי עוד הודעות ללקוח\n  if (attempts >= CONFIG.maxFollowupAttempts) {\n    return {\n      due: true,\n      reason: 'closed_no_answer',\n      actions: [\n        {\n          type: ACTION.UPDATE_RECORD,\n          key: record.leadKey,\n          updates: {\n            status: STATUS.IRRELEVANT,\n            owner: OWNER.SECRETARY,\n            nextFollowupAt: '',\n            notes: appendNote(record.notes, `נסגר אוטומטית אחרי ${attempts} ניסיונות מעקב ללא מענה`, now),\n            updatedAt: now,\n          },\n        },\n        { type: ACTION.NOTIFY_STAFF, severity: 'warning', text: messages.noAnswerAlert(record, sheetUrl) },\n      ],\n    };\n  }\n\n  const attempt = attempts + 1;\n  return {\n    due: true,\n    reason: 'reminder_sent',\n    actions: [\n      messageAction(record, messages.followupReminder(record, attempt), 'followup'),\n      {\n        type: ACTION.UPDATE_RECORD,\n        key: record.leadKey,\n        updates: {\n          status: STATUS.AWAITING_REPLY,\n          followupAttempts: attempt,\n          nextFollowupAt: addHours(now, CONFIG.followupHours),\n          notes: appendNote(record.notes, `נשלחה תזכורת מעקב (${attempt}/${CONFIG.maxFollowupAttempts})`, now),\n          updatedAt: now,\n        },\n      },\n    ],\n  };\n}\n\n/**\n * הופעל כשהמזכירה (או אינטגרציה ליומן) סימנה \"נקבע תור\".\n * מבטל מעקבים, שולח אישור, ומתזמן תזכורת יום לפני.\n */\nfunction planAppointmentBooked(record, now, sheetUrl) {\n  if (record.status !== STATUS.BOOKED) {\n    return { ok: false, reason: 'status_not_booked', actions: [] };\n  }\n  const appointmentAt = record.appointmentAt ? new Date(record.appointmentAt) : null;\n  if (!appointmentAt || Number.isNaN(appointmentAt.getTime())) {\n    return {\n      ok: false,\n      reason: 'missing_appointment_date',\n      actions: [{\n        type: ACTION.NOTIFY_STAFF,\n        severity: 'warning',\n        text: `⚠️ הליד סומן \"נקבע תור\" בלי תאריך תור — ${record.fullName} (${record.phone || 'אין טלפון'})`,\n      }],\n    };\n  }\n\n  const reminderAt = addHours(appointmentAt.toISOString(), -CONFIG.appointmentReminderHours);\n  const alreadyPast = new Date(reminderAt).getTime() <= new Date(now).getTime();\n\n  return {\n    ok: true,\n    reason: 'confirmation_sent',\n    actions: [\n      messageAction(record, messages.appointmentConfirmation(record), 'appointment_confirmation'),\n      {\n        type: ACTION.UPDATE_RECORD,\n        key: record.leadKey,\n        updates: {\n          owner: OWNER.SECRETARY,\n          nextFollowupAt: '', // ביטול כל מעקב תלוי\n          followupAttempts: 0,\n          // תור שנקבע לפחות מ-24 שעות מראש לא מקבל תזכורת נפרדת\n          appointmentReminderAt: alreadyPast ? '' : reminderAt,\n          appointmentReminderSent: alreadyPast,\n          notes: appendNote(record.notes, `נקבע תור ל-${messages.formatAppointment(record.appointmentAt)}, נשלח אישור`, now),\n          updatedAt: now,\n        },\n      },\n    ],\n  };\n}\n\n/** תזכורת יום לפני התור — נבדקת באותה סריקה שעתית. */\nfunction planAppointmentReminder(record, now) {\n  if (record.status !== STATUS.BOOKED) return { due: false, reason: 'status_not_booked', actions: [] };\n  if (record.appointmentReminderSent === true) return { due: false, reason: 'already_sent', actions: [] };\n  if (!isDue(record.appointmentReminderAt, now)) return { due: false, reason: 'not_due', actions: [] };\n  if (new Date(record.appointmentAt).getTime() <= new Date(now).getTime()) {\n    return { due: false, reason: 'appointment_passed', actions: [] };\n  }\n\n  return {\n    due: true,\n    reason: 'reminder_sent',\n    actions: [\n      messageAction(record, messages.appointmentReminder(record), 'appointment_reminder'),\n      {\n        type: ACTION.UPDATE_RECORD,\n        key: record.leadKey,\n        updates: {\n          appointmentReminderSent: true,\n          appointmentReminderAt: '',\n          notes: appendNote(record.notes, 'נשלחה תזכורת יום לפני התור', now),\n          updatedAt: now,\n        },\n      },\n    ],\n  };\n}\n\n/**\n * הסריקה השעתית על כל הגיליון.\n * @param {Object[]} records\n * @param {string} now\n * @returns {{actions: Array, summary: Object}}\n */\nfunction planHourlyScan(records = [], now, sheetUrl) {\n  const actions = [];\n  const summary = { scanned: records.length, reminders: 0, closed: 0, appointmentReminders: 0 };\n\n  for (const record of records) {\n    const followup = planFollowup(record, now, sheetUrl);\n    if (followup.due) {\n      actions.push(...followup.actions);\n      if (followup.reason === 'reminder_sent') summary.reminders += 1;\n      if (followup.reason === 'closed_no_answer') summary.closed += 1;\n      continue;\n    }\n\n    const reminder = planAppointmentReminder(record, now);\n    if (reminder.due) {\n      actions.push(...reminder.actions);\n      summary.appointmentReminders += 1;\n    }\n  }\n\n  return { actions, summary };\n}\n\n// ---- מרחב השמות messages ----\nconst messages = { formatAppointment, greeting, handoffToHuman, followupReminder, appointmentConfirmation, appointmentReminder, newLeadAlert, handoffAlert, invalidLeadAlert, noAnswerAlert, returningLeadAlert };\n\n// ---- עיבוד הצינור ----\nconst prepared = $('הכנה — נרמול, תקינות ופרומפט').first().json;\nconst lookupRow = $('חיפוש ליד קיים לפי מפתח').first()?.json ?? {};\nconst existingRecord = lookupRow['מפתח ליד'] ? fromSheetObject(lookupRow) : null;\n\n// פלט Gemini מגיע רק אם עברנו בענף התקין\nlet aiOutput = null;\nconst incoming = $input.first()?.json ?? {};\nif (incoming.candidates) {\n  aiOutput = incoming.candidates?.[0]?.content?.parts?.[0]?.text ?? null;\n}\n\nconst result = processInbound({\n  payload: prepared.payload,\n  existingRecord,\n  aiOutput,\n  now: new Date().toISOString(),\n  sheetUrl: $env.CLINIC_LEADS_SHEET_URL,\n});\n\nconst actions = result.actions;\nconst items = [];\nfor (const action of actions) {\n  if (action.type === ACTION.CREATE_RECORD) {\n    items.push({ json: { ...action, row: toSheetObject(action.record) } });\n  } else if (action.type === ACTION.UPDATE_RECORD) {\n    items.push({ json: { ...action, row: { ...toSheetObject(action.updates), 'מפתח ליד': action.key } } });\n  } else {\n    items.push({ json: action });\n  }\n}\nreturn items;"
+      },
+      "id": "node-006",
+      "name": "עיבוד הצינור",
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        280,
+        300
+      ]
+    },
+    {
+      "parameters": {
+        "rules": {
+          "values": [
+            {
+              "conditions": {
+                "options": {
+                  "caseSensitive": true,
+                  "version": 2
+                },
+                "conditions": [
+                  {
+                    "leftValue": "={{ $json.type }}",
+                    "rightValue": "create_record",
+                    "operator": {
+                      "type": "string",
+                      "operation": "equals"
+                    }
+                  }
+                ],
+                "combinator": "and"
+              },
+              "renameOutput": true,
+              "outputKey": "יצירת רשומה"
+            },
+            {
+              "conditions": {
+                "options": {
+                  "caseSensitive": true,
+                  "version": 2
+                },
+                "conditions": [
+                  {
+                    "leftValue": "={{ $json.type }}",
+                    "rightValue": "update_record",
+                    "operator": {
+                      "type": "string",
+                      "operation": "equals"
+                    }
+                  }
+                ],
+                "combinator": "and"
+              },
+              "renameOutput": true,
+              "outputKey": "עדכון רשומה"
+            },
+            {
+              "conditions": {
+                "options": {
+                  "caseSensitive": true,
+                  "version": 2
+                },
+                "conditions": [
+                  {
+                    "leftValue": "={{ $json.type }}",
+                    "rightValue": "send_message",
+                    "operator": {
+                      "type": "string",
+                      "operation": "equals"
+                    }
+                  }
+                ],
+                "combinator": "and"
+              },
+              "renameOutput": true,
+              "outputKey": "הודעה ללקוח"
+            },
+            {
+              "conditions": {
+                "options": {
+                  "caseSensitive": true,
+                  "version": 2
+                },
+                "conditions": [
+                  {
+                    "leftValue": "={{ $json.type }}",
+                    "rightValue": "notify_staff",
+                    "operator": {
+                      "type": "string",
+                      "operation": "equals"
+                    }
+                  }
+                ],
+                "combinator": "and"
+              },
+              "renameOutput": true,
+              "outputKey": "התראה למזכירה"
+            }
+          ]
+        },
+        "options": {}
+      },
+      "id": "node-007",
+      "name": "ניתוב לפי סוג פעולה",
+      "type": "n8n-nodes-base.switch",
+      "typeVersion": 3,
+      "position": [
+        500,
+        300
+      ]
+    },
+    {
+      "parameters": {
+        "operation": "append",
+        "documentId": "={{ $env.CLINIC_LEADS_SHEET_ID }}",
+        "sheetName": "={{ $env.CLINIC_LEADS_SHEET_NAME || \"לידים\" }}",
+        "columns": {
+          "mappingMode": "autoMapInputData",
+          "value": {}
+        },
+        "options": {}
+      },
+      "id": "node-008",
+      "name": "הוספת שורה בגיליון",
+      "type": "n8n-nodes-base.googleSheets",
+      "typeVersion": 4.5,
+      "position": [
+        760,
+        60
+      ]
+    },
+    {
+      "parameters": {
+        "operation": "update",
+        "documentId": "={{ $env.CLINIC_LEADS_SHEET_ID }}",
+        "sheetName": "={{ $env.CLINIC_LEADS_SHEET_NAME || \"לידים\" }}",
+        "columns": {
+          "mappingMode": "autoMapInputData",
+          "matchingColumns": [
+            "מפתח ליד"
+          ],
+          "value": {}
+        },
+        "options": {}
+      },
+      "id": "node-009",
+      "name": "עדכון שורה בגיליון",
+      "type": "n8n-nodes-base.googleSheets",
+      "typeVersion": 4.5,
+      "position": [
+        760,
+        220
+      ]
+    },
+    {
+      "parameters": {
+        "rules": {
+          "values": [
+            {
+              "conditions": {
+                "options": {
+                  "caseSensitive": true,
+                  "version": 2
+                },
+                "conditions": [
+                  {
+                    "leftValue": "={{ $json.channel }}",
+                    "rightValue": "whatsapp",
+                    "operator": {
+                      "type": "string",
+                      "operation": "equals"
+                    }
+                  }
+                ],
+                "combinator": "and"
+              },
+              "renameOutput": true,
+              "outputKey": "וואטסאפ"
+            },
+            {
+              "conditions": {
+                "options": {
+                  "caseSensitive": true,
+                  "version": 2
+                },
+                "conditions": [
+                  {
+                    "leftValue": "={{ $json.channel }}",
+                    "rightValue": "instagram",
+                    "operator": {
+                      "type": "string",
+                      "operation": "equals"
+                    }
+                  }
+                ],
+                "combinator": "and"
+              },
+              "renameOutput": true,
+              "outputKey": "אינסטגרם"
+            }
+          ]
+        },
+        "options": {
+          "fallbackOutput": "extra",
+          "renameFallbackOutput": "ללא ערוץ"
+        }
+      },
+      "id": "node-010",
+      "name": "ניתוב לפי ערוץ",
+      "type": "n8n-nodes-base.switch",
+      "typeVersion": 3,
+      "position": [
+        760,
+        400
+      ]
+    },
+    {
+      "parameters": {
+        "method": "POST",
+        "url": "={{ \"https://graph.facebook.com/v21.0/\" + $env.WHATSAPP_PHONE_NUMBER_ID + \"/messages\" }}",
+        "authentication": "genericCredentialType",
+        "genericAuthType": "httpHeaderAuth",
+        "sendBody": true,
+        "specifyBody": "json",
+        "jsonBody": "={{ JSON.stringify({ messaging_product: \"whatsapp\", to: $json.to, type: \"text\", text: { preview_url: false, body: $json.text } }) }}",
+        "options": {}
+      },
+      "id": "node-011",
+      "name": "שליחה בוואטסאפ",
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.2,
+      "position": [
+        1000,
+        340
+      ]
+    },
+    {
+      "parameters": {
+        "method": "POST",
+        "url": "={{ \"https://graph.facebook.com/v21.0/\" + $env.INSTAGRAM_USER_ID + \"/messages\" }}",
+        "authentication": "genericCredentialType",
+        "genericAuthType": "httpHeaderAuth",
+        "sendBody": true,
+        "specifyBody": "json",
+        "jsonBody": "={{ JSON.stringify({ recipient: { id: $json.to }, message: { text: $json.text } }) }}",
+        "options": {}
+      },
+      "id": "node-012",
+      "name": "שליחה באינסטגרם",
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.2,
+      "position": [
+        1000,
+        460
+      ]
+    },
+    {
+      "parameters": {},
+      "id": "node-013",
+      "name": "אין ערוץ לענות בו",
+      "type": "n8n-nodes-base.noOp",
+      "typeVersion": 1,
+      "position": [
+        1000,
+        580
+      ]
+    },
+    {
+      "parameters": {
+        "method": "POST",
+        "url": "={{ \"https://graph.facebook.com/v21.0/\" + $env.WHATSAPP_PHONE_NUMBER_ID + \"/messages\" }}",
+        "authentication": "genericCredentialType",
+        "genericAuthType": "httpHeaderAuth",
+        "sendBody": true,
+        "specifyBody": "json",
+        "jsonBody": "={{ JSON.stringify({ messaging_product: \"whatsapp\", to: $env.CLINIC_SECRETARY_PHONE, type: \"text\", text: { preview_url: false, body: $json.text } }) }}",
+        "options": {}
+      },
+      "id": "node-014",
+      "name": "התראה למזכירה",
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.2,
+      "position": [
+        760,
+        700
+      ]
+    }
+  ],
+  "connections": {
+    "Webhook — קליטת לידים": {
+      "main": [
+        [
+          {
+            "node": "הכנה — נרמול, תקינות ופרומפט",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "הכנה — נרמול, תקינות ופרומפט": {
+      "main": [
+        [
+          {
+            "node": "חיפוש ליד קיים לפי מפתח",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "חיפוש ליד קיים לפי מפתח": {
+      "main": [
+        [
+          {
+            "node": "פנייה תקינה?",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "פנייה תקינה?": {
+      "main": [
+        [
+          {
+            "node": "סיווג AI (JSON בלבד)",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "עיבוד הצינור",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "סיווג AI (JSON בלבד)": {
+      "main": [
+        [
+          {
+            "node": "עיבוד הצינור",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "עיבוד הצינור": {
+      "main": [
+        [
+          {
+            "node": "ניתוב לפי סוג פעולה",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "ניתוב לפי סוג פעולה": {
+      "main": [
+        [
+          {
+            "node": "הוספת שורה בגיליון",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "עדכון שורה בגיליון",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "ניתוב לפי ערוץ",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "התראה למזכירה",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "ניתוב לפי ערוץ": {
+      "main": [
+        [
+          {
+            "node": "שליחה בוואטסאפ",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "שליחה באינסטגרם",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "אין ערוץ לענות בו",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    }
+  },
+  "settings": {
+    "executionOrder": "v1"
+  },
+  "pinData": {}
+}
