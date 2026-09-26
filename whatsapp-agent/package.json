@@ -1,0 +1,29 @@
+{
+  "name": "whatsapp-agent",
+  "private": true,
+  "version": "0.1.0",
+  "type": "module",
+  "description": "WhatsApp assistant that understands Hebrew messages and performs actions (tasks, reminders, leads, notes) using Claude",
+  "scripts": {
+    "start": "tsx src/server.ts",
+    "dev": "tsx watch src/server.ts",
+    "chat": "tsx src/cli.ts",
+    "typecheck": "tsc --noEmit",
+    "test": "tsx --test test/*.test.ts"
+  },
+  "dependencies": {
+    "@anthropic-ai/sdk": "^0.128.0",
+    "dotenv": "^17.2.0",
+    "express": "^5.2.1",
+    "zod": "^4.6.5"
+  },
+  "devDependencies": {
+    "@types/express": "^5.0.6",
+    "@types/node": "^22.14.0",
+    "tsx": "^4.23.15",
+    "typescript": "~5.9.3"
+  },
+  "engines": {
+    "node": ">=20"
+  }
+}
