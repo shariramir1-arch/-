@@ -7,7 +7,7 @@ import path from "node:path";
 import { Store } from "../src/store.js";
 import { sendDueReminders } from "../src/reminders.js";
 import { config } from "../src/config.js";
-import { extractTextMessages, isValidSignature } from "../src/whatsapp.js";
+import { extractMessages, isValidSignature } from "../src/whatsapp.js";
 
 const tempFile = () => path.join(fs.mkdtempSync(path.join(os.tmpdir(), "wa-agent-")), "db.json");
 
@@ -60,7 +60,7 @@ test("due reminders are sent once; failures are retried", async () => {
   assert.equal(store.listReminders().length, 1);
 });
 
-test("extracts only text messages from a webhook payload", () => {
+test("extracts messages from a webhook payload", () => {
   const payload = {
     entry: [{
       changes: [{
@@ -68,17 +68,21 @@ test("extracts only text messages from a webhook payload", () => {
           contacts: [{ wa_id: "972501111111", profile: { name: "Shariram" } }],
           messages: [
             { id: "m1", from: "972501111111", type: "text", text: { body: "שלום" } },
-            { id: "m2", from: "972501111111", type: "image", image: {} },
+            { id: "m2", from: "972501111111", type: "audio", audio: {} },
+            { id: "m3", from: "972501111111", type: "interactive", interactive: { button_reply: { title: "כן" } } },
+            { id: "m4", from: "972501111111", type: "reaction", reaction: { emoji: "👍" } },
           ],
           statuses: [{ id: "s1" }],
         },
       }],
     }],
   };
-  assert.deepEqual(extractTextMessages(payload), [
-    { id: "m1", from: "972501111111", name: "Shariram", text: "שלום" },
+  assert.deepEqual(extractMessages(payload), [
+    { id: "m1", from: "972501111111", name: "Shariram", type: "text", text: "שלום" },
+    { id: "m2", from: "972501111111", name: "Shariram", type: "audio", text: undefined },
+    { id: "m3", from: "972501111111", name: "Shariram", type: "interactive", text: "כן" },
   ]);
-  assert.deepEqual(extractTextMessages({}), []);
+  assert.deepEqual(extractMessages({}), []);
 });
 
 test("webhook signature verification", () => {
