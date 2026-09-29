@@ -8,7 +8,7 @@ export const config = {
   port: Number(optional("PORT", "3000")),
   timezone: optional("TIMEZONE", "Asia/Jerusalem"),
   dataFile: optional("DATA_FILE", "./data/db.json"),
-  model: optional("CLAUDE_MODEL", "claude-opus-5"),
+  model: optional("CLAUDE_MODEL", "claude-opus-5-5"),
 
   whatsapp: {
     token: optional("WHATSAPP_TOKEN"),

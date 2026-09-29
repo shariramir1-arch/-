@@ -16,12 +16,14 @@
 | "תכתוב לי פוסט קצר לפייסבוק על סוכני AI" | התוכן נכתב ומוחזר ישירות בצ'אט |
 | "תתחיל שיחה חדשה" | היסטוריית השיחה נמחקת (הנתונים עצמם נשמרים) |
 
+הודעות קוליות, תמונות ומדבקות מקבלות תשובה שהבוט מבין כרגע רק טקסט. כיתוב של תמונה ולחיצה על כפתורים כן נקראים.
+
 רק המספרים שמופיעים ב-`ALLOWED_NUMBERS` יכולים לתת לבוט פקודות. הודעות מכל מספר אחר לא מטופלות.
 
 ## איך זה בנוי
 
 ```
-וואטסאפ ──► Meta Cloud API ──► POST /webhook (server.ts)
+וואטסאפ ──► Meta Cloud API ──► POST /webhook (app.ts, מופעל מ-server.ts)
                                    │  אימות חתימה, סינון מספרים, מניעת כפילויות
                                    ▼
                               agent.ts ── Claude + כלים (tools.ts)
@@ -73,6 +75,26 @@ npm run chat
 > **שימו לב:** לפי הכללים של וואטסאפ, בוט יכול לשלוח הודעה חופשית רק בתוך 24 שעות מההודעה האחרונה ששלחת לו.
 > תזכורת שמתוזמנת ליותר מ-24 שעות אחרי ההודעה האחרונה שלך לא תגיע. כדי לעקוף את זה צריך
 > [Message Template](https://developers.facebook.com/docs/whatsapp/business-management-api/message-templates) מאושר.
+
+## פריסה קבועה (Production)
+
+הבוט צריך לרוץ כל הזמן בכתובת HTTPS ציבורית, ואסור שקובץ הנתונים יימחק בין פריסות.
+
+**Render (הכי פשוט):** ב-Render בוחרים **New → Blueprint** ומצביעים על הריפו. הקובץ `render.yaml` מגדיר שירות Docker
+עם דיסק קבוע ב-`/data` ובדיקת תקינות. אחרי הפריסה הראשונה ממלאים בדשבורד את המשתנים הסודיים,
+ומזינים ב-Meta את הכתובת `https://<שם-השירות>.onrender.com/webhook`.
+
+**Docker בכל שרת:**
+
+```bash
+docker build -t whatsapp-agent .
+docker run -d --name whatsapp-agent --restart unless-stopped \
+  --env-file .env -p 3000:3000 -v whatsapp-data:/data whatsapp-agent
+```
+
+מול הקונטיינר צריך לשים reverse proxy עם HTTPS, למשל Caddy או nginx, או Cloudflare Tunnel.
+
+בעצירה (SIGTERM) השרת מסיים לטפל בהודעות שכבר התקבלו ורק אז יוצא, כך שפריסה מחדש לא מאבדת הודעות.
 
 ## פקודות
 

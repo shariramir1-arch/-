@@ -1,0 +1,28 @@
+# One-click deploy to Render: New > Blueprint > pick this repo.
+# Fill in the secret values in the Render dashboard after the first deploy.
+services:
+  - type: web
+    name: whatsapp-agent
+    runtime: docker
+    rootDir: whatsapp-agent
+    plan: starter
+    healthCheckPath: /health
+    disk:
+      name: data
+      mountPath: /data
+      sizeGB: 1
+    envVars:
+      - key: ANTHROPIC_API_KEY
+        sync: false
+      - key: WHATSAPP_TOKEN
+        sync: false
+      - key: WHATSAPP_PHONE_NUMBER_ID
+        sync: false
+      - key: WHATSAPP_VERIFY_TOKEN
+        generateValue: true
+      - key: WHATSAPP_APP_SECRET
+        sync: false
+      - key: ALLOWED_NUMBERS
+        sync: false
+      - key: TIMEZONE
+        value: Asia/Jerusalem
