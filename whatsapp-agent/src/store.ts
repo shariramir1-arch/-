@@ -44,6 +44,8 @@ export interface Note {
 export interface ChatTurn {
   role: "user" | "assistant";
   text: string;
+  /** Tool calls the assistant actually ran in this turn, e.g. `add_task {"title":"..."}` */
+  actions?: string[];
 }
 
 interface Data {
