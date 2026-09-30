@@ -43,8 +43,11 @@ reminders.ts – בודק כל 30 שניות אם הגיע זמנה של תזכ�
 ```bash
 cd whatsapp-agent
 npm install
-cp .env.example .env   # ולמלא את הערכים
+npm run setup          # שואל על כל ערך ויוצר את קובץ .env
 ```
+
+אפשר להריץ את `npm run setup` שוב בכל שלב כדי להשלים ערכים חסרים. ערכים שכבר מולאו נשמרים.
+מי שמעדיף ידנית: `cp .env.example .env` ולמלא בעורך טקסט.
 
 ### בדיקה מקומית, בלי וואטסאפ
 
@@ -102,6 +105,7 @@ docker run -d --name whatsapp-agent --restart unless-stopped \
 |---|---|
 | `npm start` | מריצה את השרת |
 | `npm run dev` | מריצה את השרת ומפעילה אותו מחדש בכל שינוי בקוד |
+| `npm run setup` | יוצרת או מעדכנת את קובץ `.env` בעזרת שאלות |
 | `npm run chat` | פותחת צ'אט בטרמינל, בלי וואטסאפ |
 | `npm test` | מריצה את הבדיקות |
 | `npm run typecheck` | בודקת את הטיפוסים של TypeScript |
