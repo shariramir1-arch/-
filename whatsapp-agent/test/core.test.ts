@@ -93,3 +93,35 @@ test("webhook signature verification", () => {
   assert.ok(!isValidSignature(body, "sha256=" + "0".repeat(64)));
   assert.ok(!isValidSignature(body, undefined));
 });
+
+test("tasks can be deleted", () => {
+  const store = new Store(tempFile());
+  const a = store.addTask("לבדוק את הבוט");
+  store.addTask("לבדוק את הבוט");
+  assert.equal(store.deleteTask(a.id)?.id, a.id);
+  assert.equal(store.deleteTask(a.id), undefined);
+  assert.equal(store.listTasks(true).length, 1);
+});
+
+test("reminder history shows sent and cancelled reminders", async () => {
+  const store = new Store(tempFile());
+  const past = new Date(Date.now() - 1000).toISOString();
+  const future = new Date(Date.now() + 3_600_000).toISOString();
+  const water = store.addReminder("u", "לשתות מים", past);
+  const later = store.addReminder("u", "פגישה", future);
+  store.addReminder("other", "לא שלי", past);
+
+  await sendDueReminders(store, async () => {});
+  assert.ok(store.cancelReminder(later.id));
+  assert.ok(!store.cancelReminder(later.id));
+  assert.ok(!store.cancelReminder(water.id)); // already sent
+
+  assert.equal(store.listReminders("u").length, 0);
+  const history = store.reminderHistory("u");
+  assert.deepEqual(history.map((r) => r.text).sort(), ["לשתות מים", "פגישה"]);
+  assert.ok(history.find((r) => r.id === water.id)?.sentAt);
+  assert.ok(history.find((r) => r.id === later.id)?.cancelledAt);
+
+  // A cancelled reminder is never sent, even once its time has passed
+  assert.equal(store.dueReminders(new Date(Date.now() + 7_200_000)).length, 0);
+});
