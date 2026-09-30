@@ -40,6 +40,18 @@ export function buildTools(store: Store, user: string) {
     }),
 
     betaZodTool({
+      name: "delete_task",
+      description:
+        "Permanently delete a task by its id, e.g. a duplicate or a task added by mistake. " +
+        "If the user finished the task, use complete_task instead.",
+      inputSchema: z.object({ id: z.string() }),
+      run: async ({ id }) => {
+        const task = store.deleteTask(id);
+        return task ? `Deleted: ${json(task)}` : `No task with id ${id}`;
+      },
+    }),
+
+    betaZodTool({
       name: "set_reminder",
       description:
         "Schedule a WhatsApp reminder that will be sent to the user at a specific time. " +
@@ -61,6 +73,15 @@ export function buildTools(store: Store, user: string) {
       description: "List the user's pending (not yet sent) reminders.",
       inputSchema: z.object({}),
       run: async () => json(store.listReminders(user)),
+    }),
+
+    betaZodTool({
+      name: "reminder_history",
+      description:
+        "List the user's past reminders, most recent first: ones already sent (sentAt = when it was sent) " +
+        "and ones cancelled (cancelledAt). Use it to answer questions like 'was my reminder sent?'.",
+      inputSchema: z.object({}),
+      run: async () => json(store.reminderHistory(user)),
     }),
 
     betaZodTool({

@@ -18,6 +18,10 @@ export interface Reminder {
   /** ISO 8601 timestamp */
   at: string;
   sent: boolean;
+  /** When it was actually sent */
+  sentAt?: string;
+  /** Set when the user cancelled it before it was sent */
+  cancelledAt?: string;
 }
 
 export type LeadStatus = "new" | "contacted" | "meeting" | "proposal" | "won" | "lost";
@@ -60,6 +64,7 @@ const HISTORY_LIMIT = 20;
 
 const shortId = () => randomUUID().slice(0, 8);
 const now = () => new Date().toISOString();
+const isPending = (r: Reminder) => !r.sent && !r.cancelledAt;
 
 /** Tiny JSON-file database. Good enough for a single-user assistant. */
 export class Store {
@@ -100,6 +105,15 @@ export class Store {
     return task;
   }
 
+  deleteTask(id: string): Task | undefined {
+    const task = this.data.tasks.find((t) => t.id === id);
+    if (task) {
+      this.data.tasks = this.data.tasks.filter((t) => t.id !== id);
+      this.save();
+    }
+    return task;
+  }
+
   // ---- reminders ----
   addReminder(to: string, text: string, at: string): Reminder {
     const reminder: Reminder = { id: shortId(), to, text, at, sent: false };
@@ -108,26 +122,37 @@ export class Store {
     return reminder;
   }
 
+  /** Reminders still waiting to be sent */
   listReminders(to?: string): Reminder[] {
-    return this.data.reminders.filter((r) => !r.sent && (!to || r.to === to));
+    return this.data.reminders.filter((r) => isPending(r) && (!to || r.to === to));
+  }
+
+  /** Reminders already sent or cancelled, most recent first */
+  reminderHistory(to?: string, limit = 20): Reminder[] {
+    const when = (r: Reminder) => r.sentAt ?? r.cancelledAt ?? r.at;
+    return this.data.reminders
+      .filter((r) => !isPending(r) && (!to || r.to === to))
+      .sort((a, b) => when(b).localeCompare(when(a)))
+      .slice(0, limit);
   }
 
   cancelReminder(id: string): boolean {
-    const before = this.data.reminders.length;
-    this.data.reminders = this.data.reminders.filter((r) => r.id !== id || r.sent);
-    const removed = this.data.reminders.length !== before;
-    if (removed) this.save();
-    return removed;
+    const r = this.data.reminders.find((x) => x.id === id && isPending(x));
+    if (!r) return false;
+    r.cancelledAt = now();
+    this.save();
+    return true;
   }
 
   dueReminders(at: Date = new Date()): Reminder[] {
-    return this.data.reminders.filter((r) => !r.sent && new Date(r.at) <= at);
+    return this.data.reminders.filter((r) => isPending(r) && new Date(r.at) <= at);
   }
 
   markReminderSent(id: string): void {
     const r = this.data.reminders.find((x) => x.id === id);
     if (r) {
       r.sent = true;
+      r.sentAt = now();
       this.save();
     }
   }
