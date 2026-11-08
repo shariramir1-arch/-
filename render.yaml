@@ -1,4 +1,5 @@
-# One-click deploy to Render: New > Blueprint > pick this repo.
+# One-click deploy of whatsapp-agent to Render: New > Blueprint > pick this repo
+# (or the "Deploy to Render" button in whatsapp-agent/README.md).
 # Fill in the secret values in the Render dashboard after the first deploy.
 services:
   - type: web

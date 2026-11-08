@@ -97,7 +97,9 @@ npm run chat
 
 הבוט צריך לרוץ כל הזמן בכתובת HTTPS ציבורית, ואסור שקובץ הנתונים יימחק בין פריסות.
 
-**Render (הכי פשוט):** ב-Render בוחרים **New → Blueprint** ומצביעים על הריפו. הקובץ `render.yaml` מגדיר שירות Docker
+[![Deploy to Render](https://render.com/images/deploy-to-render-button.svg)](https://render.com/deploy?repo=https://github.com/shariramir1-arch/-)
+
+**Render (הכי פשוט):** לוחצים על הכפתור למעלה, או ב-Render בוחרים **New → Blueprint** ומצביעים על הריפו. הקובץ `render.yaml` שבתיקייה הראשית של הריפו מגדיר שירות Docker
 עם דיסק קבוע ב-`/data` ובדיקת תקינות. אחרי הפריסה הראשונה ממלאים בדשבורד את המשתנים הסודיים,
 ומזינים ב-Meta את הכתובת `https://<שם-השירות>.onrender.com/webhook`.
 
