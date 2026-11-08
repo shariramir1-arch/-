@@ -1,0 +1,190 @@
+<!doctype html>
+<html lang="he" dir="rtl">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<style>:root{padding-top:env(safe-area-inset-top,0px);padding-bottom:env(safe-area-inset-bottom,0px)}body{margin:0}img{max-width:100%}[hidden]{display:none!important}</style>
+<title>Claude עונה בוואטסאפ: המדריך המלא</title>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Heebo:wght@400;700;900&family=JetBrains+Mono:wght@500;800&display=swap">
+<style>
+/* Concept: the guide is a chat thread. Each step arrives as a message bubble; commands sit in "code" bubbles.
+   LME palette: sand paper background, deep teal header, brand coral for actions. Not WhatsApp green. */
+:root{--sand:#F6F1E7;--sand2:#EDE4D3;--panel:#FFFFFF;--ink:#132A2C;--muted:#566B6D;--teal:#0F5257;--teal2:#14707A;--coral:#E8582E;--coralS:#FFE8DF;--me:#DDF3EE;--line:#E2D8C6;--ok:#1F7A55;--warn:#B4472A;
+ --f:"Heebo",system-ui,sans-serif;--m:"JetBrains Mono",ui-monospace,monospace;color-scheme:light}
+*{box-sizing:border-box}
+body{margin:0;background:var(--sand);background-image:radial-gradient(rgba(19,42,44,.05) 1px,transparent 1.2px);background-size:18px 18px;color:var(--ink);font-family:var(--f);font-size:1.05rem;line-height:1.65}
+.wrap{max-width:46rem;margin-inline:auto;display:flex;flex-direction:column;gap:2.2rem;padding:0 max(16px,env(safe-area-inset-right,0px)) 3rem max(16px,env(safe-area-inset-left,0px))}
+h1,h2,h3{margin:0;font-weight:900;line-height:1.14;text-wrap:balance}
+h1{font-size:clamp(2.1rem,7vw,3.4rem)}h2{font-size:clamp(1.35rem,4vw,1.8rem)}h3{font-size:1.1rem}
+p{margin:0}.muted{color:var(--muted)}
+bdi,.ltr{direction:ltr;unicode-bidi:isolate}
+header{margin-inline:calc(-1 * max(16px,env(safe-area-inset-right,0px)));background:linear-gradient(160deg,var(--teal2),var(--teal));color:#fff;padding:2.2rem max(16px,env(safe-area-inset-right,0px)) 2.4rem;border-radius:0 0 30px 30px;display:flex;flex-direction:column;gap:1rem}
+.who{display:flex;align-items:center;gap:.7rem}
+.av{width:3rem;height:3rem;border-radius:50%;background:#fff;color:var(--teal);font-family:var(--m);font-weight:800;display:flex;align-items:center;justify-content:center;flex:none}
+.who small{display:block;color:rgba(255,255,255,.75);font-size:.85rem}
+header h1 em{font-style:normal;color:#FFC9B5}
+header .lede{color:rgba(255,255,255,.9);font-size:1.1rem;max-width:36rem}
+.stats{display:grid;grid-template-columns:repeat(3,1fr);gap:.6rem}
+.stat{background:rgba(255,255,255,.12);border:1px solid rgba(255,255,255,.25);border-radius:16px;padding:.7rem .6rem;text-align:center}
+.stat b{display:block;font-size:1.35rem;font-family:var(--m)}
+.stat span{font-size:.85rem;color:rgba(255,255,255,.85)}
+.sec{display:flex;flex-direction:column;gap:.9rem}
+.kick{font-family:var(--m);font-size:.78rem;font-weight:800;letter-spacing:.18em;color:var(--coral);direction:ltr;text-align:right}
+.day{align-self:center;background:var(--sand2);color:var(--muted);font-size:.85rem;font-weight:700;border-radius:999px;padding:.2rem .9rem}
+.bub{position:relative;background:var(--panel);border-radius:6px 20px 20px 20px;padding:1rem 1.1rem;box-shadow:0 2px 0 rgba(19,42,44,.06);max-width:100%;display:flex;flex-direction:column;gap:.6rem;align-self:flex-start}
+.bub.me{background:var(--me);border-radius:20px 6px 20px 20px;align-self:flex-end}
+.bub .n{display:inline-flex;align-items:center;justify-content:center;width:1.8rem;height:1.8rem;border-radius:50%;background:var(--coral);color:#fff;font-weight:900;font-size:.95rem;flex:none}
+.bub h3{display:flex;gap:.6rem;align-items:center}
+.bub .done{color:var(--ok);font-weight:700;font-size:.95rem}
+.cmd{display:flex;align-items:center;gap:.6rem;background:var(--ink);color:#E9F4F2;border-radius:12px;padding:.55rem .6rem .55rem .8rem;direction:ltr}
+.cmd code{font-family:var(--m);font-size:.88rem;flex:1;overflow-x:auto;white-space:nowrap}
+.cmd code::before{content:"$ ";color:#7FB8B0}
+button.copy{font-family:var(--m);font-weight:800;font-size:.8rem;background:var(--coral);color:#fff;border:0;border-radius:8px;padding:.35rem .8rem;cursor:pointer;flex:none}
+button.copy:focus-visible{outline:2px solid var(--ink);outline-offset:2px}
+button.copy.done{background:var(--ok)}
+.opts{display:grid;grid-template-columns:repeat(auto-fit,minmax(12.5rem,1fr));gap:.7rem}
+.opt{background:var(--panel);border:1px solid var(--line);border-radius:16px;padding:.9rem 1rem;display:flex;flex-direction:column;gap:.25rem}
+.opt.rec{border:2px solid var(--coral)}
+.opt .t{font-size:.75rem;font-family:var(--m);font-weight:800;color:var(--coral);letter-spacing:.12em;direction:ltr;text-align:right}
+.prompt{background:var(--panel);border:1px solid var(--line);border-radius:16px;overflow:hidden}
+.prompt .bar{display:flex;justify-content:space-between;align-items:center;gap:.6rem;padding:.5rem .9rem;background:var(--coralS)}
+.prompt pre{margin:0;padding:.85rem 1rem;white-space:pre-wrap;font-family:var(--f);font-size:1rem;line-height:1.6}
+.rules{display:grid;grid-template-columns:repeat(auto-fit,minmax(13rem,1fr));gap:.7rem}
+.rule{background:var(--panel);border-radius:16px;padding:.9rem 1rem;border-inline-start:4px solid var(--teal)}
+table{width:100%;border-collapse:collapse}
+th,td{text-align:right;padding:.55rem .4rem;border-bottom:1px solid var(--line);vertical-align:top}
+th{font-size:.85rem;color:var(--muted)}
+.note{background:var(--coralS);border-radius:14px;padding:.85rem 1rem}
+details{background:var(--panel);border-radius:14px;padding:.8rem 1rem;border:1px solid var(--line)}
+summary{font-weight:800;cursor:pointer}
+details p{margin-top:.5rem}
+footer{display:flex;flex-direction:column;gap:.35rem;text-align:center;padding-top:1rem;border-top:1px solid var(--line)}
+footer b{font-family:var(--m);font-size:1.6rem;letter-spacing:.12em;color:var(--teal)}
+a{color:var(--teal2)}
+</style>
+</head>
+<body>
+<div class="wrap">
+  <header>
+    <div class="who"><div class="av">LME</div><div><b>מדריך LME</b><small>Claude · Kapso · WhatsApp</small></div></div>
+    <h1>Claude עונה ללקוחות שלכם <em>בוואטסאפ</em></h1>
+    <p class="lede">מספר וואטסאפ רשמי לעסק, ו-Claude שבונה את הסוכן שעונה ממנו: שאלות, תיאום פגישות, איסוף פניות. אתם מסבירים בעברית, הוא כותב את הקוד.</p>
+    <div class="stats">
+      <div class="stat"><b>$0</b><span>מסלול חינמי</span></div>
+      <div class="stat"><b class="ltr">2,000</b><span>הודעות בחודש</span></div>
+      <div class="stat"><b>API</b><span>רשמי של Meta</span></div>
+    </div>
+  </header>
+
+  <section class="sec" aria-labelledby="how-h">
+    <div class="kick">HOW IT WORKS</div>
+    <h2 id="how-h">איך זה עובד</h2>
+    <div class="bub"><p><b>Kapso</b> מחבר מספר וואטסאפ דרך ה-API הרשמי של Meta. <b><bdi>Claude Code</bdi></b> מתחבר ל-Kapso, ובונה בשבילכם את הסוכן שעונה מהמספר.</p></div>
+    <div class="bub me"><p>ומה אני צריך לדעת בקוד?</p></div>
+    <div class="bub"><p>כלום. מעתיקים כמה פקודות מהמדריך, ואז כותבים ל-Claude בעברית מה הסוכן צריך לעשות.</p></div>
+  </section>
+
+  <section class="sec" aria-labelledby="need-h">
+    <div class="kick">BEFORE YOU START</div>
+    <h2 id="need-h">מה צריך</h2>
+    <div class="bub">
+      <ul style="margin:0;padding-inline-start:1.2rem;display:flex;flex-direction:column;gap:.35rem">
+        <li><b><bdi>Claude Code</bdi></b> מותקן במחשב (עובד עם מנוי Claude).</li>
+        <li><b><bdi>Node.js</bdi></b> בגרסה 20.19 ומעלה (<a href="https://nodejs.org" target="_blank" rel="noopener">מורידים מכאן</a>).</li>
+        <li><b>חשבון פייסבוק.</b> החיבור לוואטסאפ עובר דרך מסך ההרשמה של Meta.</li>
+      </ul>
+    </div>
+  </section>
+
+  <section class="sec" aria-labelledby="num-h">
+    <div class="kick">PICK A NUMBER</div>
+    <h2 id="num-h">איזה מספר לחבר?</h2>
+    <div class="opts">
+      <div class="opt rec"><span class="t">RECOMMENDED</span><b>מספר אמריקאי של Kapso</b><span class="muted">מוכן תוך דקות, בלי סים ובלי קוד SMS (כשיש מספר פנוי במאגר). במסלול החינמי: מספר אחד בחינם.</span></div>
+      <div class="opt"><span class="t">KEEP YOUR APP</span><b>וואטסאפ ביזנס הקיים</b><span class="muted">ממשיכים לעבוד באפליקציה, וההודעות מסתנכרנות ל-Kapso. טוב למי שלקוחות כבר מכירים את המספר.</span></div>
+      <div class="opt"><span class="t">OWN SIM</span><b>סים משלכם</b><span class="muted">כל מספר, בכל מדינה, עם אימות חד-פעמי. צריך סים שמוקדש רק לזה.</span></div>
+    </div>
+    <p class="muted">להתחלה, הכי פשוט המספר של Kapso. ככה לא נוגעים במספר שהלקוחות כבר מכירים.</p>
+  </section>
+
+  <section class="sec" aria-labelledby="setup-h">
+    <div class="kick">PART 1 · SETUP · ~10 MIN</div>
+    <h2 id="setup-h">חלק 1: מחברים מספר</h2>
+    <div class="day">שלב 1 מתוך 4</div>
+    <div class="bub"><h3><span class="n">1</span>פותחים חשבון</h3>
+      <p>נכנסים ל-<a href="https://kapso.ai" target="_blank" rel="noopener"><bdi>kapso.ai</bdi></a> ← <b>Start free</b>. נרשמים ומקבלים פרויקט ראשון.</p></div>
+    <div class="bub"><h3><span class="n">2</span>מתקינים את הכלי ומתחברים</h3>
+      <p>פותחים טרמינל ומדביקים, אחת אחרי השנייה:</p>
+      <div class="cmd"><code id="c1">npm install -g @kapso/cli@latest</code><button class="copy" type="button" data-t="c1">Copy</button></div>
+      <div class="cmd"><code id="c2">kapso login</code><button class="copy" type="button" data-t="c2">Copy</button></div>
+      <p class="done">✓ נפתח דפדפן, מאשרים, והטרמינל כותב שאתם מחוברים.</p></div>
+    <div class="bub"><h3><span class="n">3</span>מחברים מספר וואטסאפ</h3>
+      <div class="cmd"><code id="c3">kapso setup</code><button class="copy" type="button" data-t="c3">Copy</button></div>
+      <p>נפתח מסך של Meta. נכנסים עם פייסבוק ובוחרים את המספר שנבחר למעלה. אחר כך בודקים שהוא מחובר:</p>
+      <div class="cmd"><code id="c4">kapso whatsapp numbers list</code><button class="copy" type="button" data-t="c4">Copy</button></div>
+      <p class="done">✓ המספר מופיע ברשימה.</p></div>
+    <div class="bub"><h3><span class="n">4</span>מחברים את Claude ל-Kapso</h3>
+      <p>יוצרים תיקייה לפרויקט, נכנסים אליה בטרמינל, ומריצים את שתי הפקודות. הראשונה מלמדת את Claude לעבוד עם Kapso, והשנייה נותנת לו גישה לחשבון:</p>
+      <div class="cmd"><code id="c5">npx skills add gokapso/agent-skills</code><button class="copy" type="button" data-t="c5">Copy</button></div>
+      <div class="cmd"><code id="c6">claude mcp add --transport http kapso https://api.kapso.ai/mcp</code><button class="copy" type="button" data-t="c6">Copy</button></div>
+      <p>פותחים את <bdi>Claude Code</bdi> (<bdi class="ltr">claude</bdi>), כותבים <bdi class="ltr">/mcp</bdi>, ומתחברים ל-Kapso בדפדפן.</p>
+      <p class="note"><b>חשוב:</b> ברירת המחדל במסך ההרשאות היא <b>Read only</b>, כלומר רק קריאה. כדי ש-Claude יוכל לשלוח הודעות, בוחרים <b>Custom</b> ומסמנים גם את שליחת ההודעות (<bdi class="ltr">messages:send</bdi>).</p></div>
+  </section>
+
+  <section class="sec" aria-labelledby="use-h">
+    <div class="kick">PART 2 · BUILD THE AGENT</div>
+    <h2 id="use-h">חלק 2: אומרים ל-Claude מה לבנות</h2>
+    <p class="muted">מעתיקים אחת מההודעות, משנים לפרטי העסק, ושולחים ל-Claude בתיקיית הפרויקט.</p>
+    <div class="prompt"><div class="bar"><b>מענה לשאלות נפוצות</b><button class="copy" type="button" data-t="p1">העתקה</button></div><pre id="p1">תבנה לי סוכן וואטסאפ על המספר שחיברתי ב-Kapso. העסק: [שם ומה עושים]. הוא עונה על: מחירים [..], שעות פעילות [..], כתובת [..]. תשובות קצרות, בעברית, בנימוס. אם הוא לא בטוח בתשובה, שיגיד שנחזור אליהם, וישלח לי הודעה עם השם והשאלה. לפני שאתה מפעיל, תראה לי 3 שיחות לדוגמה.</pre></div>
+    <div class="prompt"><div class="bar"><b>איסוף פניות (לידים)</b><button class="copy" type="button" data-t="p2">העתקה</button></div><pre id="p2">תבנה לי סוכן וואטסאפ שמקבל פניות חדשות: שואל שם, במה הלקוח מתעניין ומתי נוח לחזור אליו, ושומר כל פנייה בשורה בקובץ CSV. בסוף כל יום תשלח לי סיכום של הפניות.</pre></div>
+    <div class="prompt"><div class="bar"><b>תיאום פגישות</b><button class="copy" type="button" data-t="p3">העתקה</button></div><pre id="p3">תבנה לי סוכן וואטסאפ שמתאם פגישות. השעות הפנויות שלי: [ימים ושעות]. כשלקוח מבקש פגישה, הוא מציע שתי אפשרויות, מאשר את הבחירה, ושולח לי הודעה עם הפרטים. בלי לקבוע משהו שלא ביקשתי.</pre></div>
+    <div class="prompt"><div class="bar"><b>לקרוא ולענות בעצמי, עם עזרה</b><button class="copy" type="button" data-t="p4">העתקה</button></div><pre id="p4">תקרא את 10 השיחות האחרונות בוואטסאפ של Kapso, תסמן מי מחכה לתשובה, ותכין לי טיוטת תשובה לכל אחד. אל תשלח כלום בלי אישור שלי.</pre></div>
+    <div class="bub"><p><b>בודקים מהטלפון:</b> שולחים הודעה מהוואטסאפ שלכם למספר של הסוכן, ורואים אותו עונה.</p>
+      <p class="muted">רוצים שהסוכן יעבוד גם כשהמחשב כבוי? כותבים ל-Claude: "תעלה את הסוכן לשרת שירוץ כל הזמן, ותסביר לי כל צעד".</p></div>
+  </section>
+
+  <section class="sec" aria-labelledby="rules-h">
+    <div class="kick">WHATSAPP RULES</div>
+    <h2 id="rules-h">הכללים של וואטסאפ</h2>
+    <div class="rules">
+      <div class="rule"><b>הלקוח מתחיל</b><p class="muted">שולחים רק למי שפנה אליכם או הסכים לקבל הודעות. לא שולחים לרשימות שקניתם.</p></div>
+      <div class="rule"><b>חלון של 24 שעות</b><p class="muted">אחרי 24 שעות בלי הודעה מהלקוח, אפשר לשלוח לו רק תבנית ש-Meta אישרה מראש.</p></div>
+      <div class="rule"><b>המספר החינמי צריך שימוש</b><p class="muted">אם לא נשלחות ממנו הודעות אמיתיות 30 יום, Kapso משחררים אותו.</p></div>
+      <div class="rule"><b>עמלות של Meta</b><p class="muted">על חלק מסוגי ההודעות Meta גובה עמלה. Kapso מעבירים אותה בלי תוספת.</p></div>
+    </div>
+  </section>
+
+  <section class="sec" aria-labelledby="price-h">
+    <div class="kick">PRICING</div>
+    <h2 id="price-h">כמה זה עולה</h2>
+    <div class="bub" style="align-self:stretch">
+      <table>
+        <thead><tr><th>מסלול</th><th>מחיר</th><th>מה כולל</th></tr></thead>
+        <tbody>
+          <tr><td><b>Free</b></td><td class="ltr">$0</td><td>2,000 הודעות בחודש, מספר מחובר אחד, מספר אמריקאי בחינם (פעם אחת)</td></tr>
+          <tr><td><b>Pro</b></td><td class="ltr">$25 / month</td><td>100,000 הודעות בחודש, 3 מספרים</td></tr>
+        </tbody>
+      </table>
+      <p class="muted" style="font-size:.9rem">לפי עמוד המחירים של Kapso, נובמבר 2026. עמלות Meta בנפרד.</p>
+    </div>
+  </section>
+
+  <section class="sec" aria-labelledby="faq-h">
+    <div class="kick">FAQ</div>
+    <h2 id="faq-h">שאלות</h2>
+    <details><summary>אפשר עם המספר הרגיל של העסק?</summary><p>כן, דרך האפשרות "וואטסאפ ביזנס הקיים". ממשיכים לעבוד באפליקציה, וההודעות מסתנכרנות. להתחלה עדיף מספר נפרד, כדי לבדוק בלי לחץ.</p></details>
+    <details><summary>Meta לא מציעה מספר מוכן ומבקשת SMS</summary><p>זה קורה כשאין מספר פנוי במאגר. אפשר לנסות שוב מאוחר יותר, או לחבר סים משלכם. ב-Kapso יש עמוד עזרה ייעודי ל-Instant setup.</p></details>
+    <details><summary>משהו לא עובד</summary><p>מעתיקים ל-Claude את הודעת השגיאה כמו שהיא, וכותבים "תתקן". ברוב המקרים הוא מסתדר לבד.</p></details>
+  </section>
+
+  <footer><b>LME</b><span class="muted">הטמעת מערכות מידע ו-AI לעסקים. רוצים שנבנה לכם את הסוכן? שלחו לנו הודעה.</span><span class="muted" style="font-size:.85rem">לפי התיעוד הרשמי של Kapso (docs.kapso.ai), נובמבר 2026. Kapso, WhatsApp ו-Claude הם סימנים מסחריים של בעליהם. המדריך עצמאי.</span></footer>
+</div>
+<script>
+document.addEventListener('click',e=>{const b=e.target.closest('button.copy');if(!b)return;const el=document.getElementById(b.dataset.t);const lab=b.textContent;
+ const ok=()=>{b.textContent=lab==='Copy'?'Copied':'הועתק';b.classList.add('done');setTimeout(()=>{b.textContent=lab;b.classList.remove('done')},1600)};
+ const sel=()=>{const r=document.createRange();r.selectNodeContents(el);const s=getSelection();s.removeAllRanges();s.addRange(r)};
+ try{navigator.clipboard.writeText(el.textContent).then(ok,sel)}catch(_){sel()}});
+</script>
+
+</body>
+</html>

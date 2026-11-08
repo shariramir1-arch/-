@@ -1,0 +1,110 @@
+<!doctype html>
+<html lang="he" dir="rtl">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<style>:root{padding-top:env(safe-area-inset-top,0px);padding-bottom:env(safe-area-inset-bottom,0px)}body{margin:0}img{max-width:100%}[hidden]{display:none!important}</style>
+<title>3 הטעויות עם AI</title>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Heebo:wght@400;700;900&display=swap">
+<style>
+/* Layout: viral-style poster — huge numbers, a sticker on the key word, each mistake as a before/after split. */
+:root{--bg:#0E0E14;--panel:#17171F;--ink:#F6F3EE;--muted:#A6A3B2;--line:#2B2B36;--accent:#FF6A3D;--accent2:#7C5CFF;--bad:#FF5468;--good:#2FD68F;--f:"Heebo",system-ui,sans-serif;color-scheme:dark}
+*{box-sizing:border-box}
+body{background:var(--bg);color:var(--ink);font-family:var(--f);font-size:1.05rem;line-height:1.6;padding-left:max(16px,env(safe-area-inset-left,0px));padding-right:max(16px,env(safe-area-inset-right,0px));padding-block:2rem 3rem}
+.wrap{max-width:54rem;margin-inline:auto;display:flex;flex-direction:column;gap:3.2rem}
+h1,h2,h3{margin:0;font-weight:900;line-height:1.05;text-wrap:balance}
+h1{font-size:clamp(2.6rem,9vw,5rem);letter-spacing:-.02em}
+h2{font-size:clamp(1.6rem,5vw,2.4rem)}h3{font-size:1.1rem}
+p{margin:0}.muted{color:var(--muted)}
+.stk{display:inline-block;background:var(--accent);color:var(--bg);padding:0 .25em;border-radius:.18em;transform:rotate(-2deg)}
+header{display:flex;flex-direction:column;gap:1rem}
+.lede{font-size:1.2rem;color:var(--muted);max-width:38rem}
+.mk{display:flex;flex-direction:column;gap:1rem}
+.mk-head{display:grid;grid-template-columns:auto minmax(0,1fr);gap:1rem;align-items:center}
+.big{font-size:5.5rem;font-weight:900;line-height:.8;color:transparent;-webkit-text-stroke:3px var(--accent)}
+.split{display:grid;grid-template-columns:1fr 1fr;gap:.8rem}
+@media (max-width:620px){.split{grid-template-columns:1fr}}
+.side{border-radius:14px;padding:1rem 1.1rem;display:flex;flex-direction:column;gap:.5rem;background:var(--panel);border:1px solid var(--line);min-width:0}
+.side .lab{font-size:.8rem;font-weight:900;letter-spacing:.08em}
+.bad{border-color:var(--bad)}.bad .lab{color:var(--bad)}
+.good{border-color:var(--good)}.good .lab{color:var(--good)}
+.side q{quotes:none;display:block;font-weight:700}
+.why{color:var(--muted)}
+pre{margin:0;white-space:pre-wrap;word-break:break-word;font-family:var(--f);font-size:1rem;line-height:1.65}
+.bar{display:flex;justify-content:space-between;align-items:center;gap:.8rem}
+button.copy{font:inherit;font-weight:900;font-size:.85rem;background:var(--good);color:#06140D;border:0;border-radius:8px;padding:.3rem .8rem;cursor:pointer;flex:none}
+button.copy:focus-visible{outline:2px solid var(--accent2);outline-offset:2px}
+button.copy.done{background:var(--ink)}
+.rules{display:grid;grid-template-columns:repeat(auto-fit,minmax(14rem,1fr));gap:.8rem}
+.rule{background:var(--panel);border-radius:14px;padding:1rem 1.1rem;border-top:4px solid var(--accent2)}
+.rule b{display:block;font-size:1.15rem;margin-bottom:.2rem}
+footer{border-top:1px solid var(--line);padding-top:1.4rem;display:flex;flex-direction:column;gap:.3rem}
+footer b{font-size:1.8rem;direction:ltr;text-align:right}
+</style>
+</head>
+<body>
+<div class="wrap" dir="rtl" lang="he">
+  <header>
+    <h1>3 טעויות <span class="stk">שכולם</span> עושים עם AI</h1>
+    <p class="lede">ואיך מתקנים כל אחת בשלושים שניות. לכל טעות: מה עושים עכשיו, למה זה לא עובד, ומה כותבים במקום.</p>
+  </header>
+
+  <section class="mk">
+    <div class="mk-head"><span class="big">1</span><h2>פרומפט של מילה אחת</h2></div>
+    <p class="why">ה-AI לא מכיר את העסק, את הקהל ואת הטון שלכם. בלי הקשר הוא מנחש, ואתם מקבלים טקסט גנרי שאפשר היה לשלוח לכל עסק בעולם.</p>
+    <div class="split">
+      <div class="side bad"><span class="lab">ככה לא</span><q>"תכתוב לי פוסט"</q></div>
+      <div class="side good"><div class="bar"><span class="lab">ככה כן</span><button class="copy" type="button" data-t="g1">העתקה</button></div>
+        <pre id="g1">תכתוב פוסט לאינסטגרם לעסק שלי: [מה העסק].
+הקהל: [מי הלקוחות, גיל, מה מעניין אותם].
+המטרה: [מכירה / הרשמה / מודעות].
+טון: [חם / מקצועי / הומוריסטי].
+עד 80 מילים, עם קריאה לפעולה בסוף.</pre></div>
+    </div>
+  </section>
+
+  <section class="mk">
+    <div class="mk-head"><span class="big">2</span><h2>מוותרים אחרי תשובה אחת</h2></div>
+    <p class="why">התשובה הראשונה היא טיוטה. הכוח של AI הוא בסבב השני והשלישי, כשמכוונים אותו. רוב האנשים עוצרים בדיוק לפני החלק הטוב.</p>
+    <div class="split">
+      <div class="side bad"><span class="lab">ככה לא</span><q>מעתיקים את התשובה הראשונה, או סוגרים ואומרים "זה לא טוב"</q></div>
+      <div class="side good"><div class="bar"><span class="lab">ככה כן</span><button class="copy" type="button" data-t="g2">העתקה</button></div>
+        <pre id="g2">טוב, אבל:
+1. תקצר בחצי.
+2. הפתיחה חלשה. תן לי 3 פתיחות אחרות שתופסות מהמשפט הראשון.
+3. תכתוב את זה כמו שבעל עסק מדבר, לא כמו פרסומת.
+תציג 3 גרסאות שונות, ואני אבחר.</pre></div>
+    </div>
+  </section>
+
+  <section class="mk">
+    <div class="mk-head"><span class="big">3</span><h2>מעתיקים בלי לבדוק</h2></div>
+    <p class="why">AI כותב בביטחון גם כשהוא טועה: מחירים, תאריכים, חוקים ושמות. טעות אחת בפוסט או בהצעת מחיר עולה יותר מכל הזמן שחסכתם.</p>
+    <div class="split">
+      <div class="side bad"><span class="lab">ככה לא</span><q>מדביקים ישר לפוסט, למייל ללקוח או להצעת מחיר</q></div>
+      <div class="side good"><div class="bar"><span class="lab">ככה כן</span><button class="copy" type="button" data-t="g3">העתקה</button></div>
+        <pre id="g3">לפני שאני משתמש בזה: תסמן לי כל עובדה בטקסט (מספר, תאריך, מחיר, שם, חוק או טענה), ותגיד ליד כל אחת אם אתה בטוח בה או שאני צריך לבדוק.
+אם משהו מבוסס על הנחה, תכתוב את ההנחה.</pre></div>
+    </div>
+  </section>
+
+  <section style="display:flex;flex-direction:column;gap:1rem">
+    <h2>3 כללים לתלות ליד המחשב</h2>
+    <div class="rules">
+      <div class="rule"><b>הקשר לפני בקשה</b><span class="muted">מי, למי, למה, ובאיזה טון.</span></div>
+      <div class="rule"><b>לפחות שני סבבים</b><span class="muted">"תקצר", "תשפר", "תן 3 גרסאות".</span></div>
+      <div class="rule"><b>בודקים עובדות</b><span class="muted">כל מספר, תאריך ומחיר, לפני שזה יוצא.</span></div>
+    </div>
+  </section>
+
+  <footer><b>LME</b><p class="muted">הטמעת מערכות מידע ו-AI לעסקים. רוצים שנלמד את הצוות שלכם לעבוד ככה? שלחו לנו הודעה.</p></footer>
+</div>
+<script>
+document.addEventListener('click',e=>{const b=e.target.closest('button.copy');if(!b)return;const el=document.getElementById(b.dataset.t);
+ const ok=()=>{b.textContent='הועתק';b.classList.add('done');setTimeout(()=>{b.textContent='העתקה';b.classList.remove('done')},1600)};
+ const sel=()=>{const r=document.createRange();r.selectNodeContents(el);const s=getSelection();s.removeAllRanges();s.addRange(r);b.textContent='סומן, העתיקו ידנית'};
+ try{navigator.clipboard.writeText(el.textContent).then(ok,sel)}catch(_){sel()}});
+</script>
+
+</body>
+</html>

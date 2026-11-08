@@ -1,0 +1,100 @@
+<!doctype html>
+<html lang="he" dir="rtl">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<style>:root{padding-top:env(safe-area-inset-top,0px);padding-bottom:env(safe-area-inset-bottom,0px)}body{margin:0}img{max-width:100%}[hidden]{display:none!important}</style>
+<title>NotebookLM צעד אחר צעד</title>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Frank+Ruhl+Libre:wght@500;900&family=Assistant:wght@400;700&family=IBM+Plex+Mono:wght@500&display=swap">
+<style>
+/* Layout: a magazine feature — masthead, drop numerals for steps, pull-quote prompts, use-case column grid. */
+:root{--bg:#F2EBDD;--paper:#FBF7EE;--ink:#141414;--muted:#5A5246;--line:#141414;--blue:#2442D9;--red:#E2402A;
+ --f-d:"Frank Ruhl Libre",Georgia,serif;--f-b:"Assistant",system-ui,sans-serif;--f-m:"IBM Plex Mono",ui-monospace,monospace}
+@media (prefers-color-scheme: dark){:root:not([data-theme="light"]){--bg:#17150F;--paper:#201D16;--ink:#F1EBDD;--muted:#B5AC9A;--line:#F1EBDD;--blue:#8FA2FF;--red:#FF7A5C;color-scheme:dark}}
+:root[data-theme="dark"]{--bg:#17150F;--paper:#201D16;--ink:#F1EBDD;--muted:#B5AC9A;--line:#F1EBDD;--blue:#8FA2FF;--red:#FF7A5C;color-scheme:dark}
+*{box-sizing:border-box}
+body{background:var(--bg);color:var(--ink);font-family:var(--f-b);font-size:1.08rem;line-height:1.7;padding-left:max(16px,env(safe-area-inset-left,0px));padding-right:max(16px,env(safe-area-inset-right,0px));padding-block:1.6rem 3rem}
+.wrap{max-width:50rem;margin-inline:auto;display:flex;flex-direction:column;gap:2.8rem}
+h1,h2,h3{font-family:var(--f-d);font-weight:900;margin:0;line-height:1.05;text-wrap:balance}
+h1{font-size:clamp(2.6rem,9vw,5.2rem);letter-spacing:-.02em}
+h2{font-size:clamp(1.6rem,4.4vw,2.3rem)}h3{font-size:1.25rem}
+p{margin:0}.muted{color:var(--muted)}
+.mast{border-top:4px solid var(--line);border-bottom:1px solid var(--line);display:flex;justify-content:space-between;padding:.4rem 0;font-family:var(--f-m);font-size:.75rem;letter-spacing:.08em}
+.mast b{font-family:var(--f-d);font-size:1.4rem;letter-spacing:.06em;direction:ltr}
+header{display:flex;flex-direction:column;gap:1rem}
+header h1 em{font-style:normal;color:var(--blue)}
+.deck{font-size:1.25rem;max-width:36rem;border-top:3px solid var(--line);padding-top:.8rem}
+.rule{height:3px;background:var(--red);width:6rem}
+.steps{display:flex;flex-direction:column}
+.step{display:grid;grid-template-columns:5rem minmax(0,1fr);gap:1.2rem;border-top:2px solid var(--line);padding:1.2rem 0}
+.step .n{font-family:var(--f-d);font-weight:900;font-size:4.5rem;line-height:.85;color:var(--blue);text-align:center}
+.step div{display:flex;flex-direction:column;gap:.35rem;min-width:0}
+.pull{border-inline-start:6px solid var(--red);padding:.4rem 1.2rem;display:flex;flex-direction:column;gap:.6rem}
+.pull-bar{display:flex;justify-content:space-between;align-items:center;gap:1rem;font-family:var(--f-m);font-size:.8rem;letter-spacing:.08em}
+.pull pre{margin:0;white-space:pre-wrap;word-break:break-word;font-family:var(--f-d);font-weight:500;font-size:1.25rem;line-height:1.55}
+button.copy{font-family:var(--f-b);font-weight:700;font-size:.88rem;background:var(--ink);color:var(--paper);border:0;padding:.3rem .9rem;cursor:pointer}
+button.copy:focus-visible{outline:2px solid var(--red);outline-offset:2px}
+button.copy.done{background:var(--blue)}
+.cols{display:grid;grid-template-columns:repeat(auto-fit,minmax(14rem,1fr));gap:0 1.6rem}
+.cols div{border-top:2px solid var(--line);padding:.8rem 0;display:flex;flex-direction:column;gap:.2rem}
+.cols .k{font-family:var(--f-m);font-size:.75rem;color:var(--red);letter-spacing:.1em}
+.box{background:var(--paper);border:2px solid var(--line);padding:1.2rem 1.4rem;display:flex;flex-direction:column;gap:.5rem}
+.box ul{margin:0;padding-inline-start:1.1rem}
+footer{border-top:4px solid var(--line);padding-top:1rem;display:flex;justify-content:space-between;align-items:baseline;gap:1rem;flex-wrap:wrap}
+footer b{font-family:var(--f-d);font-size:2rem;direction:ltr}
+a{color:var(--blue)}
+</style>
+</head>
+<body>
+<div class="wrap" dir="rtl" lang="he">
+  <div class="mast"><span>מדור כלים</span><b>LME WEEKLY</b><span>מדריך</span></div>
+  <header>
+    <h1>הפכו כל PDF <em>לפודקאסט.</em></h1>
+    <p class="deck">NotebookLM של Google לוקח את המסמכים שלכם, ומייצר מהם סיכום, תשובות לשאלות, ופרק אודיו שבו שני מגישים מסבירים את החומר. ככה משתמשים בו.</p>
+    <div class="rule" aria-hidden="true"></div>
+    <p class="muted">כתובת: <a href="https://notebooklm.google.com" target="_blank" rel="noopener">notebooklm.google.com</a> · צריך חשבון Google · יש גרסה חינמית</p>
+  </header>
+
+  <section class="steps" aria-label="שלבים">
+    <div class="step"><span class="n">1</span><div><h3>פותחים מחברת חדשה</h3><p class="muted">נכנסים לאתר ולוחצים על יצירת מחברת (Notebook). כל מחברת היא נושא אחד: חוזה, קורס, דוח רבעוני.</p></div></div>
+    <div class="step"><span class="n">2</span><div><h3>מעלים מקורות</h3><p class="muted">PDF, מסמך Google Docs, קישור לאתר, או סרטון יוטיוב. אפשר כמה מקורות באותה מחברת, וה-AI עונה רק מתוכם.</p></div></div>
+    <div class="step"><span class="n">3</span><div><h3>לוחצים על Audio Overview</h3><p class="muted">אחרי כמה דקות מקבלים פרק אודיו: שני מגישים שמדברים על החומר ומסבירים אותו. אפשר להאזין באתר או להוריד.</p></div></div>
+    <div class="step"><span class="n">4</span><div><h3>מכוונים את הפרק</h3><p class="muted">לפני היצירה, באפשרות ההתאמה (Customize), כותבים למגישים על מה להתמקד. זה ההבדל בין פרק כללי לפרק שימושי.</p></div></div>
+  </section>
+
+  <section style="display:flex;flex-direction:column;gap:1.4rem">
+    <h2>מה כותבים למגישים</h2>
+    <div class="pull"><div class="pull-bar"><span>לבעלי עסקים</span><button class="copy" type="button" data-t="q1">העתקה</button></div><pre id="q1">תתמקדו במה שבעל עסק קטן צריך לדעת מהמסמך הזה: מה המספרים החשובים, מה הסיכונים, ומה שלושת הצעדים שכדאי לעשות בעקבותיו. בלי מונחים מקצועיים.</pre></div>
+    <div class="pull"><div class="pull-bar"><span>ללמידה למבחן</span><button class="copy" type="button" data-t="q2">העתקה</button></div><pre id="q2">תסבירו את החומר כמו לסטודנט שלומד למבחן בשבוע הבא: מושגי המפתח, דוגמה לכל אחד, ובסוף שלוש שאלות לחזרה.</pre></div>
+    <div class="pull"><div class="pull-bar"><span>לחוזים ומסמכים ארוכים</span><button class="copy" type="button" data-t="q3">העתקה</button></div><pre id="q3">תעברו על החוזה ותדגישו כל סעיף שמחייב אותי: תשלומים, מועדים, קנסות ויציאה מההסכם. תגידו מה כדאי לשאול לפני שחותמים.</pre></div>
+  </section>
+
+  <section style="display:flex;flex-direction:column;gap:1rem">
+    <h2>למי זה שווה</h2>
+    <div class="cols">
+      <div><span class="k">STUDENTS</span><h3>סטודנטים</h3><p class="muted">שומעים את החומר בדרך לעבודה במקום לקרוא אותו שוב.</p></div>
+      <div><span class="k">BUSINESS</span><h3>בעלי עסקים</h3><p class="muted">דוחות, חוזים ומכרזים ארוכים, מסוכמים לפרק של רבע שעה.</p></div>
+      <div><span class="k">CREATORS</span><h3>יוצרי תוכן</h3><p class="muted">הופכים מחקר לרעיונות לפוסטים ולתסריטים.</p></div>
+    </div>
+  </section>
+
+  <section class="box">
+    <h3>לפני שמעלים</h3>
+    <ul>
+      <li>מסמכים מועלים לשרתים של Google. מסמכים רגישים של לקוחות כדאי להשאיר בחוץ.</li>
+      <li>המגישים יכולים לטעות. לפני שמסתמכים על מספר או סעיף, בודקים במקור.</li>
+      <li>עדיף מקור אחד מסודר על פני עשרה מבולגנים.</li>
+    </ul>
+  </section>
+
+  <footer><b>LME</b><span class="muted">הטמעת מערכות מידע ו-AI לעסקים</span></footer>
+</div>
+<script>
+document.addEventListener('click',e=>{const b=e.target.closest('button.copy');if(!b)return;const el=document.getElementById(b.dataset.t);
+ const ok=()=>{b.textContent='הועתק';b.classList.add('done');setTimeout(()=>{b.textContent='העתקה';b.classList.remove('done')},1600)};
+ const sel=()=>{const r=document.createRange();r.selectNodeContents(el);const s=getSelection();s.removeAllRanges();s.addRange(r);b.textContent='סומן'};
+ try{navigator.clipboard.writeText(el.textContent).then(ok,sel)}catch(_){sel()}});
+</script>
+
+</body>
+</html>

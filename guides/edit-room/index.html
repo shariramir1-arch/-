@@ -1,0 +1,293 @@
+<!doctype html>
+<html lang="he" dir="rtl">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<style>:root{padding-top:env(safe-area-inset-top,0px);padding-bottom:env(safe-area-inset-bottom,0px)}body{margin:0}img{max-width:100%}[hidden]{display:none!important}</style>
+<title>חדר העריכה של LME</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Secular+One&family=IBM+Plex+Sans+Hebrew:wght@400;500;700&family=IBM+Plex+Mono:wght@500&display=swap">
+<style>
+/* Layout: an editing-bay page — each tool is a "track" on a timeline, timecodes as section markers, one phone-frame diagram for safe zones. */
+:root{
+  --bg:#F3F4F8; --panel:#FFFFFF; --ink:#151A33; --muted:#5B6180; --line:#D9DCE8;
+  --accent:#E8552A; --accent-ink:#FFFFFF; --track:#2B3A8F; --track-soft:#E6E9F7; --ok:#1E8E5A;
+  --f-display:"Secular One","IBM Plex Sans Hebrew",system-ui,sans-serif;
+  --f-body:"IBM Plex Sans Hebrew",system-ui,-apple-system,"Segoe UI",sans-serif;
+  --f-mono:"IBM Plex Mono",ui-monospace,Menlo,monospace;
+  --s1:.25rem;--s2:.5rem;--s3:.75rem;--s4:1rem;--s5:1.5rem;--s6:2.25rem;--s7:3.5rem;
+}
+@media (prefers-color-scheme: dark){:root:not([data-theme="light"]){
+  --bg:#0F1222; --panel:#171B31; --ink:#ECEEF7; --muted:#9AA0BE; --line:#2A3050;
+  --accent:#FF7A4D; --accent-ink:#1A0E08; --track:#8EA0FF; --track-soft:#222A4D; --ok:#4FD39A; color-scheme:dark}}
+:root[data-theme="dark"]{
+  --bg:#0F1222; --panel:#171B31; --ink:#ECEEF7; --muted:#9AA0BE; --line:#2A3050;
+  --accent:#FF7A4D; --accent-ink:#1A0E08; --track:#8EA0FF; --track-soft:#222A4D; --ok:#4FD39A; color-scheme:dark}
+*{box-sizing:border-box}
+body{background:var(--bg);color:var(--ink);font-family:var(--f-body);font-size:1rem;line-height:1.6;
+  padding-left:max(16px,env(safe-area-inset-left,0px));padding-right:max(16px,env(safe-area-inset-right,0px));padding-block:var(--s6)}
+.wrap{max-width:62rem;margin-inline:auto;display:flex;flex-direction:column;gap:var(--s7)}
+h1,h2,h3{font-family:var(--f-display);font-weight:400;line-height:1.15;text-wrap:balance;margin:0}
+h1{font-size:clamp(2.1rem,6vw,3.6rem)}
+h2{font-size:clamp(1.5rem,3.6vw,2.1rem)}
+h3{font-size:1.15rem}
+p{margin:0}
+.tc{font-family:var(--f-mono);font-size:.8rem;letter-spacing:.06em;color:var(--track);direction:ltr;display:inline-block}
+.lede{font-size:1.15rem;color:var(--muted);max-width:42rem}
+header{display:flex;flex-direction:column;gap:var(--s4)}
+.brand{font-family:var(--f-mono);font-size:.8rem;letter-spacing:.2em;color:var(--muted);direction:ltr;text-align:right}
+.steps{display:grid;grid-template-columns:repeat(auto-fit,minmax(14rem,1fr));gap:var(--s3);margin-top:var(--s4)}
+.step{display:flex;gap:var(--s3);align-items:flex-start;min-width:0}
+.step b{font-family:var(--f-mono);font-weight:500;color:var(--accent-ink);background:var(--accent);border-radius:6px;padding:0 .45rem;flex:none;direction:ltr}
+.step span{color:var(--muted)}
+/* timeline ruler */
+.ruler{height:18px;background:repeating-linear-gradient(to left,var(--line) 0 1px,transparent 1px 12px),repeating-linear-gradient(to left,var(--muted) 0 1px,transparent 1px 60px);opacity:.7;border-radius:2px}
+section.track{display:flex;flex-direction:column;gap:var(--s5)}
+.track-head{display:flex;flex-direction:column;gap:var(--s2)}
+.track-head p{color:var(--muted);max-width:44rem}
+.tool{display:grid;grid-template-columns:minmax(0,1fr) minmax(0,1.15fr);gap:var(--s5);align-items:start}
+@media (max-width:760px){.tool{grid-template-columns:1fr}}
+.controls{display:flex;flex-direction:column;gap:var(--s5);min-width:0}
+fieldset{border:0;margin:0;padding:0;display:flex;flex-direction:column;gap:var(--s3);min-width:0}
+legend{font-weight:700;margin-bottom:var(--s2);padding:0}
+legend small{font-weight:400;color:var(--muted)}
+.chips{display:grid;grid-template-columns:repeat(auto-fill,minmax(9.5rem,1fr));gap:var(--s2)}
+.chip{position:relative}
+.chip input{position:absolute;opacity:0;inset:0}
+.chip label{display:flex;flex-direction:column;gap:2px;height:100%;padding:var(--s3);border:1px solid var(--line);border-inline-start:4px solid var(--track-soft);background:var(--panel);border-radius:8px;cursor:pointer;transition:border-color .15s,background .15s}
+.chip label b{font-weight:700}
+.chip label span{font-size:.82rem;color:var(--muted);line-height:1.35}
+.chip input:checked+label{border-color:var(--track);border-inline-start-color:var(--accent);background:var(--track-soft)}
+.chip input:focus-visible+label{outline:2px solid var(--accent);outline-offset:2px}
+input[type=text],select{font:inherit;color:var(--ink);background:var(--panel);border:1px solid var(--line);border-radius:8px;padding:.6rem .75rem;width:100%}
+input[type=text]:focus-visible,select:focus-visible{outline:2px solid var(--accent);outline-offset:1px}
+.row{display:grid;grid-template-columns:repeat(auto-fit,minmax(11rem,1fr));gap:var(--s3)}
+.toggle{display:flex;gap:var(--s2);align-items:center;cursor:pointer}
+.toggle input{width:1.1rem;height:1.1rem;accent-color:var(--accent)}
+.out{background:var(--panel);border:1px solid var(--line);border-radius:12px;display:flex;flex-direction:column;min-width:0;position:sticky;top:calc(env(safe-area-inset-top,0px) + 12px)}
+.out-bar{display:flex;justify-content:space-between;align-items:center;gap:var(--s3);padding:var(--s3) var(--s4);border-bottom:1px solid var(--line)}
+.out pre{margin:0;padding:var(--s4);white-space:pre-wrap;word-break:break-word;font-family:var(--f-body);font-size:.92rem;line-height:1.7;max-height:30rem;overflow:auto}
+button.copy{font:inherit;font-weight:700;background:var(--accent);color:var(--accent-ink);border:0;border-radius:8px;padding:.5rem 1rem;cursor:pointer}
+button.copy:focus-visible{outline:2px solid var(--track);outline-offset:2px}
+button.copy.done{background:var(--ok)}
+.hint{font-size:.85rem;color:var(--muted)}
+/* safe zone diagram */
+.safe{display:grid;grid-template-columns:auto minmax(0,1fr);gap:var(--s6);align-items:center}
+@media (max-width:640px){.safe{grid-template-columns:1fr;justify-items:center}}
+.phone{width:13rem;max-width:100%;aspect-ratio:9/16;border:3px solid var(--ink);border-radius:22px;position:relative;overflow:hidden;background:var(--panel)}
+.zone{position:absolute;left:0;right:0;display:flex;align-items:center;justify-content:center;font-family:var(--f-mono);font-size:.7rem;direction:ltr}
+.z-top{top:0;height:14%;background:repeating-linear-gradient(45deg,var(--track-soft) 0 6px,transparent 6px 12px);border-bottom:1px dashed var(--track);color:var(--track)}
+.z-bot{bottom:0;height:20%;background:repeating-linear-gradient(45deg,var(--track-soft) 0 6px,transparent 6px 12px);border-top:1px dashed var(--track);color:var(--track)}
+.z-mid{top:14%;bottom:20%;color:var(--accent);font-family:var(--f-display);font-size:1rem;flex-direction:column}
+.z-mid small{font-family:var(--f-mono);font-size:.65rem;color:var(--muted)}
+.facts{display:flex;flex-direction:column;gap:var(--s3);min-width:0}
+.facts li{margin-bottom:var(--s2)}
+.facts ul{margin:0;padding-inline-start:1.1rem}
+.fixes{display:grid;grid-template-columns:repeat(auto-fit,minmax(17rem,1fr));gap:var(--s3)}
+.fix{background:var(--panel);border:1px solid var(--line);border-radius:10px;padding:var(--s4);display:flex;flex-direction:column;gap:var(--s3);min-width:0}
+.fix q{display:block;font-size:.95rem;quotes:none;color:var(--ink);background:var(--track-soft);border-radius:6px;padding:var(--s2) var(--s3)}
+.fix .copy{align-self:flex-start;padding:.35rem .8rem;font-size:.85rem}
+footer{border-top:1px solid var(--line);padding-top:var(--s5);display:flex;flex-wrap:wrap;justify-content:space-between;gap:var(--s4);align-items:baseline}
+footer h2{font-size:1.6rem}
+footer p{color:var(--muted)}
+@media (prefers-reduced-motion:reduce){*{transition:none!important}}
+</style>
+
+</head>
+<body>
+<div class="wrap" dir="rtl" lang="he">
+  <header>
+    <div class="brand">LME · AI EDIT ROOM</div>
+    <h1>הופכים את Claude לעורך הווידאו של העסק</h1>
+    <p class="lede">שלושה מחוללי פרומפטים: ריל עם כתוביות שזזות בקצב הדיבור, פרסומת קצרה למוצר, ומוזיקת רקע מקורית. בוחרים סגנון, והפרומפט נכתב לבד.</p>
+    <div class="steps">
+      <div class="step"><b>1</b><span>פותחים שיחה חדשה ב-Claude (באתר או באפליקציה)</span></div>
+      <div class="step"><b>2</b><span>בוחרים כאן סגנון, מעתיקים ומדביקים, ומצרפים את הקבצים</span></div>
+      <div class="step"><b>3</b><span>מאשרים את הסטוריבורד שClaude מציג, ומקבלים MP4 מוכן</span></div>
+    </div>
+  </header>
+
+  <div class="ruler" aria-hidden="true"></div>
+
+  <!-- TRACK 1 -->
+  <section class="track" aria-labelledby="t1">
+    <div class="track-head">
+      <span class="tc">TRACK 01 · 00:00–00:45</span>
+      <h2 id="t1">ריל מדבר, עם כתוביות בתנועה</h2>
+      <p>מצלמים את עצמכם מדברים לטלפון. Claude מתמלל, מחליט אילו מילים להבליט, ומסנכרן כל כתובית לשנייה שבה אמרתם אותה.</p>
+    </div>
+    <div class="tool">
+      <div class="controls">
+        <fieldset><legend>סגנון התנועה</legend><div class="chips" id="reel-styles"></div></fieldset>
+        <fieldset><legend>סיום <small>(לא חובה)</small></legend>
+          <input type="text" id="reel-cta" placeholder="למשל: שלחו לנו הודעה ונבנה לכם סוכן AI">
+        </fieldset>
+        <label class="toggle"><input type="checkbox" id="reel-sb" checked> סטוריבורד לאישור לפני העריכה (מומלץ)</label>
+      </div>
+      <div class="out">
+        <div class="out-bar"><span class="hint">להדביק ב-Claude יחד עם ההקלטה</span><button class="copy" data-target="reel-out" type="button">העתקה</button></div>
+        <pre id="reel-out"></pre>
+      </div>
+    </div>
+  </section>
+
+  <div class="ruler" aria-hidden="true"></div>
+
+  <!-- TRACK 2 -->
+  <section class="track" aria-labelledby="t2">
+    <div class="track-head">
+      <span class="tc">TRACK 02 · 00:00–00:15</span>
+      <h2 id="t2">פרסומת מושן למוצר</h2>
+      <p>מעלים 3–6 תמונות של המוצר. Claude מסיר רקע, כותב סיפור קצר בחמש עד שבע סצנות, ומסנכרן כל חיתוך לביט.</p>
+    </div>
+    <div class="tool">
+      <div class="controls">
+        <fieldset><legend>סגנון התנועה</legend><div class="chips" id="ad-styles"></div></fieldset>
+        <div class="row">
+          <div><label for="ad-product"><b>מה המוצר</b></label><input type="text" id="ad-product" value="קרם ידיים טבעי בריח לבנדר"></div>
+          <div><label for="ad-offer"><b>מבצע</b> <span class="hint">(לא חובה)</span></label><input type="text" id="ad-offer" placeholder="למשל: 1+1 עד סוף החודש"></div>
+          <div><label for="ad-format"><b>פורמט</b></label>
+            <select id="ad-format">
+              <option value="9:16 (1080x1920) לרילס, טיקטוק וסטוריז">9:16 · רילס וטיקטוק</option>
+              <option value="1:1 (1080x1080) לפיד">1:1 · פיד</option>
+              <option value="4:5 (1080x1350) לפיד ולמודעות">4:5 · מודעות</option>
+              <option value="16:9 (1920x1080) ליוטיוב">16:9 · יוטיוב</option>
+            </select></div>
+        </div>
+        <label class="toggle"><input type="checkbox" id="ad-sb" checked> סטוריבורד לאישור לפני העריכה (מומלץ)</label>
+      </div>
+      <div class="out">
+        <div class="out-bar"><span class="hint">להדביק ב-Claude יחד עם תמונות המוצר</span><button class="copy" data-target="ad-out" type="button">העתקה</button></div>
+        <pre id="ad-out"></pre>
+      </div>
+    </div>
+  </section>
+
+  <div class="ruler" aria-hidden="true"></div>
+
+  <!-- TRACK 3 -->
+  <section class="track" aria-labelledby="t3">
+    <div class="track-head">
+      <span class="tc">TRACK 03 · AUDIO</span>
+      <h2 id="t3">מוזיקת רקע מקורית</h2>
+      <p>Claude כותב את ההגדרות, ו-Suno מפיק את הטראק (יש לו גרסה חינמית). ב-Suno עוברים ל-Custom, מסמנים Instrumental, ומדביקים כל בלוק בשדה שלו.</p>
+    </div>
+    <div class="tool">
+      <div class="controls">
+        <fieldset><legend>סגנון המוזיקה</legend><div class="chips" id="mu-styles"></div></fieldset>
+        <div class="row">
+          <div><label for="mu-use"><b>בשביל מה</b></label>
+            <select id="mu-use"><option value="רקע לריל שאני מדבר/ת בו">ריל עם דיבור</option><option value="פרסומת מושן למוצר, בלי דיבור">פרסומת בלי דיבור</option><option value="סרטון תדמית לעסק">סרטון תדמית</option></select></div>
+          <div><label for="mu-len"><b>אורך</b></label>
+            <select id="mu-len"><option>כ-15 שניות</option><option selected>כ-30 שניות</option><option>כ-60 שניות</option></select></div>
+        </div>
+      </div>
+      <div class="out">
+        <div class="out-bar"><span class="hint">להדביק ב-Claude, ואת התשובה ב-Suno</span><button class="copy" data-target="mu-out" type="button">העתקה</button></div>
+        <pre id="mu-out"></pre>
+      </div>
+    </div>
+  </section>
+
+  <div class="ruler" aria-hidden="true"></div>
+
+  <!-- SAFE ZONES -->
+  <section class="track" aria-labelledby="t4">
+    <div class="track-head">
+      <span class="tc">FRAME · 1080 × 1920</span>
+      <h2 id="t4">איפה מותר לשים טקסט</h2>
+    </div>
+    <div class="safe">
+      <div class="phone" role="img" aria-label="מסך טלפון: 14 אחוז עליונים ו-20 אחוז תחתונים שמורים לממשק">
+        <div class="zone z-top">UI · 0–269px</div>
+        <div class="zone z-mid">כאן הטקסט<small>269–1536px</small></div>
+        <div class="zone z-bot">UI · 1536–1920px</div>
+      </div>
+      <div class="facts">
+        <p>אינסטגרם וטיקטוק מציירים מעל הסרטון: למעלה את שורת החיפוש, ולמטה את הכיתוב, שם המשתמש והכפתורים. כל מה שחשוב נשאר באמצע.</p>
+        <ul>
+          <li><b>הפריים הראשון</b> הוא גם התמונה הממוזערת. הוא צריך להציג כבר את ההוק, לא מסך שחור ולא לוגו.</li>
+          <li><b>רוב הצופים גוללים בלי סאונד.</b> כל מה שנאמר מופיע גם ככתובית.</li>
+          <li><b>שמות קבצים ברורים</b> (<span class="tc">product-closeup.mp4</span> ולא <span class="tc">IMG_4482</span>) עוזרים לכם להגיד לClaude מה להציג ומתי.</li>
+        </ul>
+      </div>
+    </div>
+  </section>
+
+  <section class="track" aria-labelledby="t5">
+    <div class="track-head">
+      <span class="tc">FIXES</span>
+      <h2 id="t5">כשמשהו לא יצא כמו שרציתם</h2>
+      <p>לא מתחילים מחדש. מדביקים את המשפט המתאים בהמשך אותה שיחה.</p>
+    </div>
+    <div class="fixes" id="fixes"></div>
+  </section>
+
+  <footer>
+    <div><h2>רוצים שזה יקרה אצלכם בעסק כל שבוע?</h2><p>LME · הטמעת מערכות מידע ו-AI לעסקים</p></div>
+  </footer>
+</div>
+
+<script>
+const STYLES=[
+ {id:'viral',name:'ויראלי',short:'מילים ענקיות, מכות וקצב מהיר',spec:'ויראלי ואנרגטי: מילים ענקיות שנכנסות במכה עם רעידה קלה, מילת המפתח בכל משפט במדבקה בצבע בולט, אימוג׳ים קופצים, זום מהיר וחיתוך על כל משפט. אין רגע בלי תנועה.'},
+ {id:'clean',name:'נקי',short:'הרבה אוויר, תנועה רכה',spec:'נקי ומינימליסטי: טיפוגרפיה דקה עם הרבה מרווח, שחור-לבן ומעט אפור, פייד והחלקות איטיות עם האטה ארוכה, בלי אימוג׳ים ובלי רעידות.'},
+ {id:'tech',name:'טכנולוגי',short:'ניאון, קוד, ממשק HUD',spec:'טכנולוגי: רקע כהה, ניאון ציאן וירוק, פונט מונו לצד פונט עברי, מסגרות HUD, טקסט שמוקלד אות אחרי אות, גליץ׳ קצר במעברים.'},
+ {id:'lux',name:'יוקרתי',short:'שחור-זהב, סריף, איטי',spec:'יוקרתי: שחור וזהב, פונט סריף עם ריווח אותיות רחב, חשיפה איטית דרך מסכה, זוהר עדין, מעברים בפייד לשחור. בלי מהירות ובלי צבעים צעקניים.'},
+ {id:'pop',name:'פופ',short:'צבעים מלאים, מדבקות, קפיצות',spec:'פופ צבעוני: כל סצנה בצבע רקע מלא אחר, טקסט עם קו מתאר עבה וצל קשיח, מדבקות שמתעקמות ונכנסות בקפיצה, ניגוב אלכסוני בין סצנות.'},
+ {id:'cine',name:'סינמטי',short:'טריילר שבונה מתח',spec:'סינמטי: כמו טריילר. פסי קולנוע, גרגר עדין, תאורת צד, שורה אחת בכל פעם בפונט גדול, דחיפת מצלמה איטית, חושך לפני כל חשיפה.'},
+ {id:'hand',name:'ציור יד',short:'קווים שמצטיירים, אישי',spec:'ציור יד: רקע נייר, קווים שמצטיירים מול העיניים, סימוני וי והקפות בעט, פונט שנראה כתוב ביד, דף שמתהפך בין סצנות.'},
+ {id:'auto',name:'תבחר בשבילי',short:'Claude מתאים לנושא',spec:'תבחר את הסגנון שהכי מתאים לנושא ולקהל, ותסביר לי במשפט אחד למה בחרת בו.'}
+];
+const MUSIC=[
+ {id:'deep',name:'Deep House',short:'גרוב חם, 120–124 BPM',spec:'Deep House, 120–124 BPM: בס עגול, היי-האטים עדינים, אקורדים של פסנתר חשמלי, תחושה יוקרתית וזורמת'},
+ {id:'afro',name:'Afro House',short:'כלי הקשה, אנרגטי',spec:'Afro House, 118–122 BPM: כלי הקשה חיים, גרוב מקפיץ, בס חם'},
+ {id:'lofi',name:'Lo-Fi',short:'רגוע ונעים',spec:'Lo-Fi Chill, 80–90 BPM: פסנתר רך, תופים עמומים, רחש תקליט קל'},
+ {id:'popm',name:'Upbeat Pop',short:'אופטימי וקליל',spec:'Upbeat Pop, 110–120 BPM: גיטרה קצבית, מחיאות כפיים, סינת׳ בהיר ואופטימי'},
+ {id:'trap',name:'Hip-Hop',short:'ביט כבד, 808',spec:'Hip-Hop / Trap, 140 BPM (חצי קצב): 808 כבד, היי-האטים מהירים, מלודיה מינימלית'},
+ {id:'phonk',name:'Phonk',short:'ויראלי ברילס',spec:'Phonk, 130–140 BPM: קאובל, בס מעוות, אווירה כהה וויראלית'},
+ {id:'cinem',name:'Cinematic',short:'אפי, בונה מתח',spec:'Cinematic, 90–100 BPM: מיתרים, תופים גדולים, בנייה הדרגתית לשיא'},
+ {id:'amb',name:'Luxury Ambient',short:'רך ויוקרתי',spec:'Luxury Ambient, 70–80 BPM: פדים רכים, פסנתר מרחף, הרבה מרחב'}
+];
+const FIXES=[
+ ['הסגנון לא מה שדמיינתם','תשאיר את התזמון בדיוק כמו שהוא, ותחליף רק את הסגנון ליותר נקי ורגוע.'],
+ ['העברית יצאה הפוכה','העברית מוצגת הפוכה. תתקן לכיוון מימין לשמאל, ותבדוק שוב את הפריימים לפני שאתה מגיש.'],
+ ['סצנה אחת לא טובה','רק סצנה 3 לא עובדת לי: הטקסט קטן מדי. תגדיל אותו ותשאיר את כל שאר הסצנות כמו שהן.'],
+ ['טקסט מוסתר בטלפון','חלק מהטקסט נופל באזור שהממשק של אינסטגרם מכסה. תזיז את כל הטקסט החשוב לאמצע, בין 14% מלמעלה ל-20% מלמטה.']
+];
+function chips(el,list,name,def){const box=document.getElementById(el);box.innerHTML=list.map((s,i)=>`<div class="chip"><input type="radio" name="${name}" id="${name}-${s.id}" value="${s.id}" ${s.id===def?'checked':''}><label for="${name}-${s.id}"><b>${s.name}</b><span>${s.short}</span></label></div>`).join('')}
+const val=n=>document.querySelector(`input[name="${n}"]:checked`).value;
+const byId=(l,id)=>l.find(x=>x.id===id);
+const SB='לפני שאתה עורך, תציג לי סטוריבורד: טבלה של כל הסצנות לפי הסדר (זמן, מה נאמר או כתוב, מה רואים, איזה אפקט ואיזה מעבר), ושלושה פריימים לדוגמה מסצנות שונות. תחכה לאישור או לשינויים שלי, ורק אחר כך תערוך.';
+const RULES='כללים: עברית תקינה מימין לשמאל, בלי טקסט חתוך ובלי חפיפות. שום טקסט חשוב ב-14% העליונים וב-20% התחתונים של המסך, כי שם יושב הממשק של הרשת. תבנה את האנימציה בקוד (HTML + GSAP), תבדוק את הפריימים בעצמך, ותגיש קובץ MP4 מוכן להעלאה.';
+function reel(){const s=byId(STYLES,val('rs'));const cta=document.getElementById('reel-cta').value.trim();
+ return ['אתה עורך וידאו ומעצב מושן. צירפתי הקלטה שלי מדבר/ת למצלמה (ואם צירפתי גם סרטונים, תמונות או מוזיקה, תשתמש בהם).',
+ 'תהפוך אותה לריל אנכי (9:16, 1080x1920) עם כתוביות בתנועה שמסונכרנות בדיוק לקול שלי. הריל צריך לתפוס מהשנייה הראשונה ולהיות מובן גם בלי סאונד.',
+ 'סגנון: '+s.spec,
+ 'את השאר תחליט בעצמך: תמלל את ההקלטה עם זמן לכל מילה, תבחר מה להבליט, מתי להציג כל קובץ שצירפתי, ואילו מעברים ואפקטי סאונד להוסיף. הקול שלי במרכז, והמוזיקה יורדת כשאני מדבר/ת.',
+ cta?`בסוף הריל: מסך סיום עם הקריאה לפעולה "${cta}".`:'',
+ document.getElementById('reel-sb').checked?SB:'',RULES].filter(Boolean).join('\n\n')}
+function ad(){const s=byId(STYLES,val('as'));const p=document.getElementById('ad-product').value.trim()||'[המוצר שלי]';const o=document.getElementById('ad-offer').value.trim();
+ return ['אתה מעצב מושן. צירפתי תמונות של המוצר שלי. אם צירפתי שיר, תשתמש בו. אם לא, תלחין מוזיקה מקורית.',
+ 'תכין פרסומת מושן של כ-15 שניות עם טיפוגרפיה שזזה בקצב הביט. שתהיה בנויה כסיפור קצר, לא כמודעה רגילה.',
+ 'המוצר: '+p, o?'המבצע: '+o:'', 'פורמט: '+document.getElementById('ad-format').value, 'סגנון: '+s.spec,
+ 'את השאר תחליט בעצמך: תסריט של 5 עד 7 סצנות (הוק, חשיפת המוצר, המוצר בשימוש, קריאה לפעולה), הסרת רקע מהתמונות, ותנועות ומעברים שמתאימים לסגנון. כל חיתוך וכל מילה נופלים על ביט. תכתוב רק עובדות אמיתיות על המוצר. אם חסר לך מידע, תשאל אותי במקום להמציא.',
+ document.getElementById('ad-sb').checked?SB:'',RULES].filter(Boolean).join('\n\n')}
+function mu(){const m=byId(MUSIC,val('ms'));const use=document.getElementById('mu-use').value;const len=document.getElementById('mu-len').value;
+ return ['אתה מפיק מוזיקה. תכתוב לי הגדרות ל-Suno לטראק אינסטרומנטלי (בלי מילים ובלי שירה).',
+ 'שימוש: '+use, 'סגנון: '+m.spec, 'אורך: '+len,
+ 'מה אני צריך ממך:\n1. שורת Style באנגלית, עד 200 תווים: ז׳אנר, BPM, כלים, אווירה, ובסוף instrumental, no vocals.\n2. מבנה לשדה Lyrics עם תגיות בלבד, בלי מילים, למשל [Intro] [Build] [Drop] [Outro], מותאם לאורך.\n3. שם קצר לטראק.',
+ use.includes('מדבר')?'חשוב: הטראק יושב מתחת לדיבור. אנרגיה יציבה, בלי מלודיה עמוסה בתדרים של הקול, ובלי שינויים חדים.':'',
+ 'תציג את 1 ואת 2 כל אחד בבלוק נפרד, כדי שיהיה קל להעתיק.'].filter(Boolean).join('\n\n')}
+function render(){document.getElementById('reel-out').textContent=reel();document.getElementById('ad-out').textContent=ad();document.getElementById('mu-out').textContent=mu()}
+chips('reel-styles',STYLES,'rs','viral');chips('ad-styles',STYLES,'as','clean');chips('mu-styles',MUSIC,'ms','deep');
+document.getElementById('fixes').innerHTML=FIXES.map((f,i)=>`<div class="fix"><h3>${f[0]}</h3><q id="fx${i}">${f[1]}</q><button class="copy" type="button" data-target="fx${i}">העתקה</button></div>`).join('');
+document.addEventListener('input',render);document.addEventListener('change',render);render();
+document.addEventListener('click',e=>{const b=e.target.closest('button.copy');if(!b)return;const el=document.getElementById(b.dataset.target);const txt=el.textContent;
+ const ok=()=>{const t=b.textContent;b.textContent='הועתק';b.classList.add('done');setTimeout(()=>{b.textContent=t;b.classList.remove('done')},1600)};
+ const sel=()=>{const r=document.createRange();r.selectNodeContents(el);const s=getSelection();s.removeAllRanges();s.addRange(r);b.textContent='סומן, העתיקו ידנית'};
+ try{navigator.clipboard.writeText(txt).then(ok,sel)}catch(_){sel()}});
+</script>
+
+</body>
+</html>

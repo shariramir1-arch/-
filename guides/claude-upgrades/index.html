@@ -1,0 +1,242 @@
+<!doctype html>
+<html lang="he" dir="rtl">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<style>:root{padding-top:env(safe-area-inset-top,0px);padding-bottom:env(safe-area-inset-bottom,0px)}body{margin:0}img{max-width:100%}[hidden]{display:none!important}</style>
+<title>11 השדרוגים של Claude</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Rubik:wght@500;700;800&family=Assistant:wght@400;600;700&family=JetBrains+Mono:wght@500;700&display=swap">
+<style>
+/* Layout: a workstation manual — upgrades as numbered "modules" on a switchboard, filter by work area, keycaps for every shortcut. */
+:root{
+  --bg:#F2F3F6; --panel:#FFFFFF; --ink:#16181F; --muted:#5D6273; --line:#DADDE6;
+  --accent:#5B3FE0; --accent-soft:#ECE8FF; --mark:#FFD84D; --warn:#B5462B; --warn-soft:#FBEDE8; --ok:#1E8A55;
+  --f-display:"Rubik",system-ui,sans-serif; --f-body:"Assistant",system-ui,-apple-system,"Segoe UI",sans-serif; --f-mono:"JetBrains Mono",ui-monospace,Menlo,monospace;
+}
+@media (prefers-color-scheme: dark){:root:not([data-theme="light"]){
+  --bg:#101219; --panel:#181B25; --ink:#EEF0F6; --muted:#A0A5B8; --line:#2A2E3C;
+  --accent:#A08CFF; --accent-soft:#25213F; --mark:#E8C33A; --warn:#FF9C7D; --warn-soft:#3A2420; --ok:#5DD39A; color-scheme:dark}}
+:root[data-theme="dark"]{
+  --bg:#101219; --panel:#181B25; --ink:#EEF0F6; --muted:#A0A5B8; --line:#2A2E3C;
+  --accent:#A08CFF; --accent-soft:#25213F; --mark:#E8C33A; --warn:#FF9C7D; --warn-soft:#3A2420; --ok:#5DD39A; color-scheme:dark}
+*{box-sizing:border-box}
+body{background:var(--bg);color:var(--ink);font-family:var(--f-body);font-size:1.05rem;line-height:1.6;padding-left:max(16px,env(safe-area-inset-left,0px));padding-right:max(16px,env(safe-area-inset-right,0px));padding-block:2rem 3rem}
+.wrap{max-width:60rem;margin-inline:auto;display:flex;flex-direction:column;gap:3rem}
+h1,h2,h3{font-family:var(--f-display);line-height:1.15;text-wrap:balance;margin:0}
+h1{font-size:clamp(2rem,6vw,3.4rem);font-weight:800}
+h2{font-size:clamp(1.4rem,3.4vw,1.9rem);font-weight:700}
+h3{font-size:1.2rem;font-weight:700}
+p{margin:0}
+mark{background:linear-gradient(transparent 55%,var(--mark) 55%);color:inherit;padding:0 .1em}
+.eyebrow{font-family:var(--f-mono);font-size:.78rem;letter-spacing:.12em;color:var(--accent);direction:ltr;text-align:right}
+.lede{font-size:1.2rem;color:var(--muted);max-width:40rem}
+header{display:flex;flex-direction:column;gap:1rem}
+.where{background:var(--panel);border:1px solid var(--line);border-radius:14px;padding:1.25rem 1.4rem;display:flex;flex-direction:column;gap:.6rem}
+.where p{color:var(--muted)}
+.where b{color:var(--ink)}
+/* switchboard */
+.board{display:flex;flex-direction:column;gap:1rem}
+.filters{display:flex;flex-wrap:wrap;gap:.5rem}
+.filters button{font:inherit;font-weight:600;font-size:.95rem;border:1px solid var(--line);background:var(--panel);color:var(--ink);padding:.4rem .9rem;border-radius:999px;cursor:pointer}
+.filters button[aria-pressed="true"]{background:var(--ink);color:var(--bg);border-color:var(--ink)}
+.filters button:focus-visible,.mod summary:focus-visible,.osbtn:focus-visible,button.copy:focus-visible{outline:2px solid var(--accent);outline-offset:2px}
+.mods{display:flex;flex-direction:column;gap:.6rem}
+.mod{background:var(--panel);border:1px solid var(--line);border-radius:14px;overflow:hidden}
+.mod summary{list-style:none;cursor:pointer;display:grid;grid-template-columns:auto minmax(0,1fr) auto;gap:1rem;align-items:center;padding:1rem 1.2rem}
+.mod summary::-webkit-details-marker{display:none}
+.num{font-family:var(--f-mono);font-weight:700;font-size:1.05rem;width:2.6rem;height:2.6rem;border-radius:10px;background:var(--accent-soft);color:var(--accent);display:flex;align-items:center;justify-content:center;direction:ltr}
+.mod[open] .num{background:var(--accent);color:var(--panel)}
+.sum{display:flex;flex-direction:column;gap:.1rem;min-width:0}
+.sum span{color:var(--muted);font-size:.95rem}
+.tag{font-size:.78rem;font-weight:700;padding:.15rem .6rem;border-radius:999px;border:1px solid var(--line);color:var(--muted);white-space:nowrap}
+.body{padding:0 1.2rem 1.3rem;display:grid;grid-template-columns:repeat(auto-fit,minmax(15rem,1fr));gap:1rem 1.6rem}
+.body .full{grid-column:1/-1}
+.blk h4{margin:0 0 .25rem;font-family:var(--f-display);font-size:.9rem;font-weight:700;color:var(--accent);letter-spacing:.02em}
+.blk p,.blk li{color:var(--ink)}
+.blk ul{margin:0;padding-inline-start:1.1rem}
+.catch{background:var(--warn-soft);border-radius:10px;padding:.8rem 1rem}
+.catch h4{color:var(--warn)}
+.prompt{border:1px dashed var(--accent);border-radius:12px;background:var(--accent-soft);display:flex;flex-direction:column}
+.prompt-bar{display:flex;justify-content:space-between;align-items:center;gap:.8rem;padding:.6rem .9rem;border-bottom:1px dashed var(--accent)}
+.prompt-bar b{font-family:var(--f-display);font-size:.95rem}
+.prompt pre{margin:0;padding:.9rem;white-space:pre-wrap;word-break:break-word;font-family:var(--f-body);font-size:.98rem;line-height:1.65}
+button.copy{font:inherit;font-weight:700;font-size:.9rem;background:var(--accent);color:var(--panel);border:0;border-radius:8px;padding:.35rem .9rem;cursor:pointer;flex:none}
+button.copy.done{background:var(--ok)}
+code,.cmd{font-family:var(--f-mono);font-size:.88em;background:var(--accent-soft);color:var(--accent);padding:.05rem .35rem;border-radius:5px;direction:ltr;display:inline-block}
+kbd{font-family:var(--f-mono);font-size:.85rem;font-weight:700;display:inline-flex;align-items:center;justify-content:center;min-width:2rem;height:2rem;padding:0 .5rem;border:1px solid var(--line);border-bottom-width:3px;border-radius:7px;background:var(--panel);color:var(--ink);direction:ltr}
+.keys{display:inline-flex;gap:.25rem;direction:ltr;flex-wrap:wrap}
+/* cheat sheet */
+.sheet{display:flex;flex-direction:column;gap:1rem}
+.sheet-head{display:flex;justify-content:space-between;align-items:end;gap:1rem;flex-wrap:wrap}
+.os{display:inline-flex;border:1px solid var(--line);border-radius:999px;overflow:hidden;background:var(--panel)}
+.osbtn{font:inherit;font-weight:700;border:0;background:transparent;color:var(--muted);padding:.4rem 1rem;cursor:pointer}
+.osbtn[aria-pressed="true"]{background:var(--ink);color:var(--bg)}
+.grid2{display:grid;grid-template-columns:repeat(auto-fit,minmax(17rem,1fr));gap:1rem}
+.tbl{background:var(--panel);border:1px solid var(--line);border-radius:14px;padding:.4rem 1.1rem}
+.row{display:flex;justify-content:space-between;align-items:center;gap:1rem;padding:.7rem 0;border-bottom:1px solid var(--line)}
+.row:last-child{border-bottom:0}
+.row span{min-width:0}
+/* plan */
+.plan{background:var(--panel);border:1px solid var(--line);border-radius:14px;padding:1.2rem 1.4rem;display:flex;flex-direction:column;gap:.4rem}
+.plan label{display:flex;gap:.7rem;align-items:flex-start;padding:.5rem 0;cursor:pointer}
+.plan input{width:1.2rem;height:1.2rem;margin-top:.25rem;accent-color:var(--accent);flex:none}
+.plan input:checked+span{color:var(--muted);text-decoration:line-through}
+.day{font-family:var(--f-mono);font-size:.8rem;color:var(--accent);min-width:3.6rem;direction:ltr;display:inline-block}
+.note{font-size:.9rem;color:var(--muted)}
+footer{border-top:1px solid var(--line);padding-top:1.4rem;display:flex;flex-direction:column;gap:.3rem}
+@media (max-width:520px){.mod summary{grid-template-columns:auto minmax(0,1fr)}.tag{display:none}}
+@media (prefers-reduced-motion:reduce){*{transition:none!important}}
+</style>
+
+</head>
+<body>
+<div class="wrap" dir="rtl" lang="he">
+  <header>
+    <div class="eyebrow">LME · CLAUDE DESKTOP · NOV 2026</div>
+    <h1>11 השדרוגים של Claude, <mark>ואיך מפעילים כל אחד</mark></h1>
+    <p class="lede">חמישה עשר צ'אטים פתוחים בסרגל, וחצי מהם מחכים לכם? העדכון של אפליקציית Claude למחשב מאוקטובר 2026 נבנה בדיוק בשביל זה. כאן כל שדרוג מקבל ארבע שורות: מה הוא עושה, איך מפעילים, מתי הוא שווה, ומה הקאץ'.</p>
+    <div class="where">
+      <h3>לפני שמתחילים: הכל בלשונית Code</h3>
+      <p>רוב החידושים נמצאים בלשונית <b>Code</b> של האפליקציה למחשב (מק, ווינדוס, ולינוקס בבטא). מעדכנים את האפליקציה, מפעילים מחדש, ולוחצים על הלשונית.</p>
+      <p><b>השם "קוד" מטעה.</b> מדברים שם בעברית רגילה, כמו בצ'אט. דוח, דף נחיתה, ניתוח של אקסל או מערכת קטנה לעסק: הכל קורה שם.</p>
+      <p class="note">הסוכן Cowork מתאחד לתוך הצ'אט הרגיל, בהדרגה. אם עדיין רואים אצלכם את הלשונית הישנה, השינוי פשוט עוד לא הגיע.</p>
+    </div>
+  </header>
+
+  <section class="board" aria-labelledby="b-h">
+    <h2 id="b-h">לוח השדרוגים</h2>
+    <div class="filters" role="group" aria-label="סינון לפי תחום">
+      <button type="button" data-f="all" aria-pressed="true">הכל</button>
+      <button type="button" data-f="manage" aria-pressed="false">ניהול עבודה</button>
+      <button type="button" data-f="flow" aria-pressed="false">זרימה ומסך</button>
+      <button type="button" data-f="save" aria-pressed="false">חיסכון במכסה</button>
+      <button type="button" data-f="create" aria-pressed="false">יצירה ושיתוף</button>
+      <button type="button" data-f="custom" aria-pressed="false">התאמה אישית</button>
+    </div>
+    <div class="mods" id="mods"></div>
+  </section>
+
+  <section class="sheet" aria-labelledby="s-h">
+    <div class="sheet-head">
+      <h2 id="s-h">דף עזר: פקודות וקיצורים</h2>
+      <div class="os" role="group" aria-label="מערכת הפעלה">
+        <button type="button" class="osbtn" data-os="mac" aria-pressed="true">Mac</button>
+        <button type="button" class="osbtn" data-os="win" aria-pressed="false">Windows</button>
+      </div>
+    </div>
+    <div class="grid2">
+      <div class="tbl" id="keys"></div>
+      <div class="tbl" id="cmds"></div>
+    </div>
+  </section>
+
+  <section class="sheet" aria-labelledby="p-h">
+    <h2 id="p-h">מה לנסות השבוע</h2>
+    <div class="plan" id="plan"></div>
+    <p class="note">הסימונים נשמרים רק בדפדפן שלכם.</p>
+  </section>
+
+  <footer>
+    <h3>רוצים שנגדיר לכם את כל זה בעסק?</h3>
+    <p class="note">LME · הטמעת מערכות מידע ו-AI לעסקים. חלק מהפיצ'רים נפתחים בהדרגה ועשויים להשתנות; המידע מעודכן לנובמבר 2026.</p>
+  </footer>
+</div>
+
+<script>
+const OS={mac:{cmd:'⌘',alt:'Option',ctrl:'Control'},win:{cmd:'Ctrl',alt:'Alt',ctrl:'Ctrl'}};
+let os='mac';
+const K=(...k)=>`<span class="keys">${k.map(x=>`<kbd>${x}</kbd>`).join('')}</span>`;
+const k=(tpl)=>K(...tpl.map(t=>OS[os][t]||t));
+const MODS=[
+{n:1,f:'manage',tag:'ניהול עבודה',t:'סשנים מקוננים',s:'צ\'אט שפותח לעצמו צ\'אטים',
+ what:'כל צ\'אט בלשונית Code נקרא סשן. מבקשים מסשן אחד כמה משימות במקביל, והוא פותח סשן-בן לכל אחת. הבנים מופיעים בסרגל מתחת לראשי ומדווחים לו כשהם מסיימים.',
+ how:'כותבים לסשן "תעבוד במקביל על..." ומבקשים במפורש סשן נפרד לכל משימה.',
+ when:'השקה, קמפיין, או כל עבודה שמתחלקת לחלקים עצמאיים.',
+ extra:'<b>ההבדל מסוכן משנה:</b> סוכן משנה מקבל משימה ומחזיר תשובה, ואי אפשר לדבר איתו באמצע. סשן-בן הוא צ\'אט מלא: נכנסים אליו, רואים מה עשה, ומתקנים כיוון בלי לבלבל את השאר.',
+ prompt:['פיצול קמפיין','תעבוד במקביל על שלוש משימות, ותפתח סשן נפרד לכל אחת:\n1. דף מכירה ל-[המוצר שלי]\n2. רצף של 3 מיילים ללקוחות שנרשמו ולא קנו\n3. חמש מודעות קצרות לפייסבוק\n\nכשכל סשן מסיים, תסכם לי כאן במשפט אחד מה מוכן, ומה מחכה להחלטה שלי.']},
+{n:2,f:'manage',tag:'ניהול עבודה',t:'סשן מאסטר',s:'צ\'אט אחד שמנהל את כל השאר',
+ what:'סשן יכול לראות את שאר הסשנים שלכם: לקבל רשימה, לקרוא מה קורה בכל אחד, לשלוח הודעות, לשנות שם ולהעביר לארכיון. מגדירים צ\'אט אחד כ"ראש סגל" ושואלים רק אותו.',
+ how:'פותחים סשן חדש, מדביקים את פרומפט ההגדרה, ומהיום מתחילים כל בוקר עם השאלה "על מה מחכים לי?".',
+ when:'כשיש לכם יותר מחמישה סשנים פעילים ואתם מאבדים מעקב.',
+ catch:'<ul><li>כברירת מחדל הוא רואה את 20 הסשנים האחרונים ומדלג על הארכיון. אפשר לבקש שיחפש רחוק יותר.</li><li>רק סשנים מקומיים באפליקציה. סשנים בענן, בטרמינל או ב-VS Code לא נכנסים.</li><li>העברה לארכיון דורשת את האישור שלכם.</li></ul>',
+ prompt:['הגדרת סשן המאסטר','מהיום אתה סשן המאסטר שלי. התפקיד שלך הוא לעקוב אחרי כל שאר הסשנים באפליקציה, לדעת על מה כל אחד עובד, ולהגיד לי מה מחכה להחלטה שלי.\n\nכללים: אל תעשה בעצמך את העבודה של הסשנים האחרים, ואל תשנה בהם כלום בלי לשאול אותי.\n\nתתחיל עכשיו: תעבור על הסשנים, תן לכל אחד שם ברור לפי מה שהוא עושה, ותציג לי טבלה של סשן, מצב, ומה מחכה לי.'],
+ prompt2:['שאלת הבוקר','על מה מחכים לי? תעבור על כל הסשנים ותחזיר רשימה של ההחלטות שמחכות לי, מהדחופה לפחות דחופה. לכל החלטה: משפט אחד על מה צריך להחליט, ומה אתה ממליץ.']},
+{n:3,f:'manage',tag:'ניהול עבודה',t:'פרויקטים בענן',s:'צוות שעובד גם כשהמחשב סגור',
+ what:'אותו רעיון של סשן שמנהל צוות, אבל רץ בענן של Anthropic וממשיך לעבוד כשהמחשב כבוי. לכל פרויקט יש זיכרון משותף, הוראות קבועות (עד 16,000 תווים) ועמוד סקירה לפי מצב: מוכן לבדיקה, מחכה לכם, בעבודה, נסגר.',
+ how:'בסרגל, או תחת More. אם לא מופיע, נרשמים לרשימת ההמתנה.',
+ when:'פרויקט גדול ומתמשך שצריך להמשיך לרוץ גם כשאתם בחוץ.',
+ extra:'<b>כלל אצבע:</b> צריך את הקבצים והכלים שעל המחשב, או שהכל צריך להישאר אצלכם? סשנים מקוננים. פרויקט ארוך שירוץ בלעדיכם? פרויקט בענן.',
+ catch:'בטא ציבורית, רק ב-Pro ו-Max, ונפתח בהדרגה. וכל קובץ שמעלים יושב בשרתים של Anthropic, אז מחליטים מראש אילו מסמכים של העסק ושל הלקוחות מותר להעלות.'},
+{n:4,f:'flow',tag:'זרימה ומסך',t:'צ\'אט צד',s:'שואלים באמצע בלי לעצור את העבודה',
+ what:'לשונית שקוראת את כל השיחה הראשית עד אותו רגע ועונה לכם, בלי לכתוב לתוכה כלום. המשימה הראשית ממשיכה לרוץ.',
+ how:()=>`${k(['cmd',';'])} או להקליד <code>/btw</code> בתיבת הכתיבה.`,
+ when:'"מה עשית עד עכשיו בשתי שורות?", "למה בחרת ככה?", "יש משהו שמחכה לי?"',
+ catch:'צ\'אט הצד לא נשמר לדיסק. כשסוגרים את האפליקציה הוא נעלם, אז מעתיקים ממנו כל מה שחשוב.'},
+{n:5,f:'flow',tag:'זרימה ומסך',t:'מסך מפוצל',s:'כמה צ\'אטים מול העיניים',
+ what:'שני סשנים או יותר זה לצד זה, או סשן בחלון נפרד.',
+ how:()=>`<ul><li>${k(['alt'])} + קליק על סשן: פיצול ליד הסשן הנוכחי (או קליק ימני ← Open in ← Split view)</li><li>${k(['cmd'])} + קליק: חלון נפרד</li><li>הוצאה מהפיצול: ${os==='mac'?K('⌘','Control','W'):K('Ctrl','Alt','W')}</li></ul>`,
+ when:'כשאתם קופצים כל הזמן בין שני סשנים.',
+ extra:'<b>טיפ:</b> מתחילים עם שניים. כל צ\'אט על המסך תופס מקום גם בראש.'},
+{n:6,f:'save',tag:'חיסכון במכסה',t:'לוח הצד',s:'מה באמת אוכל לכם את המכסה',
+ what:'הכפתור Show session rail בפינה העליונה פותח כרטיסים: סביבה (איפה הסשן רץ, ומתג Remote Control להמשך מהטלפון), הקשר (כמה מהזיכרון תפוס ומה תופס אותו), חיבורים (מייל, יומן, דרייב), ושינויים (כל הקבצים שנוצרו או השתנו).',
+ how:'לוחצים על Show session rail. בהגדרות תחת Code אפשר לחבר כל סשן חדש לשליטה מרחוק אוטומטית, ולהשאיר את המחשב ער כל עוד Claude עובד.',
+ when:'כשהמכסה נגמרת מהר. קבצי הוראות, זיכרון, סקילים וכלים מחוברים נטענים לכל צ\'אט חדש עוד לפני ההודעה הראשונה.',
+ catch:'"מחשב ער" לא עוזר כשסוגרים את המכסה של הלפטופ.',
+ prompt:['ניקוי ההקשר','תבדוק מה נטען להקשר של הסשן הזה, בעזרת /context ו-/skill-doctor. תגיד לי מה תופס הכי הרבה מקום, אילו סקילים וכלים לא השתמשתי בהם לאחרונה, ומה אפשר לכבות, לקצר או לאחד. אל תשנה כלום לפני שאני מאשר.']},
+{n:7,f:'create',tag:'יצירה ושיתוף',t:'ארטיפקטים',s:'מסמכים, מצגות ודשבורדים בתוך Claude',
+ what:'קנבס משותף לכם ול-Claude: משאירים הערות, מתייגים את Claude בהערה כדי שיתקן, ומשתפים בקישור. חמישה סוגים: מסמכים, מצגות (מייצאים לפאוורפוינט, PDF או Google Slides), עיצוב, דשבורדים (בטא) ומושן (בטא).',
+ how:'מבקשים בצ\'אט "תכין לי מצגת/מסמך/דשבורד על...".',
+ when:'כל דבר שאתם שולחים ללקוח או לצוות.',
+ extra:'<b>זמינות:</b> מסמכים, מצגות ועיצוב בכל החבילות. דשבורדים מ-Pro ומעלה. מושן רק ב-Team ו-Enterprise.',
+ catch:'מי שעובד באתר הנפרד של Claude Design: הוא עובר לקריאה בלבד ב-14 בדצמבר 2026. מעבירים את העבודה לאפליקציה לפני כן.'},
+{n:8,f:'create',tag:'יצירה ושיתוף',t:'ארטיפקטים חכמים',s:'Claude בתוך הדשבורד שלכם',
+ what:'ארטיפקט יכול לפנות ל-Claude בעצמו. מוסיפים לדשבורד תיבת שאלות, וכל מי שפותח אותו שואל "איזה מוצר ירד החודש?" ומקבל תשובה מהנתונים.',
+ how:'מבקשים מ-Claude להוסיף תיבת שאלות. ארטיפקט ישן (לפני אמצע ספטמבר) מפעילים בהגדרות תחת Capabilities.',
+ when:'דשבורד שכל הצוות פותח, ואנשים שלא רוצים ללמוד כלים.',
+ extra:'<b>מי משלם:</b> השימוש נספר במכסה של מי שצופה, לא שלכם. בפעם הראשונה הארטיפקט מבקש אישור.',
+ prompt:['תיבת שאלות לדשבורד','תוסיף לדשבורד הזה תיבת שאלות, כך שכל מי שפותח אותו יוכל לשאול שאלה בעברית על הנתונים ולקבל תשובה קצרה עם המספר הרלוונטי.']},
+{n:9,f:'save',tag:'חיסכון במכסה',t:'פקודות סלאש',s:'קיצורים שמקלידים בתיבת הכתיבה',
+ what:'פקודות שמתחילות ב-/ ועושות פעולה אחת מהר. הרשימה המלאה בדף העזר למטה.',
+ how:'מקלידים / בתיבת הכתיבה ובוחרים.',
+ when:'/recap כשחוזרים לצ\'אט אחרי יומיים. /skill-doctor כשהמכסה נגמרת. /rewind כשמשהו הלך לכיוון לא נכון.',
+ catch:'/advisor עדיין ניסיונית ודורשת עבודה דרך ה-API, אז היא מתאימה בעיקר למתקדמים.'},
+{n:10,f:'custom',tag:'התאמה אישית',t:'מודים',s:'Claude שמשנה את עצמו',
+ what:'תוסף קטן שמשנה את המראה או ההתנהגות של Claude Code: פס מעל תיבת הכתיבה, כפתור חדש, בדיקה אוטומטית לפני פעולה, או הסתרת סיסמאות לפני שהן מגיעות למודל. עובד באפליקציה, בטרמינל וב-VS Code.',
+ how:'מתארים ל-Claude מה רוצים. הוא כותב את המוד, מתקין ומרענן את הסשן.',
+ when:'משהו שאתם עושים שוב ושוב ורוצים שיקרה לבד.',
+ catch:'מודים לא רצים בבידוד, ויש להם אותה גישה למחשב כמו ל-Claude Code. מתקינים רק מה שבניתם בעצמכם או ממקור שאתם סומכים עליו.',
+ prompt:['המוד הראשון','תבנה לי מוד שמוסיף פס קטן מעל תיבת הכתיבה, שמראה כמה מהזיכרון של הסשן כבר תפוס. לפני שאתה מתקין, תסביר לי במשפט אחד למה המוד יכול לגשת.']},
+{n:11,f:'flow',tag:'זרימה ומסך',t:'קיצורי מקלדת',s:'שניות שמצטברות לשעות',
+ what:'מי שעובד עם Claude כמה שעות ביום מרוויח מכל קיצור.',
+ how:()=>`הכי חשוב: ${k(['cmd','/'])} פותח את הרשימה המלאה.`,
+ when:'מהיום הראשון. השאר בדף העזר למטה.'}
+];
+const CMDS=[['/doctor','בדיקת תקינות להגדרות ולקובץ ההוראות'],['/skill-doctor','כמה כל סקיל תופס, וכמה השתמשתם בו'],['/context','פירוט מה תופס את הזיכרון'],['/output-style','תשובות קצרות ופשוטות יותר'],['/recap','שורה אחת: איפה הסשן עומד'],['/rewind','חזרה לנקודה מוקדמת בשיחה'],['/insights','דוח על איך אתם עובדים, עם הצעות'],['/btw','צ\'אט צד בלי לעצור את המשימה'],['/advisor','מודל זול רוב הזמן, חזק להחלטות גדולות (ניסיוני)']];
+const KEYS=()=>[[k(['cmd','/']),'כל הקיצורים'],[os==='mac'?K('Option','Option'):'<span class="note">לא זמין בווינדוס</span>','לפתוח את Claude מעל כל חלון (לחיצה כפולה)'],[k(['cmd','N']),'סשן חדש'],[K('Ctrl','Tab'),'מעבר בין סשנים'],[k(['cmd',';']),'צ\'אט צד'],[k(['alt'])+' + קליק','פיצול מסך'],[k(['cmd'])+' + קליק','סשן בחלון נפרד']];
+const PLAN=[['יום א׳','מעדכנים את האפליקציה ופותחים את לשונית Code'],['יום ב׳','מגדירים סשן מאסטר עם הפרומפט'],['יום ג׳','מריצים /skill-doctor ומכבים סקיל אחד שלא בשימוש'],['יום ד׳','מפצלים משימה אחת לשלושה סשנים-בנים'],['יום ה׳','בונים מוד ראשון, או מוסיפים תיבת שאלות לדשבורד']];
+const esc=s=>s.replace(/&/g,'&amp;').replace(/</g,'&lt;');
+const val=v=>typeof v==='function'?v():v;
+const promptBox=(p,id)=>p?`<div class="prompt full"><div class="prompt-bar"><b>${p[0]}</b><button class="copy" type="button" data-target="${id}">העתקה</button></div><pre id="${id}">${esc(p[1])}</pre></div>`:'';
+let filter='all';
+function renderMods(){const open=new Set([...document.querySelectorAll('.mod[open]')].map(d=>d.dataset.n));
+ document.getElementById('mods').innerHTML=MODS.filter(m=>filter==='all'||m.f===filter).map(m=>`<details class="mod" data-n="${m.n}" ${open.has(String(m.n))?'open':''}><summary><span class="num">${String(m.n).padStart(2,'0')}</span><span class="sum"><h3>${m.t}</h3><span>${m.s}</span></span><span class="tag">${m.tag}</span></summary>
+ <div class="body"><div class="blk"><h4>מה זה</h4><p>${m.what}</p></div><div class="blk"><h4>איך מפעילים</h4><div>${val(m.how)}</div></div><div class="blk"><h4>מתי זה שווה</h4><p>${m.when}</p></div>
+ ${m.extra?`<div class="blk"><p>${m.extra}</p></div>`:''}${m.catch?`<div class="blk catch full"><h4>הקאץ'</h4><div>${m.catch}</div></div>`:''}${promptBox(m.prompt,'p'+m.n)}${promptBox(m.prompt2,'q'+m.n)}</div></details>`).join('')}
+function renderSheet(){document.getElementById('keys').innerHTML=KEYS().map(r=>`<div class="row"><span>${r[1]}</span>${r[0]}</div>`).join('');
+ document.getElementById('cmds').innerHTML=CMDS.map(r=>`<div class="row"><span>${r[1]}</span><span class="cmd">${r[0]}</span></div>`).join('')}
+let done={};try{done=JSON.parse(localStorage.getItem('lme-plan')||'{}')}catch(_){}
+document.getElementById('plan').innerHTML=PLAN.map((p,i)=>`<label for="pl${i}"><input type="checkbox" id="pl${i}" ${done[i]?'checked':''}><span><span class="day">${p[0]}</span> ${p[1]}</span></label>`).join('');
+document.getElementById('plan').addEventListener('change',e=>{const i=e.target.id.slice(2);done[i]=e.target.checked;try{localStorage.setItem('lme-plan',JSON.stringify(done))}catch(_){}});
+document.querySelector('.filters').addEventListener('click',e=>{const b=e.target.closest('button');if(!b)return;filter=b.dataset.f;document.querySelectorAll('.filters button').forEach(x=>x.setAttribute('aria-pressed',x===b));renderMods()});
+document.querySelector('.os').addEventListener('click',e=>{const b=e.target.closest('button');if(!b)return;os=b.dataset.os;document.querySelectorAll('.osbtn').forEach(x=>x.setAttribute('aria-pressed',x===b));renderMods();renderSheet()});
+document.addEventListener('click',e=>{const b=e.target.closest('button.copy');if(!b)return;const el=document.getElementById(b.dataset.target);
+ const ok=()=>{b.textContent='הועתק';b.classList.add('done');setTimeout(()=>{b.textContent='העתקה';b.classList.remove('done')},1600)};
+ const sel=()=>{const r=document.createRange();r.selectNodeContents(el);const s=getSelection();s.removeAllRanges();s.addRange(r);b.textContent='סומן, העתיקו ידנית'};
+ try{navigator.clipboard.writeText(el.textContent).then(ok,sel)}catch(_){sel()}});
+renderMods();renderSheet();
+document.querySelector('.mod').open=true;
+</script>
+
+</body>
+</html>

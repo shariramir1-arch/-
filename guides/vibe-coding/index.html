@@ -1,0 +1,115 @@
+<!doctype html>
+<html lang="he" dir="rtl">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<style>:root{padding-top:env(safe-area-inset-top,0px);padding-bottom:env(safe-area-inset-bottom,0px)}body{margin:0}img{max-width:100%}[hidden]{display:none!important}</style>
+<title>Vibe Coding מאפס</title>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Rubik:wght@500;800&family=JetBrains+Mono:wght@400;700&display=swap">
+<style>
+/* Layout: an editor window — tabs as sections, line-numbered gutter, terminal blocks for commands, prompts as chat input. */
+:root{--bg:#0D1117;--panel:#161B22;--bar:#1F2630;--ink:#E6EDF3;--muted:#8B95A3;--line:#2A313C;--kw:#C792EA;--str:#C3E88D;--fn:#82AAFF;--accent:#D97757;--ok:#5BD69B;
+ --f-b:"Rubik",system-ui,sans-serif;--f-m:"JetBrains Mono",ui-monospace,Menlo,monospace;color-scheme:dark}
+*{box-sizing:border-box}
+body{background:var(--bg);color:var(--ink);font-family:var(--f-b);font-size:1.02rem;line-height:1.65;padding-left:max(16px,env(safe-area-inset-left,0px));padding-right:max(16px,env(safe-area-inset-right,0px));padding-block:1.5rem 3rem}
+.win{max-width:56rem;margin-inline:auto;border:1px solid var(--line);border-radius:14px;overflow:hidden;background:var(--panel)}
+.titlebar{display:flex;align-items:center;gap:.5rem;padding:.7rem 1rem;background:var(--bar);direction:ltr;font-family:var(--f-m);font-size:.8rem;color:var(--muted)}
+.titlebar i{width:12px;height:12px;border-radius:50%;display:inline-block}
+.tabs{display:flex;gap:2px;background:var(--bar);overflow-x:auto;direction:rtl}
+.tabs a{font-family:var(--f-m);font-size:.8rem;color:var(--muted);text-decoration:none;padding:.55rem .9rem;background:var(--bg);white-space:nowrap}
+.tabs a:first-child{color:var(--ink);border-top:2px solid var(--accent)}
+main{padding:1.6rem clamp(1rem,4vw,2.4rem) 2.4rem;display:flex;flex-direction:column;gap:2.6rem}
+h1,h2,h3{margin:0;font-weight:800;line-height:1.15;text-wrap:balance}
+h1{font-size:clamp(2rem,6vw,3.2rem)}h2{font-size:clamp(1.35rem,3.6vw,1.8rem);display:flex;gap:.6rem;align-items:baseline}
+h2 code{font-family:var(--f-m);font-size:.75rem;color:var(--muted);direction:ltr}
+h3{font-size:1.05rem}p{margin:0}.muted{color:var(--muted)}
+.c{color:var(--muted);font-family:var(--f-m);font-size:.85rem;direction:ltr;text-align:right}
+.need{display:grid;grid-template-columns:repeat(auto-fit,minmax(13rem,1fr));gap:.7rem}
+.need div{border:1px solid var(--line);border-radius:10px;padding:.9rem 1rem;display:flex;flex-direction:column;gap:.2rem}
+.need b{color:var(--fn)}
+.term{background:#010409;border:1px solid var(--line);border-radius:10px;direction:ltr;text-align:left;font-family:var(--f-m);font-size:.92rem;padding:.9rem 1rem;display:flex;justify-content:space-between;gap:1rem;align-items:center;overflow-x:auto}
+.term code{white-space:pre}.term .p{color:var(--accent)}
+.steps{display:flex;flex-direction:column;gap:1.1rem}
+.step{display:grid;grid-template-columns:2.4rem minmax(0,1fr);gap:.8rem}
+.ln{font-family:var(--f-m);color:var(--muted);text-align:center;border-inline-start:1px solid var(--line);direction:ltr}
+.step div{display:flex;flex-direction:column;gap:.45rem;min-width:0}
+.chat{border:1px solid var(--accent);border-radius:12px;background:#1A1512;overflow:hidden}
+.chat-bar{display:flex;justify-content:space-between;align-items:center;padding:.5rem .9rem;border-bottom:1px solid #3A2A22;gap:.8rem}
+.chat-bar b{font-size:.92rem}
+.chat pre{margin:0;padding:.9rem 1rem;white-space:pre-wrap;word-break:break-word;font-family:var(--f-b);font-size:.98rem;line-height:1.7}
+button.copy{font:inherit;font-weight:800;font-size:.82rem;background:var(--accent);color:#1A0E08;border:0;border-radius:7px;padding:.3rem .8rem;cursor:pointer;flex:none}
+button.copy:focus-visible{outline:2px solid var(--fn);outline-offset:2px}
+button.copy.done{background:var(--ok)}
+.tips{display:grid;grid-template-columns:repeat(auto-fit,minmax(14rem,1fr));gap:.7rem}
+.tip{background:var(--bg);border:1px solid var(--line);border-radius:10px;padding:1rem}
+.tip b{color:var(--str);display:block;margin-bottom:.2rem}
+.ideas{display:flex;flex-wrap:wrap;gap:.5rem}
+.ideas span{font-family:var(--f-m);font-size:.82rem;border:1px solid var(--line);border-radius:999px;padding:.3rem .8rem;color:var(--kw)}
+footer{border-top:1px solid var(--line);padding:1.2rem clamp(1rem,4vw,2.4rem);display:flex;justify-content:space-between;gap:1rem;flex-wrap:wrap;background:var(--bar)}
+footer b{font-family:var(--f-m);direction:ltr}
+</style>
+</head>
+<body>
+<div class="win" dir="rtl" lang="he">
+  <div class="titlebar"><i style="background:#FF5F57"></i><i style="background:#FEBC2E"></i><i style="background:#28C840"></i>&nbsp; vibe-coding-guide — LME</div>
+  <nav class="tabs" aria-label="חלקים"><a href="#start">התחלה.md</a><a href="#install">התקנה.sh</a><a href="#first">אפליקציה-ראשונה.md</a><a href="#tips">טיפים.md</a><a href="#ideas">רעיונות.json</a></nav>
+  <main>
+    <section id="start" style="display:flex;flex-direction:column;gap:1rem">
+      <p class="c">// בונים אפליקציה בלי לדעת לתכנת</p>
+      <h1>Vibe Coding מאפס</h1>
+      <p class="muted" style="font-size:1.15rem">אתם מתארים במילים מה רוצים, ו-Claude Code כותב את הקוד, מריץ, בודק ומתקן. אתם מנהלים את הכיוון, והוא עושה את העבודה.</p>
+      <div class="need">
+        <div><b>מנוי</b><span class="muted">Claude Pro או Max (או חשבון API)</span></div>
+        <div><b>מחשב</b><span class="muted">Mac, Windows או Linux</span></div>
+        <div><b>זמן</b><span class="muted">ערב אחד לאפליקציה ראשונה</span></div>
+      </div>
+    </section>
+
+    <section id="install" style="display:flex;flex-direction:column;gap:1rem">
+      <h2>שלב 1: התקנה <code>install.sh</code></h2>
+      <div class="steps">
+        <div class="step"><span class="ln">1</span><div><h3>הדרך הקלה: האפליקציה</h3><p class="muted">מורידים את אפליקציית Claude למחשב, מתחברים, ופותחים את הלשונית Code. בלי טרמינל.</p></div></div>
+        <div class="step"><span class="ln">2</span><div><h3>או: מהטרמינל</h3><p class="muted">צריך Node.js מותקן. מעתיקים את השורה הזאת:</p>
+          <div class="term"><code><span class="p">$</span> npm install -g @anthropic-ai/claude-code</code><button class="copy" type="button" data-t="t1">העתקה</button><span id="t1" hidden>npm install -g @anthropic-ai/claude-code</span></div></div></div>
+        <div class="step"><span class="ln">3</span><div><h3>פותחים תיקייה ריקה ומתחילים</h3>
+          <div class="term"><code><span class="p">$</span> mkdir my-app &amp;&amp; cd my-app &amp;&amp; claude</code><button class="copy" type="button" data-t="t2">העתקה</button><span id="t2" hidden>mkdir my-app && cd my-app && claude</span></div></div></div>
+      </div>
+    </section>
+
+    <section id="first" style="display:flex;flex-direction:column;gap:1rem">
+      <h2>שלב 2: האפליקציה הראשונה <code>first-app.md</code></h2>
+      <p class="muted">שלוש הודעות, אחת אחרי השנייה. מחכים שכל אחת תסתיים לפני הבאה.</p>
+      <div class="chat"><div class="chat-bar"><b>הודעה 1: התוכנית</b><button class="copy" type="button" data-t="c1">העתקה</button></div><pre id="c1">אני רוצה לבנות אפליקציה פשוטה לניהול תורים לעסק שלי ([סוג העסק]).
+לקוח בוחר יום ושעה פנויים ומשאיר שם וטלפון. אני רואה רשימה של כל התורים.
+לפני שאתה כותב קוד, תציג לי תוכנית קצרה: אילו מסכים יהיו, ומה הדבר הכי קטן שאפשר לבנות קודם.</pre></div>
+      <div class="chat"><div class="chat-bar"><b>הודעה 2: בונים את החלק הראשון</b><button class="copy" type="button" data-t="c2">העתקה</button></div><pre id="c2">מעולה. תבנה רק את המסך הראשון: בחירת יום ושעה. בעברית, מימין לשמאל, שייראה טוב בטלפון.
+תריץ אותו ותגיד לי איך אני פותח אותו בדפדפן.</pre></div>
+      <div class="chat"><div class="chat-bar"><b>הודעה 3: בדיקה</b><button class="copy" type="button" data-t="c3">העתקה</button></div><pre id="c3">לפני שממשיכים: תבדוק את עצמך. תנסה לקבוע תור, תנסה לקבוע תור כפול באותה שעה, ותנסה לשלוח בלי טלפון.
+תתקן מה שלא עובד ותגיד לי מה תיקנת.</pre></div>
+    </section>
+
+    <section id="tips" style="display:flex;flex-direction:column;gap:1rem">
+      <h2>3 טיפים של מקצוענים <code>tips.md</code></h2>
+      <div class="tips">
+        <div class="tip"><b>מתחילים קטן</b><span class="muted">לא "תבנה לי אמזון". מסך אחד שעובד, ואז הבא.</span></div>
+        <div class="tip"><b>שינוי אחד בכל פעם</b><span class="muted">בקשה אחת, בודקים, ורק אז הבאה. ככה יודעים מה שבר מה.</span></div>
+        <div class="tip"><b>"תבדוק את עצמך"</b><span class="muted">מבקשים שיריץ, ינסה לשבור ויתקן, לפני שאתם בודקים.</span></div>
+      </div>
+    </section>
+
+    <section id="ideas" style="display:flex;flex-direction:column;gap:1rem">
+      <h2>רעיונות לאפליקציה הראשונה <code>ideas.json</code></h2>
+      <div class="ideas"><span>"מחשבון הצעת מחיר"</span><span>"טופס לידים לאתר"</span><span>"ניהול תורים"</span><span>"מעקב הוצאות"</span><span>"דף נחיתה למבצע"</span><span>"רשימת מלאי"</span><span>"שאלון ללקוח חדש"</span></div>
+    </section>
+  </main>
+  <footer><b>LME</b><span class="muted">רוצים שנבנה איתכם את הראשונה? שלחו לנו הודעה.</span></footer>
+</div>
+<script>
+document.addEventListener('click',e=>{const b=e.target.closest('button.copy');if(!b)return;const el=document.getElementById(b.dataset.t);
+ const ok=()=>{b.textContent='הועתק';b.classList.add('done');setTimeout(()=>{b.textContent='העתקה';b.classList.remove('done')},1600)};
+ const sel=()=>{el.hidden=false;const r=document.createRange();r.selectNodeContents(el);const s=getSelection();s.removeAllRanges();s.addRange(r);b.textContent='סומן'};
+ try{navigator.clipboard.writeText(el.textContent).then(ok,sel)}catch(_){sel()}});
+</script>
+
+</body>
+</html>

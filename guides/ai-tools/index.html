@@ -1,0 +1,111 @@
+<!doctype html>
+<html lang="he" dir="rtl">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<style>:root{padding-top:env(safe-area-inset-top,0px);padding-bottom:env(safe-area-inset-bottom,0px)}body{margin:0}img{max-width:100%}[hidden]{display:none!important}</style>
+<title>5 כלי ה-AI לעסק</title>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Secular+One&family=Rubik:wght@400;700;900&display=swap">
+<style>
+/* Layout: pop-art countdown — each tool is a sticker card in its own flat color, hard shadows, a "first move" prompt on each. */
+:root{--bg:#FFF6E0;--ink:#111;--paper:#FFFFFF;--y:#FFD60A;--p:#FF5DA2;--c:#00C2FF;--l:#B6F500;--o:#FF8A00;
+ --f-d:"Secular One","Rubik",system-ui,sans-serif;--f-b:"Rubik",system-ui,sans-serif;color-scheme:light}
+*{box-sizing:border-box}
+body{background:var(--bg);background-image:radial-gradient(rgba(0,0,0,.07) 2px,transparent 2.5px);background-size:22px 22px;color:var(--ink);font-family:var(--f-b);font-size:1.05rem;line-height:1.55;padding-left:max(16px,env(safe-area-inset-left,0px));padding-right:max(16px,env(safe-area-inset-right,0px));padding-block:2rem 3rem}
+.wrap{max-width:52rem;margin-inline:auto;display:flex;flex-direction:column;gap:2.4rem}
+h1,h2,h3{font-family:var(--f-d);font-weight:400;margin:0;line-height:1.05;text-wrap:balance}
+h1{font-size:clamp(2.6rem,9vw,5rem)}h2{font-size:clamp(1.8rem,5vw,2.6rem)}
+p{margin:0}
+.stk{background:var(--paper);border:4px solid var(--ink);border-radius:18px;box-shadow:8px 8px 0 var(--ink)}
+header{display:flex;flex-direction:column;gap:1rem;align-items:flex-start}
+.badge{font-family:var(--f-d);font-size:1.2rem;background:var(--p);padding:.3rem 1rem;transform:rotate(-2deg)}
+.lede{font-size:1.15rem;max-width:36rem}
+.card{position:relative;padding:1.4rem 1.4rem 1.2rem;display:flex;flex-direction:column;gap:.7rem}
+.rank{position:absolute;top:-1.4rem;left:1rem;font-family:"Rubik";font-weight:900;font-size:3.2rem;color:var(--paper);-webkit-text-stroke:3px var(--ink);paint-order:stroke fill;text-shadow:4px 4px 0 var(--ink);direction:ltr}
+.top{display:flex;gap:1rem;align-items:center}
+.emo{width:4.2rem;height:4.2rem;flex:none;border:3px solid var(--ink);border-radius:50%;display:flex;align-items:center;justify-content:center;font-size:2.2rem;background:var(--paper)}
+.top h2{font-family:"Rubik";font-weight:900;direction:ltr;text-align:right}
+.top span{font-weight:700}
+.grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(13rem,1fr));gap:.6rem 1.2rem}
+.grid b{display:block;font-size:.85rem;letter-spacing:.04em}
+.move{border:3px dashed var(--ink);border-radius:12px;background:rgba(255,255,255,.7);display:flex;flex-direction:column}
+.move-bar{display:flex;justify-content:space-between;align-items:center;gap:.8rem;padding:.5rem .8rem;border-bottom:3px dashed var(--ink)}
+.move pre{margin:0;padding:.8rem;white-space:pre-wrap;word-break:break-word;font-family:var(--f-b);font-size:.98rem;line-height:1.6}
+button.copy{font-family:var(--f-d);font-size:.95rem;background:var(--ink);color:var(--paper);border:0;border-radius:8px;padding:.3rem .9rem;cursor:pointer;flex:none}
+button.copy:focus-visible{outline:3px solid var(--p);outline-offset:2px}
+button.copy.done{background:#1E8A55}
+a{color:var(--ink);font-weight:700}
+.pick{padding:1.4rem;display:flex;flex-direction:column;gap:.8rem;background:var(--y)}
+.pick table{width:100%;border-collapse:collapse}
+.pick td{padding:.5rem .3rem;border-bottom:2px solid var(--ink);vertical-align:top}
+.pick td:last-child{font-weight:900;white-space:nowrap}
+footer{display:flex;flex-direction:column;gap:.3rem;padding-top:1rem}
+footer b{font-family:"Rubik";font-weight:900;font-size:2rem;direction:ltr;text-align:right}
+</style>
+</head>
+<body>
+<div class="wrap" dir="rtl" lang="he">
+  <header>
+    <span class="badge stk">TOP 5</span>
+    <h1>5 כלי ה-AI שכל עסק צריך להכיר</h1>
+    <p class="lede">לכל כלי: למה הוא הכי טוב, מתי לבחור בו, ואת הדבר הראשון לעשות איתו כבר היום. מחירים ותוכניות משתנים, אז תבדקו באתר של כל כלי.</p>
+  </header>
+
+  <article class="card stk" style="background:var(--p)"><span class="rank">#5</span>
+    <div class="top"><span class="emo">🎙️</span><div><h2>ElevenLabs</h2><span>קריינות מקצועית בלי אולפן</span></div></div>
+    <div class="grid"><p><b>הכי טוב ל</b>קריינות לסרטונים, פודקאסטים ומודעות, גם בעברית</p><p><b>מתי לבחור</b>כשצריך קול אחיד ומקצועי, ואין זמן או תקציב להקליט</p></div>
+    <div class="move"><div class="move-bar"><b>המהלך הראשון (ב-Claude)</b><button class="copy" type="button" data-t="m5">העתקה</button></div><pre id="m5">תכתוב לי טקסט קריינות של 20 שניות לסרטון על [העסק שלי]. משפטים קצרים, שקל להגיד בקול, עם הפסקות מסומנות ב-"...".</pre></div>
+    <p><a href="https://elevenlabs.io" target="_blank" rel="noopener">elevenlabs.io ↗</a></p>
+  </article>
+
+  <article class="card stk" style="background:var(--c)"><span class="rank">#4</span>
+    <div class="top"><span class="emo">🎨</span><div><h2>Canva AI</h2><span>עיצובים בקליק</span></div></div>
+    <div class="grid"><p><b>הכי טוב ל</b>פוסטים, באנרים, מצגות ומודעות מתבניות</p><p><b>מתי לבחור</b>כשצריך הרבה ויזואל מהר, בלי מעצב</p></div>
+    <div class="move"><div class="move-bar"><b>המהלך הראשון (ב-Claude)</b><button class="copy" type="button" data-t="m4">העתקה</button></div><pre id="m4">תן לי 5 כותרות קצרות (עד 6 מילים) לפוסט אינסטגרם על [המבצע שלי], ולכל אחת תיאור של התמונה שמתאימה לה. אני אעצב את זה ב-Canva.</pre></div>
+    <p><a href="https://www.canva.com" target="_blank" rel="noopener">canva.com ↗</a></p>
+  </article>
+
+  <article class="card stk" style="background:var(--l)"><span class="rank">#3</span>
+    <div class="top"><span class="emo">🎧</span><div><h2>NotebookLM</h2><span>כל מסמך הופך לפודקאסט</span></div></div>
+    <div class="grid"><p><b>הכי טוב ל</b>ללמוד ולסכם מתוך המקורות שלכם: PDF, אתרים, סרטוני יוטיוב</p><p><b>מתי לבחור</b>כשיש חומר ארוך ואתם רוצים להבין אותו מהר</p></div>
+    <div class="move"><div class="move-bar"><b>המהלך הראשון (ב-NotebookLM)</b><button class="copy" type="button" data-t="m3">העתקה</button></div><pre id="m3">תסכם לי את המסמך הזה בחמש נקודות, ותגיד לי מה שלוש השאלות הכי חשובות שבעל עסק צריך לשאול בעקבותיו.</pre></div>
+    <p><a href="https://notebooklm.google.com" target="_blank" rel="noopener">notebooklm.google.com ↗</a></p>
+  </article>
+
+  <article class="card stk" style="background:var(--o)"><span class="rank">#2</span>
+    <div class="top"><span class="emo">💬</span><div><h2>ChatGPT</h2><span>עוזר לכל דבר</span></div></div>
+    <div class="grid"><p><b>הכי טוב ל</b>שאלות מהירות, רעיונות, ויצירת תמונות</p><p><b>מתי לבחור</b>כשצריך תשובה כללית מהר, או תמונה לפוסט</p></div>
+    <div class="move"><div class="move-bar"><b>המהלך הראשון</b><button class="copy" type="button" data-t="m2">העתקה</button></div><pre id="m2">תן לי 10 רעיונות לתוכן לחודש הקרוב לעסק [סוג העסק], חצי טיפים מקצועיים וחצי מאחורי הקלעים. לכל רעיון: כותרת ומשפט אחד.</pre></div>
+    <p><a href="https://chatgpt.com" target="_blank" rel="noopener">chatgpt.com ↗</a></p>
+  </article>
+
+  <article class="card stk" style="background:var(--y)"><span class="rank">#1</span>
+    <div class="top"><span class="emo">🧠</span><div><h2>Claude</h2><span>כותב, מנתח, ובונה לכם כלים</span></div></div>
+    <div class="grid"><p><b>הכי טוב ל</b>כתיבה ארוכה, ניתוח מסמכים וקבצים, ובניית כלים, דפים ואוטומציות</p><p><b>מתי לבחור</b>עבודה אמיתית: הצעות מחיר, חוזים, דוחות, דף נחיתה, סוכן</p></div>
+    <div class="move"><div class="move-bar"><b>המהלך הראשון</b><button class="copy" type="button" data-t="m1">העתקה</button></div><pre id="m1">אתה יועץ עסקי. אני אצרף לך [הצעת מחיר / דף מכירה / מייל ללקוח] שלי.
+תגיד לי 3 דברים שהייתי משפר כדי שיותר לקוחות יגידו "כן", ותכתוב גרסה משופרת.</pre></div>
+    <p><a href="https://claude.ai" target="_blank" rel="noopener">claude.ai ↗</a></p>
+  </article>
+
+  <section class="pick stk">
+    <h2>מה לבחור למה?</h2>
+    <table>
+      <tr><td>לכתוב, לנתח קובץ, לבנות כלי</td><td>Claude</td></tr>
+      <tr><td>שאלה מהירה או תמונה</td><td>ChatGPT</td></tr>
+      <tr><td>להבין מסמך ארוך / לשמוע אותו</td><td>NotebookLM</td></tr>
+      <tr><td>פוסט, באנר, מצגת מעוצבת</td><td>Canva AI</td></tr>
+      <tr><td>קול לסרטון</td><td>ElevenLabs</td></tr>
+    </table>
+  </section>
+
+  <footer><b>LME</b><p>הטמעת מערכות מידע ו-AI לעסקים. רוצים שנחבר את הכלים האלה לעסק שלכם? שלחו לנו הודעה.</p></footer>
+</div>
+<script>
+document.addEventListener('click',e=>{const b=e.target.closest('button.copy');if(!b)return;const el=document.getElementById(b.dataset.t);
+ const ok=()=>{b.textContent='הועתק';b.classList.add('done');setTimeout(()=>{b.textContent='העתקה';b.classList.remove('done')},1600)};
+ const sel=()=>{const r=document.createRange();r.selectNodeContents(el);const s=getSelection();s.removeAllRanges();s.addRange(r);b.textContent='סומן'};
+ try{navigator.clipboard.writeText(el.textContent).then(ok,sel)}catch(_){sel()}});
+</script>
+
+</body>
+</html>

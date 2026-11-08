@@ -1,0 +1,138 @@
+<!doctype html>
+<html lang="he" dir="rtl">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<style>:root{padding-top:env(safe-area-inset-top,0px);padding-bottom:env(safe-area-inset-bottom,0px)}body{margin:0}img{max-width:100%}[hidden]{display:none!important}</style>
+<title>הבודק הוויראלי: בודקים סרטון לפני שמעלים</title>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Heebo:wght@400;700;900&family=JetBrains+Mono:wght@500;800&display=swap">
+<style>
+/* Same world as the reel: "ultraviolet" — mid indigo header, lavender page, mint highlights, pink for drops, hand-drawn circles. */
+:root{--ind:#4636B8;--ind2:#5B49D6;--lav:#F4F1FF;--lav2:#E4DDFF;--panel:#FFFFFF;--ink:#1E1747;--muted:#5F5885;--vi:#6A4BEF;--mint:#0E9F70;--mintb:#21D99B;--pink:#D61F6E;--line:#E4DDFF;
+ --f:"Heebo",system-ui,sans-serif;--m:"JetBrains Mono",ui-monospace,monospace;color-scheme:light}
+*{box-sizing:border-box}
+body{margin:0;background:linear-gradient(180deg,var(--lav) 0%,#FFFFFF 60%,var(--lav) 100%);color:var(--ink);font-family:var(--f);font-size:1.05rem;line-height:1.65}
+.wrap{max-width:52rem;margin-inline:auto;display:flex;flex-direction:column;gap:2.4rem;padding:0 max(16px,env(safe-area-inset-right,0px)) 3rem max(16px,env(safe-area-inset-left,0px))}
+h1,h2,h3{margin:0;font-weight:900;line-height:1.12;text-wrap:balance}
+h1{font-size:clamp(2.2rem,7vw,3.6rem)}h2{font-size:clamp(1.4rem,4vw,1.9rem)}h3{font-size:1.1rem}
+p{margin:0}.muted{color:var(--muted)}
+.tag{font-family:var(--m);font-size:.78rem;font-weight:800;letter-spacing:.2em;color:var(--vi);direction:ltr;text-align:right}
+header{margin-inline:calc(-1 * max(16px,env(safe-area-inset-right,0px)));background:radial-gradient(80% 90% at 50% 30%,var(--ind2) 0%,var(--ind) 70%);color:#fff;padding:2.4rem max(16px,env(safe-area-inset-right,0px)) 2.6rem;border-radius:0 0 32px 32px;display:flex;flex-direction:column;gap:1rem}
+header .tag{color:var(--mintb)}
+header .lede{font-size:1.15rem;color:rgba(255,255,255,.88);max-width:38rem}
+.hi{position:relative;color:var(--mintb);white-space:nowrap}
+.hi svg{position:absolute;inset:-18% -10%;width:120%;height:136%;overflow:visible;pointer-events:none}
+.card{background:var(--panel);border:1px solid var(--line);border-radius:22px;box-shadow:0 14px 34px rgba(70,54,184,.10);padding:1.3rem 1.4rem;display:flex;flex-direction:column;gap:.8rem}
+.grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(13rem,1fr));gap:.9rem}
+.feat{background:var(--panel);border:1px solid var(--line);border-radius:18px;padding:1rem 1.1rem;display:flex;flex-direction:column;gap:.3rem}
+.feat .n{font-family:var(--m);font-weight:800;color:var(--vi);font-size:.8rem;letter-spacing:.14em;direction:ltr;text-align:right}
+.feat b{font-size:1.1rem}
+ol.steps{margin:0;padding:0;list-style:none;counter-reset:s;display:flex;flex-direction:column;gap:.75rem}
+ol.steps li{counter-increment:s;display:flex;gap:.8rem;align-items:flex-start}
+ol.steps li::before{content:counter(s);flex:none;width:2rem;height:2rem;border-radius:50%;background:var(--vi);color:#fff;font-weight:900;display:flex;align-items:center;justify-content:center;margin-top:.1rem}
+code,.url{font-family:var(--m);direction:ltr;unicode-bidi:isolate;background:var(--lav);border:1px solid var(--line);border-radius:6px;padding:.05rem .4rem;font-size:.9em;word-break:break-all}
+.msg{border:1px solid var(--line);border-radius:16px;overflow:hidden;background:#fff}
+.msg-bar{display:flex;justify-content:space-between;align-items:center;gap:.6rem;padding:.55rem .9rem;background:var(--lav);border-bottom:1px solid var(--line)}
+pre{margin:0;padding:.9rem 1rem;white-space:pre-wrap;font-family:var(--f);font-size:1rem;line-height:1.6}
+button.copy{font-family:var(--m);font-weight:800;font-size:.8rem;background:var(--vi);color:#fff;border:0;border-radius:8px;padding:.35rem .85rem;cursor:pointer;flex:none}
+button.copy:focus-visible{outline:2px solid var(--ink);outline-offset:2px}
+button.copy.done{background:var(--mint)}
+table{width:100%;border-collapse:collapse;font-size:1rem}
+th,td{text-align:right;padding:.6rem .5rem;border-bottom:1px solid var(--line)}
+th{font-size:.85rem;color:var(--muted);font-weight:700}
+td.num{font-family:var(--m);font-weight:800;direction:ltr;text-align:right}
+.low{color:var(--pink)}
+.note{border-inline-start:4px solid var(--pink);background:#FFF0F6;border-radius:12px;padding:.9rem 1rem}
+.ok{border-inline-start:4px solid var(--mint);background:#E9FBF4;border-radius:12px;padding:.9rem 1rem}
+ul{margin:0;padding-inline-start:1.2rem;display:flex;flex-direction:column;gap:.4rem}
+footer{display:flex;flex-direction:column;gap:.4rem;text-align:center;padding-top:1rem;border-top:1px solid var(--line)}
+footer b{font-family:var(--m);font-size:1.6rem;letter-spacing:.12em}
+</style>
+</head>
+<body>
+<div class="wrap">
+  <header>
+    <div class="tag">VIRALITY PREDICTOR × CLAUDE</div>
+    <h1>בודקים אם הסרטון יהיה <span class="hi">ויראלי<svg viewBox="0 0 200 100" preserveAspectRatio="none" aria-hidden="true"><path d="M30,18 C80,2 170,4 190,40 C205,72 150,96 95,95 C40,94 2,78 6,50 C9,30 40,14 82,10" fill="none" stroke="#21D99B" stroke-width="4" stroke-linecap="round" vector-effect="non-scaling-stroke"/></svg></span>, לפני שמעלים</h1>
+    <p class="lede">מחברים את Higgsfield ל-Claude, שולחים את 15 השניות הראשונות של הסרטון, ומקבלים ציון, גרף קשב שנייה אחרי שנייה, ותיקונים להוק.</p>
+  </header>
+
+  <section aria-labelledby="what-h" style="display:flex;flex-direction:column;gap:1rem">
+    <div class="tag">WHAT YOU GET</div>
+    <h2 id="what-h">מה מקבלים על כל סרטון</h2>
+    <div class="grid">
+      <div class="feat"><span class="n">01</span><b>ציון ויראליות</b><span class="muted">מספר אחד מ-0 עד 100, ולצדו ציון נפרד להוק (3 השניות הראשונות).</span></div>
+      <div class="feat"><span class="n">02</span><b>גרף קשב</b><span class="muted">קו שנייה אחרי שנייה. רואים בדיוק איפה הקשב צונח.</span></div>
+      <div class="feat"><span class="n">03</span><b>רגע השיא</b><span class="muted">השנייה שבה הסרטון הכי תופס, ואחוז ההחזקה (Hold rate).</span></div>
+      <div class="feat"><span class="n">04</span><b>מפת חום של המוח</b><span class="muted">המודל מנבא אילו אזורים "נדלקים": ראייה, שמיעה, שפה וקשב.</span></div>
+    </div>
+  </section>
+
+  <section class="card" aria-labelledby="need-h">
+    <div class="tag">BEFORE YOU START</div>
+    <h2 id="need-h">מה צריך</h2>
+    <ul>
+      <li><b>מנוי בתשלום ב-Higgsfield.</b> בלי מנוי פעיל אי אפשר להתחבר.</li>
+      <li><b>חשבון Claude</b> באתר claude.ai או באפליקציה למחשב. בתוכנית החינמית אפשר להוסיף מחבר מותאם אחד.</li>
+      <li><b>קטע של עד 15 שניות.</b> סרטון ארוך יותר חותכים קודם, ושולחים רק את הפתיחה.</li>
+    </ul>
+  </section>
+
+  <section class="card" aria-labelledby="con-h">
+    <div class="tag">STEP 1 · CONNECT</div>
+    <h2 id="con-h">מחברים את Higgsfield ל-Claude (פעם אחת)</h2>
+    <ol class="steps">
+      <li><span>פותחים את Claude באתר או באפליקציה למחשב, ונכנסים ל-<b>Settings ← Connectors</b>. בגרסאות חדשות זה נקרא <b>Customize ← Connectors</b>.</span></li>
+      <li><span>לוחצים על <b>Add custom connector</b>.</span></li>
+      <li><span>שם: <b>Higgsfield</b>. כתובת:<br><span style="display:inline-flex;gap:.5rem;align-items:center;flex-wrap:wrap;margin-top:.35rem"><span class="url" id="mcp" style="font-size:.8em;word-break:normal;white-space:nowrap">https://mcp.higgsfield.ai/mcp</span><button class="copy" type="button" data-t="mcp">העתקה</button></span></span></li>
+      <li><span>לוחצים <b>Connect</b>. נפתח חלון של Higgsfield: נכנסים לחשבון ומאשרים.</span></li>
+      <li><span>חוזרים ל-Claude. המחבר Higgsfield מופיע ברשימת המחברים הפעילים. זהו.</span></li>
+    </ol>
+    <p class="muted">לא צריך מפתח API. הסיסמה של Higgsfield נשארת אצלם, ו-Claude לא רואה אותה. בחשבון Team, רק מנהל יכול להוסיף מחבר.</p>
+  </section>
+
+  <section style="display:flex;flex-direction:column;gap:1rem" aria-labelledby="ask-h">
+    <div class="tag">STEP 2 · ASK CLAUDE</div>
+    <h2 id="ask-h">3 הודעות להעתקה</h2>
+    <p class="muted">מצרפים את הסרטון לצ'אט, ומדביקים את ההודעה.</p>
+    <div class="msg"><div class="msg-bar"><b>בדיקת הוק</b><button class="copy" type="button" data-t="p1">העתקה</button></div><pre id="p1">תריץ על הסרטון המצורף את Virality Predictor של Higgsfield. תן לי: ציון כולל, ציון הוק, השנייה שבה הקשב הכי נמוך, ושלושה תיקונים מעשיים ל-3 השניות הראשונות. אם הסרטון ארוך מ-15 שניות, תגיד לי לפני שאתה מריץ.</pre></div>
+    <div class="msg"><div class="msg-bar"><b>השוואה בין גרסאות</b><button class="copy" type="button" data-t="p2">העתקה</button></div><pre id="p2">צירפתי [2/3] גרסאות של אותו הוק. תריץ Virality Predictor על כל אחת, תשים את התוצאות בטבלה (ציון כולל, ציון הוק, שנייה חלשה), ותגיד לי איזו לפרסם ולמה. בלי לנחש: רק לפי מה שהכלי החזיר.</pre></div>
+    <div class="msg"><div class="msg-bar"><b>תיקון לפי הגרף</b><button class="copy" type="button" data-t="p3">העתקה</button></div><pre id="p3">לפי הגרף, הקשב יורד בשנייה [X]. מה רואים ושומעים בסרטון בשנייה הזאת? תכתוב לי 3 פתיחות חלופיות: משפט ראשון על המסך, מה רואים בפריים הראשון, ומה קורה בשנייה 2. כל אחת עד 8 מילים.</pre></div>
+  </section>
+
+  <section class="card" aria-labelledby="res-h">
+    <div class="tag">OUR REAL TEST · NOV 2026</div>
+    <h2 id="res-h">בדקתי 2 סרטונים שלי. זה מה שיצא</h2>
+    <table>
+      <thead><tr><th>סרטון (15 השניות הראשונות)</th><th>ציון כולל</th><th>ציון הוק</th><th>מה הגרף הראה</th></tr></thead>
+      <tbody>
+        <tr><td>TOP 5 כלי AI</td><td class="num">47</td><td class="num low">29</td><td>ירידה בשנייה 1, ואז עלייה עד הסוף</td></tr>
+        <tr><td>סוכן AI ב-07:59</td><td class="num">46</td><td class="num low">29</td><td>ירידה של 18% בשלוש השניות הראשונות</td></tr>
+      </tbody>
+    </table>
+    <p class="ok"><b>המסקנה:</b> שני הסרטונים מחזיקים טוב אחרי הפתיחה, אבל ההוק חלש בשניהם. את השינוי הכי גדול עושים ב-3 השניות הראשונות.</p>
+  </section>
+
+  <section class="card" aria-labelledby="read-h">
+    <div class="tag">HOW TO READ IT</div>
+    <h2 id="read-h">איך לקרוא את הציון</h2>
+    <ul>
+      <li><b>זו תחזית, לא הבטחה.</b> Higgsfield עצמם כותבים שאלה מדדים שמנבאים, ולא מבטיחים ביצועים. האלגוריתם, השעה והקהל שלכם משנים הכל.</li>
+      <li><b>משווים גרסאות של אותו סרטון.</b> הכלי הכי שימושי כשבודקים 2–3 פתיחות שונות ובוחרים את הטובה.</li>
+      <li><b>משנים דבר אחד בכל פעם:</b> משפט הפתיחה, הפריים הראשון או המוזיקה. ככה יודעים מה עזר.</li>
+      <li><b>מסתכלים על הגרף, לא רק על המספר.</b> הנקודה שבה הקו צונח אומרת מה לחתוך.</li>
+    </ul>
+    <p class="note"><b>על עלות:</b> כל יצירה דרך המחבר משתמשת בקרדיטים של Higgsfield. בבדיקות שלנו (מנוי Pro, נובמבר 2026) הבודק לא הוריד קרדיטים, אבל זה יכול להשתנות. בודקים את היתרה לפני ואחרי.</p>
+  </section>
+
+  <footer><b>LME</b><span class="muted">הטמעת מערכות מידע ו-AI לעסקים. רוצים שנבדוק לכם את הסרטונים ונבנה הוק חדש? שלחו לנו הודעה.</span><span class="muted" style="font-size:.85rem">לפי מרכז העזרה ועמוד הכלי של Higgsfield, נובמבר 2026. הפרטים עשויים להשתנות.</span></footer>
+</div>
+<script>
+document.addEventListener('click',e=>{const b=e.target.closest('button.copy');if(!b)return;const el=document.getElementById(b.dataset.t);
+ const ok=()=>{b.textContent='הועתק';b.classList.add('done');setTimeout(()=>{b.textContent='העתקה';b.classList.remove('done')},1600)};
+ const sel=()=>{const r=document.createRange();r.selectNodeContents(el);const s=getSelection();s.removeAllRanges();s.addRange(r);b.textContent='סומן'};
+ try{navigator.clipboard.writeText(el.textContent).then(ok,sel)}catch(_){sel()}});
+</script>
+
+</body>
+</html>

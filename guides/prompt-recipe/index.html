@@ -1,0 +1,99 @@
+<!doctype html>
+<html lang="he" dir="rtl">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<style>:root{padding-top:env(safe-area-inset-top,0px);padding-bottom:env(safe-area-inset-bottom,0px)}body{margin:0}img{max-width:100%}[hidden]{display:none!important}</style>
+<title>מתכון הפרומפט המושלם</title>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Amatic+SC:wght@700&family=Varela+Round&display=swap">
+<style>
+/* Layout: a recipe card on a gingham tablecloth — ingredients are form fields, the "dish" is the assembled prompt. */
+:root{--cloth:#FBF3E4;--red:#D63B3B;--card:#FFFCF5;--ink:#3A2A1E;--muted:#8A6E58;--line:#E8DCCB;--blue:#3C78C8;--ok:#2E9E5B;
+ --f-d:"Amatic SC","Varela Round",cursive;--f-b:"Varela Round",system-ui,sans-serif;color-scheme:light}
+*{box-sizing:border-box}
+body{background-color:var(--cloth);background-image:repeating-linear-gradient(0deg,rgba(214,59,59,.38) 0 40px,transparent 40px 80px),repeating-linear-gradient(90deg,rgba(214,59,59,.38) 0 40px,transparent 40px 80px);color:var(--ink);font-family:var(--f-b);font-size:1.02rem;line-height:1.6;padding-left:max(16px,env(safe-area-inset-left,0px));padding-right:max(16px,env(safe-area-inset-right,0px));padding-block:2rem 3rem}
+.card{max-width:46rem;margin-inline:auto;background:var(--card);border-radius:8px;box-shadow:0 20px 50px rgba(80,30,10,.3);padding:2.4rem clamp(1.2rem,5vw,3rem) 2.4rem;position:relative;background-image:repeating-linear-gradient(180deg,transparent 0 36px,rgba(60,120,200,.14) 36px 37px);display:flex;flex-direction:column;gap:2rem}
+.card::before{content:"";position:absolute;top:-16px;right:3rem;width:9rem;height:34px;background:rgba(255,226,140,.85);transform:rotate(-3deg)}
+h1,h2{font-family:var(--f-d);font-weight:700;margin:0;line-height:.95;color:var(--red);text-wrap:balance}
+h1{font-size:clamp(3.2rem,11vw,5.4rem)}h2{font-size:clamp(2.2rem,7vw,3rem)}
+p{margin:0}.muted{color:var(--muted)}
+.meta{display:flex;flex-wrap:wrap;gap:.6rem}
+.meta span{border:2px dashed #D9A441;border-radius:12px;padding:.3rem .8rem;background:#FFF1D6}
+.ing{display:flex;flex-direction:column;gap:1rem}
+.f{display:grid;grid-template-columns:2.4rem minmax(0,1fr);gap:.8rem;align-items:start}
+.f .e{font-size:1.8rem;line-height:1.2}
+.f label{font-family:var(--f-d);font-size:1.9rem;line-height:1;display:block}
+.f small{display:block;color:var(--muted);margin-bottom:.3rem}
+.f input,.f textarea{width:100%;font:inherit;color:var(--ink);background:#fff;border:2px solid var(--line);border-radius:10px;padding:.55rem .75rem}
+.f textarea{min-height:4.2rem;resize:vertical}
+.f input:focus-visible,.f textarea:focus-visible{outline:none;border-color:var(--blue)}
+.dish{border:3px solid var(--ink);border-radius:16px;background:#fff;display:flex;flex-direction:column}
+.dish-bar{display:flex;justify-content:space-between;align-items:center;gap:.8rem;padding:.6rem 1rem;border-bottom:3px solid var(--ink)}
+.dish-bar b{font-family:var(--f-d);font-size:1.9rem;line-height:1}
+.dish pre{margin:0;padding:1rem;white-space:pre-wrap;word-break:break-word;font-family:var(--f-b);font-size:1rem;line-height:1.75;min-height:8rem}
+button{font:inherit;font-weight:700;border:0;border-radius:10px;padding:.45rem 1rem;cursor:pointer}
+button:focus-visible{outline:3px solid var(--blue);outline-offset:2px}
+.copy{background:var(--red);color:#fff}.copy.done{background:var(--ok)}
+.ex{display:flex;flex-wrap:wrap;gap:.5rem;align-items:center}
+.ex button{background:#FFF1D6;color:var(--ink);border:2px solid #D9A441}
+.tips{display:grid;grid-template-columns:repeat(auto-fit,minmax(13rem,1fr));gap:.8rem}
+.tips div{background:#FFF8EA;border-radius:12px;padding:.9rem 1rem}
+.tips b{font-family:var(--f-d);font-size:1.6rem;display:block;line-height:1}
+.sign{font-family:var(--f-d);font-size:2.6rem;text-align:left;color:var(--ink)}
+</style>
+</head>
+<body>
+<div class="card" dir="rtl" lang="he">
+  <header style="display:flex;flex-direction:column;gap:.8rem">
+    <p class="muted">~ מתכון סודי ~</p>
+    <h1>הפרומפט המושלם</h1>
+    <div class="meta"><span>⏱️ 30 שניות</span><span>👌 קל</span><span>🍽️ אינסוף מנות</span></div>
+    <p>ממלאים את חמשת המצרכים, והפרומפט מתבשל לבד למטה. מעתיקים ומדביקים ב-Claude או בכל צ'אט אחר.</p>
+    <div class="ex"><span class="muted">דוגמה מוכנה:</span><button type="button" data-ex="0">מאפייה</button><button type="button" data-ex="1">קליניקה</button><button type="button" data-ex="2">יועץ עסקי</button></div>
+  </header>
+
+  <section class="ing" aria-labelledby="ing-h">
+    <h2 id="ing-h">מצרכים:</h2>
+    <div class="f"><span class="e">🧑‍💼</span><div><label for="i-role">כף של תפקיד</label><small>מי ה-AI צריך להיות</small><input id="i-role" type="text"></div></div>
+    <div class="f"><span class="e">🎯</span><div><label for="i-task">כוס של משימה</label><small>מה בדיוק לעשות</small><input id="i-task" type="text"></div></div>
+    <div class="f"><span class="e">📍</span><div><label for="i-ctx">קורט הקשר</label><small>מי העסק, מי הקהל, מה המטרה</small><textarea id="i-ctx"></textarea></div></div>
+    <div class="f"><span class="e">📐</span><div><label for="i-fmt">2 כפות פורמט</label><small>אורך, מבנה, טון, מה לכלול</small><input id="i-fmt" type="text"></div></div>
+    <div class="f"><span class="e">⭐</span><div><label for="i-ex">דוגמה אחת לטעם</label><small>לא חובה: טקסט שאהבתם, שישמש השראה</small><textarea id="i-ex"></textarea></div></div>
+  </section>
+
+  <section class="dish" aria-labelledby="dish-h">
+    <div class="dish-bar"><b id="dish-h">ומוכן! 🍽️</b><button class="copy" type="button" id="copy">העתקה</button></div>
+    <pre id="out"></pre>
+  </section>
+
+  <section style="display:flex;flex-direction:column;gap:1rem">
+    <h2>טיפים מהמטבח</h2>
+    <div class="tips">
+      <div><b>לא יצא טעים?</b>כותבים "תקצר", "יותר חם", או "תן 3 גרסאות". לא מתחילים מחדש.</div>
+      <div><b>חסר מצרך?</b>ההקשר הכי חשוב. בלעדיו יוצא טקסט גנרי.</div>
+      <div><b>שומרים את המתכון</b>פרומפט שעבד מצוין שווה לשמור בקובץ לפעם הבאה.</div>
+    </div>
+  </section>
+  <p class="sign">באהבה, LME ♥</p>
+</div>
+<script>
+const F=['role','task','ctx','fmt','ex'].map(k=>document.getElementById('i-'+k));
+const EX=[
+ ['קופירייטר מומחה לעסקים קטנים','כתוב 3 פוסטים לאינסטגרם','מאפייה ביתית שמכינה עוגות לאירועים. הקהל: אמהות 30–45 באזור המרכז. המטרה: הזמנות לסוף השבוע.','עד 80 מילים לכל פוסט, טון חם, עם אימוג׳י ו-5 האשטגים','ריח של עוגה בבית = אהבה 🍰 הזמינו עוגת שמרים לשישי'],
+ ['כותב תוכן לקליניקות','כתוב מייל ללקוחות קבועים','קליניקה לפיזיותרפיה. הקהל: מטופלים שלא הגיעו חצי שנה. המטרה: שיחזרו לקבוע טיפול.','מייל קצר, עד 120 מילים, טון אכפתי, עם קישור לקביעת תור בסוף',''],
+ ['יועץ עסקי מנוסה','תכתוב הצעת מחיר ללקוח חדש','אני יועץ להטמעת מערכות מידע. הלקוח: משרד רואי חשבון עם 8 עובדים. הם רוצים לעבור לניהול משימות דיגיטלי.','עמוד אחד: רקע קצר, מה נעשה בשלבים, לוח זמנים, ומחיר (השאר [מחיר] במקום המספר)','']];
+function cook(){const [r,t,c,f,e]=F.map(x=>x.value.trim());
+ const lines=[r?`אתה ${r}.`:'',t?`המשימה: ${t}.`:'',c?`הקשר: ${c}`:'',f?`פורמט: ${f}.`:'',e?`דוגמה לסגנון שאני אוהב:\n"${e}"`:'',(r||t)?'אם חסר לך מידע, תשאל אותי לפני שאתה כותב.':''].filter(Boolean);
+ document.getElementById('out').textContent=lines.length?lines.join('\n\n'):'ממלאים את המצרכים למעלה, והפרומפט יופיע כאן.'}
+function load(i){F.forEach((x,j)=>x.value=EX[i][j]);cook()}
+document.addEventListener('input',cook);
+document.querySelector('.ex').addEventListener('click',e=>{const b=e.target.closest('button');if(b)load(+b.dataset.ex)});
+document.getElementById('copy').addEventListener('click',e=>{const b=e.currentTarget,el=document.getElementById('out');
+ const ok=()=>{b.textContent='הועתק';b.classList.add('done');setTimeout(()=>{b.textContent='העתקה';b.classList.remove('done')},1600)};
+ const sel=()=>{const r=document.createRange();r.selectNodeContents(el);const s=getSelection();s.removeAllRanges();s.addRange(r);b.textContent='סומן'};
+ try{navigator.clipboard.writeText(el.textContent).then(ok,sel)}catch(_){sel()}});
+load(0);
+</script>
+
+</body>
+</html>

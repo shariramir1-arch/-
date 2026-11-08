@@ -1,0 +1,138 @@
+<!doctype html>
+<html lang="he" dir="rtl">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<style>:root{padding-top:env(safe-area-inset-top,0px);padding-bottom:env(safe-area-inset-bottom,0px)}body{margin:0}img{max-width:100%}[hidden]{display:none!important}</style>
+<title>הסוכן הראשון שלכם</title>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Frank+Ruhl+Libre:wght@500;900&family=Heebo:wght@400;600;800&family=IBM+Plex+Mono:wght@500&display=swap">
+<style>
+/* Layout: a trailer one-sheet — dark amber stage, one glowing "core" at the top, tasks as a call sheet, prompts as film slates. */
+:root{--bg:#1C1610;--panel:#2A2118;--ink:#FBF4E8;--muted:#CBBBA2;--line:#43362A;--gold:#F2C66D;--ai:#5FE3FF;--ok:#4FD39A;--warn:#FF9C7D;
+ --f-d:"Frank Ruhl Libre",Georgia,serif;--f-b:"Heebo",system-ui,sans-serif;--f-m:"IBM Plex Mono",ui-monospace,monospace;color-scheme:dark}
+*{box-sizing:border-box}
+body{background:var(--bg);color:var(--ink);font-family:var(--f-b);font-size:1.05rem;line-height:1.65;padding-left:max(16px,env(safe-area-inset-left,0px));padding-right:max(16px,env(safe-area-inset-right,0px));padding-block:2rem 3rem}
+.wrap{max-width:52rem;margin-inline:auto;display:flex;flex-direction:column;gap:3rem}
+h1,h2,h3{font-family:var(--f-d);font-weight:900;line-height:1.12;margin:0;text-wrap:balance}
+h1{font-size:clamp(2.3rem,7vw,4rem)}h2{font-size:clamp(1.5rem,4vw,2.1rem)}h3{font-family:var(--f-b);font-weight:800;font-size:1.1rem}
+p{margin:0}.muted{color:var(--muted)}
+.core{width:120px;height:120px;border-radius:50%;margin-inline:auto;position:relative;background:radial-gradient(circle,#fff 0%,var(--ai) 35%,#1C6E8A 70%);box-shadow:0 0 60px var(--ai),0 0 140px #5FE3FF55}
+.core::before,.core::after{content:"";position:absolute;inset:-22px;border-radius:50%;border:3px solid var(--ai);border-top-color:transparent;border-bottom-color:transparent}
+.core::after{inset:-40px;border:2px dashed var(--gold)}
+header{text-align:center;display:flex;flex-direction:column;gap:1.4rem;padding-top:2rem}
+.kick{font-family:var(--f-m);font-size:.8rem;letter-spacing:.35em;color:var(--gold);direction:ltr}
+.lede{font-size:1.2rem;color:var(--muted);max-width:36rem;margin-inline:auto}
+.vs{display:grid;grid-template-columns:1fr 1fr;gap:1rem}
+@media (max-width:560px){.vs{grid-template-columns:1fr}}
+.vs div{background:var(--panel);border:1px solid var(--line);border-radius:14px;padding:1.2rem 1.3rem;display:flex;flex-direction:column;gap:.5rem}
+.vs div:last-child{border-color:var(--ai)}
+.vs b{font-family:var(--f-d);font-size:1.4rem}
+.vs ul{margin:0;padding-inline-start:1.1rem;color:var(--muted)}
+.tasks{display:grid;grid-template-columns:repeat(auto-fit,minmax(15rem,1fr));gap:.8rem}
+.task{background:var(--panel);border:1px solid var(--line);border-radius:14px;padding:1.1rem;display:flex;flex-direction:column;gap:.35rem}
+.task .e{font-size:1.8rem;line-height:1}
+.task .when{font-family:var(--f-m);font-size:.78rem;color:var(--ai);direction:ltr;text-align:right}
+.steps{display:flex;flex-direction:column;gap:1rem;counter-reset:s}
+.step{display:grid;grid-template-columns:auto minmax(0,1fr);gap:1rem;align-items:start}
+.step::before{counter-increment:s;content:counter(s);font-family:var(--f-d);font-weight:900;font-size:2rem;color:var(--gold);width:2.6rem;text-align:center;line-height:1}
+.step div{display:flex;flex-direction:column;gap:.3rem;min-width:0}
+.slate{border:1px solid var(--line);border-radius:14px;overflow:hidden;background:var(--panel)}
+.slate-bar{display:flex;justify-content:space-between;align-items:center;gap:1rem;padding:.6rem 1rem;background:repeating-linear-gradient(-45deg,#0E0B08 0 14px,#3A2E22 14px 28px);}
+.slate-bar b{background:var(--bg);padding:.15rem .6rem;border-radius:6px;font-size:.95rem}
+.slate pre{margin:0;padding:1rem 1.1rem;white-space:pre-wrap;word-break:break-word;font-family:var(--f-b);font-size:1rem;line-height:1.7}
+button.copy{font:inherit;font-weight:800;font-size:.9rem;background:var(--gold);color:#1C1610;border:0;border-radius:8px;padding:.35rem .9rem;cursor:pointer}
+button.copy:focus-visible{outline:2px solid var(--ai);outline-offset:2px}
+button.copy.done{background:var(--ok)}
+.tools{display:grid;grid-template-columns:repeat(auto-fit,minmax(14rem,1fr));gap:.8rem}
+.tool{border-inline-start:3px solid var(--gold);padding:.3rem 1rem;display:flex;flex-direction:column;gap:.2rem}
+.safe{background:#3A2420;border-radius:14px;padding:1.2rem 1.4rem;display:flex;flex-direction:column;gap:.6rem}
+.safe h2{color:var(--warn);font-size:1.4rem}
+.safe ul{margin:0;padding-inline-start:1.1rem}
+footer{text-align:center;border-top:1px solid var(--line);padding-top:1.6rem;display:flex;flex-direction:column;gap:.4rem}
+footer b{font-family:var(--f-d);font-size:2rem;letter-spacing:.08em;direction:ltr}
+a{color:var(--ai)}
+</style>
+</head>
+<body>
+<div class="wrap" dir="rtl" lang="he">
+  <header>
+    <div class="core" aria-hidden="true"></div>
+    <div class="kick">LME · AGENT ONE-SHEET</div>
+    <h1>הסוכן הראשון שלכם</h1>
+    <p class="lede">צ'אטבוט עונה כששואלים אותו. סוכן AI עושה עבודה לבד, לפי לוח זמנים, עם גישה לכלים שלכם. כאן תבנו אחד בערב אחד.</p>
+  </header>
+
+  <section class="vs" aria-label="צ'אטבוט מול סוכן">
+    <div><b>צ'אטבוט</b><ul><li>מחכה שתשאלו</li><li>עונה בטקסט</li><li>את העבודה עושים אתם</li></ul></div>
+    <div><b>סוכן AI</b><ul><li>מתעורר לבד בזמן קבוע</li><li>ניגש למייל, ליומן ולגיליונות</li><li>מבצע, ומדווח לכם בסוף</li></ul></div>
+  </section>
+
+  <section style="display:flex;flex-direction:column;gap:1rem">
+    <h2>5 משימות שהכי כדאי להעביר לסוכן</h2>
+    <div class="tasks">
+      <div class="task"><span class="e">📧</span><h3>סיכום מיילים</h3><p class="muted">3 הדחופים למעלה, השאר בשורה אחת</p><span class="when">EVERY DAY 08:00</span></div>
+      <div class="task"><span class="e">📊</span><h3>עדכון גיליון לידים</h3><p class="muted">כל פנייה חדשה נכנסת לשורה, עם סטטוס</p><span class="when">EVERY HOUR</span></div>
+      <div class="task"><span class="e">⏰</span><h3>תזכורות ללקוחות</h3><p class="muted">טיוטת הודעה למי שלא ענה 3 ימים</p><span class="when">SUN–THU 10:00</span></div>
+      <div class="task"><span class="e">🧾</span><h3>הצעת מחיר ראשונית</h3><p class="muted">מתבנית קבועה, לאישור שלכם לפני שליחה</p><span class="when">ON NEW LEAD</span></div>
+      <div class="task"><span class="e">📈</span><h3>דוח שבועי</h3><p class="muted">מה נכנס, מה נסגר, מה תקוע</p><span class="when">FRI 12:00</span></div>
+    </div>
+  </section>
+
+  <section style="display:flex;flex-direction:column;gap:1.2rem">
+    <h2>בונים את הסוכן: 4 צעדים</h2>
+    <div class="steps">
+      <div class="step"><div><h3>בוחרים משימה אחת</h3><p class="muted">רק אחת. משהו שחוזר כל יום וגוזל לכם חצי שעה. מתחילים קטן, ומרחיבים אחרי שבוע שזה עובד.</p></div></div>
+      <div class="step"><div><h3>מחברים את הכלים</h3><p class="muted">ב-Claude: הגדרות ← Connectors (חיבורים). מחברים את מה שהמשימה צריכה: Gmail, יומן, Google Drive. שום דבר מעבר לזה.</p></div></div>
+      <div class="step"><div><h3>כותבים את ההוראה</h3><p class="muted">מדביקים את הפרומפט שלמטה ומשנים את מה שבסוגריים. מריצים פעם אחת ידנית ובודקים את התוצאה.</p></div></div>
+      <div class="step"><div><h3>מתזמנים</h3><p class="muted">מבקשים מ-Claude להפוך את זה למשימה מתוזמנת (Scheduled task), או מריצים דרך Make / Zapier / n8n. בשבוע הראשון: הסוכן מכין טיוטות, אתם מאשרים.</p></div></div>
+    </div>
+  </section>
+
+  <section style="display:flex;flex-direction:column;gap:1rem">
+    <h2>פרומפטים מוכנים</h2>
+    <div class="slate"><div class="slate-bar"><b>סוכן סיכום בוקר</b><button class="copy" type="button" data-t="p1">העתקה</button></div><pre id="p1">כל יום ב-08:00, תעבור על המיילים שהגיעו מאז אתמול בערב.
+תחזיר לי סיכום קצר:
+1. שלושת המיילים הכי דחופים: ממי, מה מבקשים, ומה אתה ממליץ לענות.
+2. מיילים שמחכים לתשובה שלי יותר מיומיים.
+3. כל השאר: שורה אחת לכל קבוצה (ניוזלטרים, חשבוניות, עדכונים).
+אל תשלח שום מייל בעצמך. רק סיכום וטיוטות.</pre></div>
+    <div class="slate"><div class="slate-bar"><b>סוכן לידים</b><button class="copy" type="button" data-t="p2">העתקה</button></div><pre id="p2">בכל פעם שמגיע מייל או טופס של לקוח חדש, תוסיף שורה לגיליון [שם הגיליון]:
+תאריך, שם, טלפון/מייל, מה ביקש, מקור הפנייה, וסטטוס "חדש".
+אם חסר פרט, תכתוב "חסר" ולא תמציא.
+פעם ביום ב-17:00 תשלח לי רשימה של הלידים שעדיין בסטטוס "חדש".</pre></div>
+    <div class="slate"><div class="slate-bar"><b>סוכן דוח שבועי</b><button class="copy" type="button" data-t="p3">העתקה</button></div><pre id="p3">כל יום שישי ב-12:00, תכין לי דוח שבועי קצר על העסק:
+מה נכנס השבוע (לידים, פניות, הזמנות), מה נסגר, ומה תקוע ולמה.
+תסיים בשלוש פעולות שאתה ממליץ לעשות בשבוע הבא.
+עד חצי עמוד, בעברית פשוטה.</pre></div>
+  </section>
+
+  <section style="display:flex;flex-direction:column;gap:1rem">
+    <h2>איפה מריצים סוכן</h2>
+    <div class="tools">
+      <div class="tool"><h3>Claude</h3><p class="muted">חיבורים למייל, ליומן ולדרייב, ומשימות מתוזמנות. הכי פשוט להתחלה.</p></div>
+      <div class="tool"><h3>Make / Zapier</h3><p class="muted">זרימות "כשקורה X, תעשה Y" עם Claude באמצע. משלמים לפי שימוש.</p></div>
+      <div class="tool"><h3>n8n</h3><p class="muted">אותו רעיון, בקוד פתוח. חינמי אם מתקינים בעצמכם.</p></div>
+    </div>
+  </section>
+
+  <section class="safe">
+    <h2>לפני שנותנים לסוכן מפתחות</h2>
+    <ul>
+      <li>מחברים רק את הכלים שהמשימה צריכה.</li>
+      <li>בהתחלה הסוכן מכין טיוטות, ולא שולח בעצמו ללקוחות.</li>
+      <li>לא מכניסים סיסמאות או פרטי כרטיס אשראי לפרומפט.</li>
+      <li>בודקים את התוצאות כל יום בשבוע הראשון.</li>
+    </ul>
+  </section>
+
+  <footer><b>LME</b><p class="muted">רוצים שנבנה לכם סוכן שמותאם לעסק? שלחו לנו הודעה.</p></footer>
+</div>
+<script>
+document.addEventListener('click',e=>{const b=e.target.closest('button.copy');if(!b)return;const el=document.getElementById(b.dataset.t);
+ const ok=()=>{b.textContent='הועתק';b.classList.add('done');setTimeout(()=>{b.textContent='העתקה';b.classList.remove('done')},1600)};
+ const sel=()=>{const r=document.createRange();r.selectNodeContents(el);const s=getSelection();s.removeAllRanges();s.addRange(r);b.textContent='סומן, העתיקו ידנית'};
+ try{navigator.clipboard.writeText(el.textContent).then(ok,sel)}catch(_){sel()}});
+</script>
+
+</body>
+</html>
