@@ -26,7 +26,12 @@ while (true) {
   try {
     console.log(`\n${await handleMessage(store, USER, text)}\n`);
   } catch (err) {
-    console.error(err);
+    const status = (err as { status?: number }).status;
+    if (status === 401) {
+      console.error("\n⚠️  מפתח Claude לא תקין. הרץ npm run setup והדבק מפתח מ-console.anthropic.com\n");
+    } else {
+      console.error(err);
+    }
   }
 }
 

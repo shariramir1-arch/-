@@ -38,7 +38,19 @@
 reminders.ts – בודק כל 30 שניות אם הגיע זמנה של תזכורת, ואם כן שולח אותה
 ```
 
-## התקנה
+## התקנה בלחיצה כפולה
+
+1. מורידים את הריפו: בעמוד הריפו ב-GitHub לוחצים **Code → Download ZIP** ופותחים את ה-ZIP.
+2. נכנסים לתיקייה `whatsapp-agent`, ואז:
+   - **Windows:** לחיצה כפולה על `install.bat`
+   - **Mac:** קליק ימני על `install.command`, ואז **Open**. בפעם הראשונה macOS מבקש לאשר את הקובץ.
+   - **Linux:** `bash install.sh`
+3. הסקריפט בודק שיש Node.js ומנסה להתקין אותו אם חסר (winget / Homebrew / apt). אחר כך הוא מתקין את החבילות,
+   שואל על המפתח של Claude ועל מספר הוואטסאפ, ופותח צ'אט בדיקה.
+
+את המפתח מקבלים ב-[console.anthropic.com](https://console.anthropic.com) → **API Keys** → **Create Key**.
+
+## התקנה ידנית
 
 דרישות: Node.js 20 ומעלה.
 
