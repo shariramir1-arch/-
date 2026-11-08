@@ -38,7 +38,19 @@
 reminders.ts – בודק כל 30 שניות אם הגיע זמנה של תזכורת, ואם כן שולח אותה
 ```
 
-## התקנה
+## התקנה בלחיצה כפולה
+
+1. מורידים את הריפו: בעמוד הריפו ב-GitHub לוחצים **Code → Download ZIP** ופותחים את ה-ZIP.
+2. נכנסים לתיקייה `whatsapp-agent`, ואז:
+   - **Windows:** לחיצה כפולה על `install.bat`
+   - **Mac:** קליק ימני על `install.command`, ואז **Open**. בפעם הראשונה macOS מבקש לאשר את הקובץ.
+   - **Linux:** `bash install.sh`
+3. הסקריפט בודק שיש Node.js ומנסה להתקין אותו אם חסר (winget / Homebrew / apt). אחר כך הוא מתקין את החבילות,
+   שואל על המפתח של Claude ועל מספר הוואטסאפ, ופותח צ'אט בדיקה.
+
+את המפתח מקבלים ב-[console.anthropic.com](https://console.anthropic.com) → **API Keys** → **Create Key**.
+
+## התקנה ידנית
 
 דרישות: Node.js 20 ומעלה.
 
@@ -85,7 +97,9 @@ npm run chat
 
 הבוט צריך לרוץ כל הזמן בכתובת HTTPS ציבורית, ואסור שקובץ הנתונים יימחק בין פריסות.
 
-**Render (הכי פשוט):** ב-Render בוחרים **New → Blueprint** ומצביעים על הריפו. הקובץ `render.yaml` מגדיר שירות Docker
+[![Deploy to Render](https://render.com/images/deploy-to-render-button.svg)](https://render.com/deploy?repo=https://github.com/shariramir1-arch/-)
+
+**Render (הכי פשוט):** לוחצים על הכפתור למעלה, או ב-Render בוחרים **New → Blueprint** ומצביעים על הריפו. הקובץ `render.yaml` שבתיקייה הראשית של הריפו מגדיר שירות Docker
 עם דיסק קבוע ב-`/data` ובדיקת תקינות. אחרי הפריסה הראשונה ממלאים בדשבורד את המשתנים הסודיים,
 ומזינים ב-Meta את הכתובת `https://<שם-השירות>.onrender.com/webhook`.
 
