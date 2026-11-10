@@ -40,6 +40,9 @@ header{display:flex;flex-direction:column;gap:var(--s4)}
 .step{display:flex;gap:var(--s3);align-items:flex-start;min-width:0}
 .step b{font-family:var(--f-mono);font-weight:500;color:var(--accent-ink);background:var(--accent);border-radius:6px;padding:0 .45rem;flex:none;direction:ltr}
 .step span{color:var(--muted)}
+.setup{margin:0;padding-inline-start:1.3rem;display:flex;flex-direction:column;gap:var(--s3);max-width:44rem}
+.setup li{min-width:0}
+.setup a{color:var(--track)}
 /* timeline ruler */
 .ruler{height:18px;background:repeating-linear-gradient(to left,var(--line) 0 1px,transparent 1px 12px),repeating-linear-gradient(to left,var(--muted) 0 1px,transparent 1px 60px);opacity:.7;border-radius:2px}
 section.track{display:flex;flex-direction:column;gap:var(--s5)}
@@ -101,11 +104,33 @@ footer p{color:var(--muted)}
     <h1>הופכים את Claude לעורך הווידאו של העסק</h1>
     <p class="lede">שלושה מחוללי פרומפטים: ריל עם כתוביות שזזות בקצב הדיבור, פרסומת קצרה למוצר, ומוזיקת רקע מקורית. בוחרים סגנון, והפרומפט נכתב לבד.</p>
     <div class="steps">
-      <div class="step"><b>1</b><span>פותחים שיחה חדשה ב-Claude (באתר או באפליקציה)</span></div>
-      <div class="step"><b>2</b><span>בוחרים כאן סגנון, מעתיקים ומדביקים, ומצרפים את הקבצים</span></div>
-      <div class="step"><b>3</b><span>מאשרים את הסטוריבורד שClaude מציג, ומקבלים MP4 מוכן</span></div>
+      <div class="step"><b>1</b><span>מתקינים פעם אחת את Claude Code ואת HyperFrames (הסבר מיד למטה)</span></div>
+      <div class="step"><b>2</b><span>שמים את הקבצים בתיקייה, בוחרים כאן סגנון, ומדביקים את הפרומפט ב-Claude Code</span></div>
+      <div class="step"><b>3</b><span>מאשרים את הסטוריבורד ש-Claude מציג, ומקבלים MP4 מוכן</span></div>
     </div>
   </header>
+
+  <section class="track" aria-labelledby="t0">
+    <div class="track-head">
+      <span class="tc">SETUP · ONCE</span>
+      <h2 id="t0">לפני שמתחילים: Claude Code</h2>
+      <p>עריכת וידאו עובדת עם קבצים שנמצאים במחשב שלכם. באתר ובאפליקציה של Claude אפשר להעלות רק מסמכים ותמונות, בלי וידאו ובלי קול, ולכן הריל והפרסומת נעשים ב-Claude Code. המוזיקה (TRACK 03) עובדת גם באתר הרגיל.</p>
+    </div>
+    <ol class="setup">
+      <li>מתקינים את Claude Code לפי ההוראות הרשמיות: <a href="https://code.claude.com/docs" target="_blank" rel="noopener">code.claude.com/docs</a>. צריך מנוי Claude בתשלום או חשבון API.</li>
+      <li>יוצרים תיקייה לסרטון ושמים בה את הקבצים: ההקלטה, תמונות המוצר, הלוגו. שמות ברורים עוזרים (<span class="tc">product-closeup.mp4</span> ולא <span class="tc">IMG_4482</span>).</li>
+      <li>פותחים את Claude Code בתיקייה הזו, ומדביקים פעם אחת את הודעת ההתקנה:
+        <div class="out" style="position:static;margin-top:var(--s3)">
+          <div class="out-bar"><span class="hint">פעם אחת, ב-Claude Code</span><button class="copy" data-target="setup-out" type="button">העתקה</button></div>
+          <pre id="setup-out">תכין את המחשב שלי לעריכת וידאו עם HyperFrames (כלי קוד פתוח של HeyGen שהופך HTML לסרטון MP4):
+1. תבדוק שמותקנים Node.js בגרסה 22 ומעלה ו-FFmpeg, ותתקין את מה שחסר. תשאל אותי לפני כל התקנה.
+2. תריץ npx hyperframes skills update כדי להתקין את הסקילים של HyperFrames.
+3. תגיד לי כשסיימת, ואם צריך לפתוח שיחה חדשה כדי שהסקילים ייטענו.</pre>
+        </div>
+      </li>
+      <li>פותחים שיחה חדשה באותה תיקייה, ומדביקים את הפרומפט מאחד המחוללים למטה.</li>
+    </ol>
+  </section>
 
   <div class="ruler" aria-hidden="true"></div>
 
@@ -114,7 +139,7 @@ footer p{color:var(--muted)}
     <div class="track-head">
       <span class="tc">TRACK 01 · 00:00–00:45</span>
       <h2 id="t1">ריל מדבר, עם כתוביות בתנועה</h2>
-      <p>מצלמים את עצמכם מדברים לטלפון. Claude מתמלל, מחליט אילו מילים להבליט, ומסנכרן כל כתובית לשנייה שבה אמרתם אותה.</p>
+      <p>מצלמים את עצמכם מדברים לטלפון ומעבירים את הקובץ לתיקייה במחשב. Claude מתמלל, מחליט אילו מילים להבליט, ומסנכרן כל כתובית לשנייה שבה אמרתם אותה.</p>
     </div>
     <div class="tool">
       <div class="controls">
@@ -125,7 +150,7 @@ footer p{color:var(--muted)}
         <label class="toggle"><input type="checkbox" id="reel-sb" checked> סטוריבורד לאישור לפני העריכה (מומלץ)</label>
       </div>
       <div class="out">
-        <div class="out-bar"><span class="hint">להדביק ב-Claude יחד עם ההקלטה</span><button class="copy" data-target="reel-out" type="button">העתקה</button></div>
+        <div class="out-bar"><span class="hint">להדביק ב-Claude Code, בתיקייה עם ההקלטה</span><button class="copy" data-target="reel-out" type="button">העתקה</button></div>
         <pre id="reel-out"></pre>
       </div>
     </div>
@@ -138,7 +163,7 @@ footer p{color:var(--muted)}
     <div class="track-head">
       <span class="tc">TRACK 02 · 00:00–00:15</span>
       <h2 id="t2">פרסומת מושן למוצר</h2>
-      <p>מעלים 3–6 תמונות של המוצר. Claude מסיר רקע, כותב סיפור קצר בחמש עד שבע סצנות, ומסנכרן כל חיתוך לביט.</p>
+      <p>שמים בתיקייה 3–6 תמונות של המוצר. Claude מסיר רקע, כותב סיפור קצר בחמש עד שבע סצנות, ומסנכרן כל חיתוך לביט.</p>
     </div>
     <div class="tool">
       <div class="controls">
@@ -157,7 +182,7 @@ footer p{color:var(--muted)}
         <label class="toggle"><input type="checkbox" id="ad-sb" checked> סטוריבורד לאישור לפני העריכה (מומלץ)</label>
       </div>
       <div class="out">
-        <div class="out-bar"><span class="hint">להדביק ב-Claude יחד עם תמונות המוצר</span><button class="copy" data-target="ad-out" type="button">העתקה</button></div>
+        <div class="out-bar"><span class="hint">להדביק ב-Claude Code, בתיקייה עם התמונות</span><button class="copy" data-target="ad-out" type="button">העתקה</button></div>
         <pre id="ad-out"></pre>
       </div>
     </div>
@@ -183,7 +208,7 @@ footer p{color:var(--muted)}
         </div>
       </div>
       <div class="out">
-        <div class="out-bar"><span class="hint">להדביק ב-Claude, ואת התשובה ב-Suno</span><button class="copy" data-target="mu-out" type="button">העתקה</button></div>
+        <div class="out-bar"><span class="hint">להדביק ב-Claude (גם באתר), ואת התשובה ב-Suno</span><button class="copy" data-target="mu-out" type="button">העתקה</button></div>
         <pre id="mu-out"></pre>
       </div>
     </div>
@@ -208,7 +233,7 @@ footer p{color:var(--muted)}
         <ul>
           <li><b>הפריים הראשון</b> הוא גם התמונה הממוזערת. הוא צריך להציג כבר את ההוק, לא מסך שחור ולא לוגו.</li>
           <li><b>רוב הצופים גוללים בלי סאונד.</b> כל מה שנאמר מופיע גם ככתובית.</li>
-          <li><b>שמות קבצים ברורים</b> (<span class="tc">product-closeup.mp4</span> ולא <span class="tc">IMG_4482</span>) עוזרים לכם להגיד לClaude מה להציג ומתי.</li>
+          <li><b>שמות קבצים ברורים</b> (<span class="tc">product-closeup.mp4</span> ולא <span class="tc">IMG_4482</span>) עוזרים לכם להגיד ל-Claude מה להציג ומתי.</li>
         </ul>
       </div>
     </div>
@@ -259,16 +284,16 @@ function chips(el,list,name,def){const box=document.getElementById(el);box.inner
 const val=n=>document.querySelector(`input[name="${n}"]:checked`).value;
 const byId=(l,id)=>l.find(x=>x.id===id);
 const SB='לפני שאתה עורך, תציג לי סטוריבורד: טבלה של כל הסצנות לפי הסדר (זמן, מה נאמר או כתוב, מה רואים, איזה אפקט ואיזה מעבר), ושלושה פריימים לדוגמה מסצנות שונות. תחכה לאישור או לשינויים שלי, ורק אחר כך תערוך.';
-const RULES='כללים: עברית תקינה מימין לשמאל, בלי טקסט חתוך ובלי חפיפות. שום טקסט חשוב ב-14% העליונים וב-20% התחתונים של המסך, כי שם יושב הממשק של הרשת. תבנה את האנימציה בקוד (HTML + GSAP), תבדוק את הפריימים בעצמך, ותגיש קובץ MP4 מוכן להעלאה.';
+const RULES='כללים: עברית תקינה מימין לשמאל, בלי טקסט חתוך ובלי חפיפות. שום טקסט חשוב ב-14% העליונים וב-20% התחתונים של המסך, כי שם יושב הממשק של הרשת. תבנה את הסרטון בקוד עם HyperFrames (HTML + GSAP), תבדוק את הפריימים בעצמך, ותגיש קובץ MP4 מוכן להעלאה.';
 function reel(){const s=byId(STYLES,val('rs'));const cta=document.getElementById('reel-cta').value.trim();
- return ['אתה עורך וידאו ומעצב מושן. צירפתי הקלטה שלי מדבר/ת למצלמה (ואם צירפתי גם סרטונים, תמונות או מוזיקה, תשתמש בהם).',
+ return ['אתה עורך וידאו ומעצב מושן. בתיקייה הזו יש הקלטה שלי מדבר/ת למצלמה (ואם יש בה גם סרטונים, תמונות או מוזיקה, תשתמש בהם).',
  'תהפוך אותה לריל אנכי (9:16, 1080x1920) עם כתוביות בתנועה שמסונכרנות בדיוק לקול שלי. הריל צריך לתפוס מהשנייה הראשונה ולהיות מובן גם בלי סאונד.',
  'סגנון: '+s.spec,
- 'את השאר תחליט בעצמך: תמלל את ההקלטה עם זמן לכל מילה, תבחר מה להבליט, מתי להציג כל קובץ שצירפתי, ואילו מעברים ואפקטי סאונד להוסיף. הקול שלי במרכז, והמוזיקה יורדת כשאני מדבר/ת.',
+ 'את השאר תחליט בעצמך: תמלל את ההקלטה עם זמן לכל מילה, תבחר מה להבליט, מתי להציג כל קובץ מהתיקייה, ואילו מעברים ואפקטי סאונד להוסיף. הקול שלי במרכז, והמוזיקה יורדת כשאני מדבר/ת.',
  cta?`בסוף הריל: מסך סיום עם הקריאה לפעולה "${cta}".`:'',
  document.getElementById('reel-sb').checked?SB:'',RULES].filter(Boolean).join('\n\n')}
 function ad(){const s=byId(STYLES,val('as'));const p=document.getElementById('ad-product').value.trim()||'[המוצר שלי]';const o=document.getElementById('ad-offer').value.trim();
- return ['אתה מעצב מושן. צירפתי תמונות של המוצר שלי. אם צירפתי שיר, תשתמש בו. אם לא, תלחין מוזיקה מקורית.',
+ return ['אתה מעצב מושן. בתיקייה הזו יש תמונות של המוצר שלי. אם יש בה גם שיר, תשתמש בו. אם לא, תלחין מוזיקה מקורית.',
  'תכין פרסומת מושן של כ-15 שניות עם טיפוגרפיה שזזה בקצב הביט. שתהיה בנויה כסיפור קצר, לא כמודעה רגילה.',
  'המוצר: '+p, o?'המבצע: '+o:'', 'פורמט: '+document.getElementById('ad-format').value, 'סגנון: '+s.spec,
  'את השאר תחליט בעצמך: תסריט של 5 עד 7 סצנות (הוק, חשיפת המוצר, המוצר בשימוש, קריאה לפעולה), הסרת רקע מהתמונות, ותנועות ומעברים שמתאימים לסגנון. כל חיתוך וכל מילה נופלים על ביט. תכתוב רק עובדות אמיתיות על המוצר. אם חסר לך מידע, תשאל אותי במקום להמציא.',
