@@ -1,0 +1,111 @@
+<!doctype html>
+<html lang="he" dir="rtl">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<style>:root{padding-top:env(safe-area-inset-top,0px);padding-bottom:env(safe-area-inset-bottom,0px)}body{margin:0}img{max-width:100%}[hidden]{display:none!important}</style>
+<title>סוכן הסושיאל: Claude מנהל איתכם את הרשתות</title>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Heebo:wght@400;700;900&family=JetBrains+Mono:wght@500;800&display=swap">
+<style>
+:root{--bg:#FFF7F1;--bg2:#FFE9DB;--panel:#FFFFFF;--ink:#2A1608;--muted:#7A5A47;--or:#FF6B35;--ord:#C9400F;--dark:#2B1710;--line:#F4D9C8;--ok:#0E8F62;
+ --f:"Heebo",system-ui,sans-serif;--m:"JetBrains Mono",ui-monospace,monospace;color-scheme:light}
+*{box-sizing:border-box}
+body{margin:0;background:linear-gradient(180deg,var(--bg) 0%,#fff 55%,var(--bg) 100%);color:var(--ink);font-family:var(--f);font-size:1.05rem;line-height:1.65}
+.wrap{max-width:52rem;margin-inline:auto;display:flex;flex-direction:column;gap:2.4rem;padding:0 16px 3rem}
+h1,h2{margin:0;font-weight:900;line-height:1.12;text-wrap:balance}
+h1{font-size:clamp(2.2rem,7vw,3.6rem)}h2{font-size:clamp(1.4rem,4vw,1.9rem)}
+p{margin:0}.muted{color:var(--muted)}
+.tag{font-family:var(--m);font-size:.78rem;font-weight:800;letter-spacing:.2em;color:var(--ord);direction:ltr;text-align:right}
+header{margin-inline:-16px;background:radial-gradient(90% 100% at 50% 20%,#5A2A14 0%,var(--dark) 75%);color:#fff;padding:2.4rem 16px 2.6rem;border-radius:0 0 32px 32px;display:flex;flex-direction:column;gap:1rem}
+header .tag{color:#FFB27F}header .lede{font-size:1.15rem;color:rgba(255,255,255,.88);max-width:38rem}
+.hi{color:var(--or)}
+section{display:flex;flex-direction:column;gap:1rem}
+.grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(13rem,1fr));gap:.9rem}
+.feat{background:var(--panel);border:1px solid var(--line);border-radius:18px;padding:1rem 1.1rem;display:flex;flex-direction:column;gap:.3rem}
+.feat .n{font-family:var(--m);font-weight:800;color:var(--ord);font-size:.8rem;letter-spacing:.14em;direction:ltr;text-align:right}
+.feat b{font-size:1.1rem}
+.card{background:var(--panel);border:1px solid var(--line);border-radius:22px;box-shadow:0 14px 34px rgba(201,64,15,.10);padding:1.3rem 1.4rem;display:flex;flex-direction:column;gap:.9rem}
+ol.steps{margin:0;padding:0;list-style:none;counter-reset:s;display:flex;flex-direction:column;gap:.75rem}
+ol.steps li{counter-increment:s;display:flex;gap:.8rem;align-items:flex-start}
+ol.steps li::before{content:counter(s);flex:none;width:2rem;height:2rem;border-radius:50%;background:var(--or);color:#fff;font-weight:900;display:flex;align-items:center;justify-content:center;margin-top:.1rem}
+.en{font-family:var(--m);direction:ltr;unicode-bidi:isolate;background:var(--bg2);border-radius:6px;padding:.05rem .4rem;font-size:.9em}
+a.dl{align-self:flex-start;background:var(--or);color:#fff;font-weight:900;text-decoration:none;border-radius:14px;padding:.8rem 1.4rem;font-size:1.1rem}
+a.dl:focus-visible,button.copy:focus-visible{outline:2px solid var(--ink);outline-offset:2px}
+.msg{border:1px solid var(--line);border-radius:16px;overflow:hidden;background:#fff}
+.msg-bar{display:flex;justify-content:space-between;align-items:center;gap:.6rem;padding:.55rem .9rem;background:var(--bg2);border-bottom:1px solid var(--line)}
+pre{margin:0;padding:.9rem 1rem;white-space:pre-wrap;font-family:var(--f);font-size:1rem;line-height:1.6}
+button.copy{font-family:var(--f);font-weight:800;font-size:.9rem;background:var(--dark);color:#fff;border:0;border-radius:8px;padding:.35rem .85rem;cursor:pointer;flex:none}
+button.copy.done{background:var(--ok)}
+.note{border-inline-start:4px solid var(--or);background:#FFF1E8;border-radius:12px;padding:.9rem 1rem}
+ul{margin:0;padding-inline-start:1.2rem;display:flex;flex-direction:column;gap:.4rem}
+footer{display:flex;flex-direction:column;gap:.4rem;text-align:center;padding-top:1rem;border-top:1px solid var(--line)}
+footer b{font-family:var(--m);font-size:1.6rem;letter-spacing:.12em}
+</style>
+</head>
+<body>
+<div class="wrap">
+  <header>
+    <div class="tag">LME · SOCIAL AGENT</div>
+    <h1>סוכן הסושיאל: <span class="hi">Claude</span> מנהל איתכם את הרשתות</h1>
+    <p class="lede">סקיל אחד שמתקינים ב-Claude. הוא מכיר את העסק שלכם, מתכנן שבוע תוכן, כותב פוסטים ותסריטים, מנסח תשובות לתגובות, ולומד מרילס שהצליחו בנישה שלכם.</p>
+    <a class="dl" href="social-agent.zip" download>הורדת הסקיל (ZIP)</a>
+  </header>
+
+  <section aria-labelledby="c-h">
+    <div class="tag">8 SKILLS IN ONE</div>
+    <h2 id="c-h">שמונה יכולות שעובדות יחד</h2>
+    <div class="grid"><div class="feat"><span class="n">01</span><b>תכנון שבוע</b><span class="muted">טבלה לשבוע: יום, פורמט, נושא, שורת פתיחה וקריאה לפעולה.</span></div><div class="feat"><span class="n">02</span><b>פוסט וכיתוב</b><span class="muted">שורה ראשונה שעוצרת גלילה, גוף קצר והאשטגים. בשתי גרסאות.</span></div><div class="feat"><span class="n">03</span><b>תסריט לריל</b><span class="muted">20 עד 35 שניות: מה רואים, מה אומרים ומה כתוב על המסך.</span></div><div class="feat"><span class="n">04</span><b>מענה לתגובות</b><span class="muted">מדביקים תגובות והודעות ומקבלים טיוטת תשובה לכל אחת.</span></div><div class="feat"><span class="n">05</span><b>שיפור הפרופיל</b><span class="muted">ביו חדש, שם תצוגה, נושאים להיילייטס ומה חסר.</span></div><div class="feat"><span class="n">06</span><b>מנוע הרילס</b><span class="muted">מביאים רילס שהצליחו בנישה. הסוכן מסביר למה הם עובדים וכותב 3 תסריטים לעסק שלכם.</span></div><div class="feat"><span class="n">07</span><b>מיחזור תוכן</b><span class="muted">תוצר אחד הופך לריל, קרוסלה, סטורי ופוסט.</span></div><div class="feat"><span class="n">08</span><b>דוח שבועי</b><span class="muted">מדביקים את המספרים ומקבלים מה עבד, מה לא ו-3 שינויים לשבוע הבא.</span></div></div>
+  </section>
+
+  <section aria-labelledby="i-h">
+    <div class="tag">SETUP · ONCE</div>
+    <h2 id="i-h">התקנה, פעם אחת</h2>
+    <div class="card">
+      <ol class="steps">
+        <li><span>מורידים את הקובץ <span class="en">social-agent.zip</span> מהכפתור למעלה. לא פותחים אותו.</span></li>
+        <li><span>נכנסים ל-Claude במחשב, ופותחים <span class="en">Settings › Capabilities</span>. מוודאים שהאפשרות <span class="en">Code execution</span> פועלת.</span></li>
+        <li><span>פותחים <span class="en">Customize › Skills</span>, לוחצים על <span class="en">+</span>, ואז <span class="en">Create skill › Upload a skill</span>.</span></li>
+        <li><span>בוחרים את קובץ ה-ZIP שהורדתם. הסקיל <span class="en">social-agent</span> מופיע ברשימה, ומוודאים שהוא מופעל.</span></li>
+        <li><span>פותחים שיחה חדשה ומדביקים את ההודעה הראשונה מלמטה.</span></li>
+      </ol>
+      <p class="muted">לפי מרכז העזרה של Claude, סקילים זמינים בכל התוכניות, כולל החינמית. שמות התפריטים משתנים לפעמים. אם משהו נראה אחרת, מחפשים "Skills" בהגדרות.</p>
+    </div>
+  </section>
+
+  <section aria-labelledby="p-h">
+    <div class="tag">COPY · PASTE</div>
+    <h2 id="p-h">הודעות מוכנות להעתקה</h2>
+    <div class="msg"><div class="msg-bar"><b>מתחילים: תיק העסק</b><button class="copy" data-t="p1">העתקה</button></div><pre id="p1">סוכן סושיאל, בוא נתחיל. תשאל אותי את השאלות על העסק ותבנה לי תיק עסק.</pre></div><div class="msg"><div class="msg-bar"><b>שבוע תוכן</b><button class="copy" data-t="p2">העתקה</button></div><pre id="p2">סוכן סושיאל, תכנן לי שבוע תוכן לאינסטגרם ולפייסבוק, 3 פרסומים בשבוע.</pre></div><div class="msg"><div class="msg-bar"><b>מנוע הרילס</b><button class="copy" data-t="p3">העתקה</button></div><pre id="p3">סוכן סושיאל, מנוע רילס. הנה 3 רילס שהצליחו בנישה שלי (אני מדביק תמלול או תיאור של כל אחד). תסביר למה הם עובדים ותכתוב לי 3 תסריטים לעסק שלי:
+
+1.
+2.
+3.</pre></div><div class="msg"><div class="msg-bar"><b>מענה לתגובות</b><button class="copy" data-t="p4">העתקה</button></div><pre id="p4">סוכן סושיאל, הנה התגובות מהפוסט האחרון. תכתוב טיוטת תשובה לכל אחת:
+
+</pre></div><div class="msg"><div class="msg-bar"><b>דוח שבועי</b><button class="copy" data-t="p5">העתקה</button></div><pre id="p5">סוכן סושיאל, דוח שבועי. אלה המספרים מהאינסייטס של השבוע:
+
+</pre></div>
+    <p class="muted">טיפ: שומרים את תיק העסק שהסוכן בונה בהוראות של Project ב-Claude. כך לא צריך לענות על השאלות בכל שיחה מחדש.</p>
+  </section>
+
+  <section aria-labelledby="l-h">
+    <div class="tag">HONEST LIMITS</div>
+    <h2 id="l-h">מה הסוכן לא עושה</h2>
+    <div class="note"><ul>
+      <li>הוא לא מפרסם ולא עונה ללקוחות בעצמו. הוא כותב, ואתם מעתיקים ומאשרים.</li>
+      <li>הוא לא ממציא מחירים, מבצעים או המלצות. מה שחסר, הוא שואל.</li>
+      <li>הוא לא מבטיח ויראליות. הוא לומד ממבנים שעבדו ומתאים אותם לעסק.</li>
+      <li>אם הוא לא יכול לצפות בריל, הוא יבקש תמלול או תיאור.</li>
+    </ul></div>
+  </section>
+
+  <footer><p>רוצים שזה יעבוד אצלכם בעסק כל שבוע?</p><b>LME</b><p class="muted">הטמעת מערכות מידע ו-AI לעסקים</p></footer>
+</div>
+<script>
+document.addEventListener('click',e=>{const b=e.target.closest('button.copy');if(!b)return;const el=document.getElementById(b.dataset.t);
+ const ok=()=>{b.textContent='הועתק';b.classList.add('done');setTimeout(()=>{b.textContent='העתקה';b.classList.remove('done')},1600)};
+ const sel=()=>{const r=document.createRange();r.selectNodeContents(el);const s=getSelection();s.removeAllRanges();s.addRange(r);b.textContent='סומן'};
+ try{navigator.clipboard.writeText(el.textContent).then(ok,sel)}catch(_){sel()}});
+</script>
+
+</body>
+</html>
