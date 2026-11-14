@@ -1,0 +1,135 @@
+<!doctype html>
+<html lang="he" dir="rtl">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<style>:root{padding-top:env(safe-area-inset-top,0px);padding-bottom:env(safe-area-inset-bottom,0px)}body{margin:0}img{max-width:100%}[hidden]{display:none!important}</style>
+<title>העסק שלכם ב-ChatGPT: מדריך ל-Business Hub</title>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Heebo:wght@400;700;900&family=JetBrains+Mono:wght@500;800&display=swap">
+<style>
+:root{--bg:#F3FBF8;--bg2:#DDF3EC;--panel:#FFFFFF;--ink:#0E211C;--muted:#4C6B62;--or:#10A37F;--ord:#0B7A5E;--dark:#0F2A24;--line:#CFE9E0;--ok:#0E8F62;
+ --f:"Heebo",system-ui,sans-serif;--m:"JetBrains Mono",ui-monospace,monospace;color-scheme:light}
+*{box-sizing:border-box}
+body{margin:0;background:linear-gradient(180deg,var(--bg) 0%,#fff 55%,var(--bg) 100%);color:var(--ink);font-family:var(--f);font-size:1.05rem;line-height:1.65}
+.wrap{max-width:52rem;margin-inline:auto;display:flex;flex-direction:column;gap:2.4rem;padding:0 16px 3rem}
+h1,h2{margin:0;font-weight:900;line-height:1.12;text-wrap:balance}
+h1{font-size:clamp(2.2rem,7vw,3.6rem)}h2{font-size:clamp(1.4rem,4vw,1.9rem)}
+p{margin:0}.muted{color:var(--muted)}
+.tag{font-family:var(--m);font-size:.78rem;font-weight:800;letter-spacing:.2em;color:var(--ord);direction:ltr;text-align:right}
+header{margin-inline:-16px;background:radial-gradient(90% 100% at 50% 20%,#1D5548 0%,var(--dark) 75%);color:#fff;padding:2.4rem 16px 2.6rem;border-radius:0 0 32px 32px;display:flex;flex-direction:column;gap:1rem}
+header .tag{color:#7FE3C7}header .lede{font-size:1.15rem;color:rgba(255,255,255,.88);max-width:38rem}
+.hi{color:var(--or)}
+section{display:flex;flex-direction:column;gap:1rem}
+.grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(13rem,1fr));gap:.9rem}
+.feat{background:var(--panel);border:1px solid var(--line);border-radius:18px;padding:1rem 1.1rem;display:flex;flex-direction:column;gap:.3rem}
+.feat .n{font-family:var(--m);font-weight:800;color:var(--ord);font-size:.8rem;letter-spacing:.14em;direction:ltr;text-align:right}
+.feat b{font-size:1.1rem}
+.card{background:var(--panel);border:1px solid var(--line);border-radius:22px;box-shadow:0 14px 34px rgba(11,122,94,.10);padding:1.3rem 1.4rem;display:flex;flex-direction:column;gap:.9rem}
+ol.steps{margin:0;padding:0;list-style:none;counter-reset:s;display:flex;flex-direction:column;gap:.75rem}
+ol.steps li{counter-increment:s;display:flex;gap:.8rem;align-items:flex-start}
+ol.steps li::before{content:counter(s);flex:none;width:2rem;height:2rem;border-radius:50%;background:var(--or);color:#fff;font-weight:900;display:flex;align-items:center;justify-content:center;margin-top:.1rem}
+.en{font-family:var(--m);direction:ltr;unicode-bidi:isolate;background:var(--bg2);border-radius:6px;padding:.05rem .4rem;font-size:.9em}
+a.dl{align-self:flex-start;background:var(--or);color:#fff;font-weight:900;text-decoration:none;border-radius:14px;padding:.8rem 1.4rem;font-size:1.1rem}
+a.dl:focus-visible,button.copy:focus-visible{outline:2px solid var(--ink);outline-offset:2px}
+.msg{border:1px solid var(--line);border-radius:16px;overflow:hidden;background:#fff}
+.msg-bar{display:flex;justify-content:space-between;align-items:center;gap:.6rem;padding:.55rem .9rem;background:var(--bg2);border-bottom:1px solid var(--line)}
+pre{margin:0;padding:.9rem 1rem;white-space:pre-wrap;font-family:var(--f);font-size:1rem;line-height:1.6}
+button.copy{font-family:var(--f);font-weight:800;font-size:.9rem;background:var(--dark);color:#fff;border:0;border-radius:8px;padding:.35rem .85rem;cursor:pointer;flex:none}
+button.copy.done{background:var(--ok)}
+.note{border-inline-start:4px solid var(--or);background:#EAF8F3;border-radius:12px;padding:.9rem 1rem}
+ul{margin:0;padding-inline-start:1.2rem;display:flex;flex-direction:column;gap:.4rem}
+footer{display:flex;flex-direction:column;gap:.4rem;text-align:center;padding-top:1rem;border-top:1px solid var(--line)}
+footer b{font-family:var(--m);font-size:1.6rem;letter-spacing:.12em}
+</style>
+<style>table{width:100%;border-collapse:collapse}th,td{text-align:right;padding:.6rem .5rem;border-bottom:1px solid var(--line);vertical-align:top}th{font-size:.85rem;color:var(--muted)}.warn{border-inline-start:4px solid #C9400F;background:#FFF1E8;border-radius:12px;padding:.9rem 1rem}a{color:var(--ord)}</style>
+</head>
+<body>
+<div class="wrap">
+  <header>
+    <div class="tag">CHATGPT · BUSINESS HUB · BETA</div>
+    <h1>העסק שלכם ב-<span class="hi">ChatGPT</span>: תובעים את הפרופיל</h1>
+    <p class="lede">ב-10 בנובמבר 2026 השיקה OpenAI את Businesses in ChatGPT. בעלי עסקים יכולים לתבוע בעלות על הפרופיל של העסק, לעדכן אותו, ולראות כמה ChatGPT מזכיר אותם. בחינם, בגרסת בטא.</p>
+    <a class="dl" href="https://chatgpt.com/business-hub">פתיחת Business Hub</a>
+    <a class="dl" style="background:#fff;color:#0B7A5E" href="ChatGPT-Business-Hub.pdf">הורדת המדריך (PDF)</a>
+  </header>
+
+  <section aria-labelledby="w-h">
+    <div class="tag">WHAT YOU GET</div>
+    <h2 id="w-h">מה מקבלים</h2>
+    <div class="grid"><div class="feat"><span class="n">01</span><b>פרופיל עסקי</b><span class="muted">תיאור, קטגוריה, לוגו ותמונת נושא שמופיעים כש-ChatGPT מציג את העסק.</span></div><div class="feat"><span class="n">02</span><b>תג מאומת</b><span class="muted">וי כחול ליד שם העסק, אחרי שאימות הזהות אושר.</span></div><div class="feat"><span class="n">03</span><b>Insights</b><span class="muted">כמה פעמים ChatGPT הזכיר את האתר שלכם, כמה לחצו, ובאילו נושאים. 28 הימים האחרונים.</span></div><div class="feat"><span class="n">04</span><b>קטלוג מוצרים</b><span class="muted">חנויות Shopify מחברות את החנות ישר מה-Business Hub.</span></div></div>
+  </section>
+
+  <section aria-labelledby="e-h">
+    <div class="tag">WHO CAN JOIN</div>
+    <h2 id="e-h">מי יכול להצטרף</h2>
+    <div class="card"><table>
+      <tr><th>סוג העסק</th><th>איפה זמין</th></tr>
+      <tr><td><b>עסק אונליין עם אתר</b></td><td>בכל מדינה שבה ChatGPT זמין, בכפוף לבדיקת זכאות.</td></tr>
+      <tr><td><b>עסק מקומי עם כתובת</b> (חנות, מסעדה)</td><td>כרגע רק בארה"ב, ורק לרשומה שכבר קיימת. כל סניף נתבע בנפרד.</td></tr>
+      <tr><td><b>Business Agents</b> (סוכן שעונה ללקוחות)</td><td>רק עסקי מסחר ושירותים אונליין בארה"ב.</td></tr>
+    </table>
+    <p class="muted">הזכאות תלויה בתחום, במיקום ובאימות. חלק מהעסקים דיווחו על רשימת המתנה.</p></div>
+  </section>
+
+  <section aria-labelledby="s-h">
+    <div class="tag">STEP BY STEP</div>
+    <h2 id="s-h">צעד אחר צעד</h2>
+    <div class="card">
+      <ol class="steps">
+        <li><span><b>נכנסים ל-Business Hub.</b> בכתובת <span class="en">chatgpt.com/business-hub</span>, לוחצים <span class="en">Add</span> ומחפשים את העסק. אם הוא לא מופיע, יוצרים אותו. חשבון ChatGPT חינמי מספיק.</span></li>
+        <li><span><b>מזינים את כתובת האתר</b> המדויקת של העסק, בלי תווים מיותרים בסוף. ChatGPT סורק את האתר ומבין מה אתם מציעים.</span></li>
+        <li><span><b>משלימים פרטים:</b> קטגוריה ותיאור קצר (אפשר בעברית), טלפון ומייל, מדיניות משלוחים והחזרות. לוגו ותמונת נושא הם רשות, אבל משדרגים את הפרופיל.</span></li>
+        <li><span><b>מאמתים טלפון ומייל</b> עם קוד חד-פעמי, ב-SMS או בשיחה קולית.</span></li>
+        <li><span><b>מאמתים בעלות על הדומיין:</b> מוסיפים רשומת <span class="en">TXT</span> ב-DNS אצל רשם הדומיין (למשל GoDaddy), וחוזרים ללחוץ <span class="en">Verify</span>.</span></li>
+        <li><span><b>התוצאה:</b> העסק מסומן <span class="en">Claimed business</span> עם וי כחול. אחרי זה פותחים Insights ובודקים פעם בשבוע.</span></li>
+      </ol>
+    </div>
+  </section>
+
+  <section aria-labelledby="p-h">
+    <div class="tag">COPY · PASTE</div>
+    <h2 id="p-h">תיאור לעסק, בעזרת ChatGPT</h2>
+    <div class="msg"><div class="msg-bar"><b>פרומפט לתיאור הפרופיל</b><button class="copy" data-t="p1">העתקה</button></div><pre id="p1">תכתוב תיאור קצר לפרופיל העסקי שלי ב-ChatGPT, עד 3 משפטים.
+העסק: [שם העסק ומה הוא מוכר]
+הלקוחות: [למי]
+מה מייחד אותנו: [דבר אחד]
+בלי סופרלטיבים ובלי הבטחות. רק עובדות שלקוח צריך כדי להחליט.
+תן לי 3 גרסאות.</pre></div>
+    <div class="msg"><div class="msg-bar"><b>בדיקה: מה ChatGPT אומר עליכם היום</b><button class="copy" data-t="p2">העתקה</button></div><pre id="p2">מה אתה יודע על העסק [שם העסק] ב[עיר]? מה הם מוכרים, למי, ומה אומרים עליהם? תציין מאיפה המידע.</pre></div>
+    <p class="muted">מריצים את הבדיקה לפני ואחרי עדכון הפרופיל, ומשווים.</p>
+  </section>
+
+  <section aria-labelledby="l-h">
+    <div class="tag">GOOD TO KNOW</div>
+    <h2 id="l-h">מה חשוב לדעת</h2>
+    <div class="note"><ul>
+      <li><b>זה בחינם כרגע.</b> OpenAI לא התחייבה שזה יישאר כך. מודעות ממומנות הן מוצר נפרד בתשלום.</li>
+      <li><b>פרטיות:</b> העסק לא רואה את השיחות של המשתמשים. רואים רק מספרים מסכמים.</li>
+      <li><b>לחיצה היא לא ביקור.</b> מספר הלחיצות לא מאשר שהגולש הגיע לאתר או קנה.</li>
+      <li><b>אזכור נספר רק כש-ChatGPT מפנה לאתר שלכם.</b> תשובה שרק מזכירה את השם לא נספרת.</li>
+      <li><b>Insights מופיעים רק אחרי אימות</b> ורק כשיש מספיק פעילות.</li>
+    </ul></div>
+    <div class="warn"><b>מישראל:</b> הרישום עובד גם מישראל לעסקים אונליין עם אתר. בונה הסוכנים (Agent builder) נפתח בהדרגה לפי אזורים ועוד לא זמין בישראל. ייתכן שתתבקשו גם לאימות זהות דרך שירות בשם Persona.</div>
+  </section>
+
+  <section aria-labelledby="src-h">
+    <div class="tag">SOURCES</div>
+    <h2 id="src-h">מקורות</h2>
+    <ul>
+      <li><a href="https://openai.com/index/introducing-businesses-chatgpt/">ההכרזה של OpenAI: Introducing Businesses in ChatGPT</a></li>
+      <li><a href="https://help.openai.com/en/articles/20001635-setting-up-your-business-on-chatgpt">מרכז העזרה: Setting up your business on ChatGPT</a></li>
+    </ul>
+    <p class="muted">נבדק ב-13 בנובמבר 2026. המוצר בבטא והפרטים משתנים. לפני שמתחילים, בודקים את מרכז העזרה של OpenAI.</p>
+  </section>
+
+  <footer><p>רוצים שנעשה את זה יחד לעסק שלכם?</p><b>LME</b><p class="muted">LME Academy · סדנאות והדרכות AI לבעלי עסקים · <a href="https://lmeacademy.co.il">lmeacademy.co.il</a></p></footer>
+</div>
+<script>
+document.addEventListener('click',e=>{const b=e.target.closest('button.copy');if(!b)return;const el=document.getElementById(b.dataset.t);
+ const ok=()=>{b.textContent='הועתק';b.classList.add('done');setTimeout(()=>{b.textContent='העתקה';b.classList.remove('done')},1600)};
+ const sel=()=>{const r=document.createRange();r.selectNodeContents(el);const s=getSelection();s.removeAllRanges();s.addRange(r);b.textContent='סומן'};
+ try{navigator.clipboard.writeText(el.textContent).then(ok,sel)}catch(_){sel()}});
+</script>
+
+</body>
+</html>
