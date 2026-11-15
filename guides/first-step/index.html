@@ -1,0 +1,230 @@
+<!doctype html>
+<html lang="he" dir="rtl">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<style>:root{padding-top:env(safe-area-inset-top,0px);padding-bottom:env(safe-area-inset-bottom,0px)}body{margin:0}img{max-width:100%}[hidden]{display:none!important}</style>
+<title>הצעד הראשון</title>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Rubik:wght@400;500;700;800;900&display=swap">
+<style>
+/* Layout: reel 07's world as a page — newspaper clippings on a yellow halftone field, Rubik with a thick outline
+   and hard shadows, one colour per section band (yellow, cyan, pink, green) like the reel's scenes.
+   A 3-question picker points to the one automation to start with; prompts sit in copy boxes.
+   Interaction follows apple-design: press feedback, instant copy state, details open from their row, reduced motion.
+   Deliberately single-theme (bright pop), every colour set explicitly. */
+:root{
+ --yellow:#FFD23F;--cyan:#3FC8F5;--pink:#FF7AB8;--green:#43D98C;--orange:#FF9A3D;
+ --ink:#141414;--paper:#FFFBF0;--red:#E8322B;--white:#FFFFFF;--dim:#3A3A3A;
+ --f:"Rubik","Heebo",system-ui,sans-serif;--spring:cubic-bezier(.2,.9,.25,1);color-scheme:light}
+*{box-sizing:border-box}
+body{background:var(--yellow);background-image:radial-gradient(rgba(20,20,20,.12) 22%,transparent 24%);background-size:22px 22px;color:var(--ink);font-family:var(--f);font-size:1.06rem;line-height:1.65;
+ padding-left:max(16px,env(safe-area-inset-left,0px));padding-right:max(16px,env(safe-area-inset-right,0px));padding-block:2rem 3rem}
+.wrap{max-width:46rem;margin-inline:auto;display:flex;flex-direction:column;gap:2.4rem}
+h1,h2,h3{margin:0;text-wrap:balance;letter-spacing:-.015em}
+h1{font-size:clamp(2.6rem,10vw,4.4rem);line-height:1;font-weight:900;color:var(--white);-webkit-text-stroke:3px var(--ink);paint-order:stroke fill;text-shadow:5px 6px 0 var(--ink)}
+h2{font-size:clamp(1.6rem,5.5vw,2.2rem);line-height:1.08;font-weight:900}
+h3{font-size:1.18rem;line-height:1.25;font-weight:800}
+p{margin:0}
+section{display:flex;flex-direction:column;gap:1rem}
+.kick{font-weight:800;font-size:.95rem;letter-spacing:.04em}
+.lede{font-size:1.18rem;font-weight:500;max-width:34rem}
+.stk{display:inline-block;background:var(--red);color:var(--white);border:3px solid var(--ink);border-radius:.55em;padding:.02em .4em .12em;box-shadow:.2rem .25rem 0 var(--ink);font-weight:900}
+.clip{background:var(--paper);border:3px solid var(--ink);box-shadow:6px 7px 0 var(--ink);padding:1.1rem 1.2rem;display:flex;flex-direction:column;gap:.6rem;min-width:0}
+.band{border:3px solid var(--ink);border-radius:22px;box-shadow:6px 7px 0 var(--ink);padding:1.3rem 1.2rem;display:flex;flex-direction:column;gap:1rem}
+.cyan{background:var(--cyan)}.pink{background:var(--pink)}.green{background:var(--green)}.orange{background:var(--orange)}
+.src{font-size:.88rem;color:var(--dim)}
+
+/* the numbers */
+.bars{display:grid;grid-template-columns:1fr 1fr;gap:1rem;align-items:end;min-height:11rem}
+.bar{display:flex;flex-direction:column;align-items:center;gap:.4rem}
+.bar i{display:block;width:100%;max-width:7rem;border:3px solid var(--ink);border-bottom:0;box-shadow:5px 0 0 var(--ink)}
+.bar b{font-size:2.4rem;font-weight:900;line-height:1;direction:ltr}
+.bar span{font-weight:700;text-align:center;line-height:1.25}
+.bar small{display:block;font-weight:500;font-size:.85rem;color:var(--dim)}
+
+/* picker */
+.q{display:flex;flex-direction:column;gap:.6rem}
+.opts{display:flex;flex-wrap:wrap;gap:.6rem}
+.opt{font:700 1rem var(--f);background:var(--paper);color:var(--ink);border:3px solid var(--ink);border-radius:999px;padding:.55rem 1rem;cursor:pointer;box-shadow:3px 3px 0 var(--ink);
+ transition:transform .3s var(--spring),box-shadow .3s var(--spring),background-color .2s}
+.opt:active{transform:translate(3px,3px) scale(.97);box-shadow:0 0 0 var(--ink);transition-duration:60ms}
+.opt[aria-pressed="true"]{background:var(--ink);color:var(--yellow)}
+.verdict{background:var(--paper);border:3px dashed var(--ink);border-radius:16px;padding:.9rem 1rem;font-weight:700}
+
+/* automations */
+.autos{display:flex;flex-direction:column;gap:1.3rem}
+.auto{position:relative}
+.auto.pick{outline:5px solid var(--red);outline-offset:4px}
+.auto .tag{position:absolute;top:-.9rem;inset-inline-start:1rem;font-size:.85rem}
+.auto .emo{font-size:2.2rem;line-height:1}
+.auto ul{margin:0;padding-inline-start:1.2rem;display:flex;flex-direction:column;gap:.3rem}
+
+/* copy boxes */
+.copybox{border:3px solid var(--ink);border-radius:18px;background:var(--white);box-shadow:5px 6px 0 var(--ink);display:flex;flex-direction:column;min-width:0}
+.copybar{display:flex;justify-content:space-between;align-items:center;gap:.8rem;padding:.55rem .9rem;border-bottom:2px dashed var(--ink)}
+.copybar b{font-size:1rem}
+.copybox pre{margin:0;padding:.9rem;white-space:pre-wrap;word-break:break-word;font-family:var(--f);font-size:1rem;line-height:1.75}
+button.copy{font:900 .95rem var(--f);background:var(--red);color:var(--white);border:2px solid var(--ink);border-radius:12px;padding:.45rem 1rem;cursor:pointer;flex:none;min-width:5.6rem;box-shadow:3px 3px 0 var(--ink);
+ transition:transform .3s var(--spring),box-shadow .3s var(--spring),background-color .2s}
+button.copy:active{transform:translate(3px,3px) scale(.97);box-shadow:0 0 0 var(--ink);transition-duration:60ms}
+button.copy.done{background:#1E9E5A}
+:is(button,a,summary):focus-visible{outline:3px solid var(--ink);outline-offset:3px}
+
+details{border-bottom:3px solid var(--ink)}
+summary{cursor:pointer;list-style:none;display:flex;justify-content:space-between;gap:1rem;align-items:center;padding:.85rem 0;font-weight:800;font-size:1.05rem}
+summary::-webkit-details-marker{display:none}
+summary::after{content:"+";font-weight:900;font-size:1.6rem;color:var(--red);transition:transform .35s var(--spring)}
+details[open] summary::after{transform:rotate(45deg)}
+details .ans{padding-bottom:1rem;transform-origin:top right;animation:drop .35s var(--spring)}
+@keyframes drop{from{opacity:0;transform:translateY(-6px) scaleY(.97)}}
+
+footer{border-top:3px solid var(--ink);padding-top:1.2rem;display:flex;flex-direction:column;gap:.6rem}
+footer .lme{font-size:1.9rem;font-weight:900;letter-spacing:.1em;direction:ltr;text-align:right}
+.contact{display:flex;flex-wrap:wrap;gap:.6rem;align-items:center}
+.contact a,.contact .ph{font-weight:800;color:var(--ink);background:var(--paper);border:3px solid var(--ink);border-radius:12px;padding:.4rem .8rem;text-decoration:none;direction:ltr;user-select:all}
+@media (prefers-reduced-motion:reduce){*,*::before,*::after{transition-duration:1ms!important;animation:none!important}}
+</style>
+</head>
+<body>
+<div class="wrap" dir="rtl" lang="he">
+  <header style="display:flex;flex-direction:column;gap:1.1rem">
+    <div class="kick">LME · המדריך לסרטון "מה העיתונים לא מספרים לך"</div>
+    <h1>הצעד<br>הראשון</h1>
+    <p class="lede">שלוש אוטומציות קטנות שמתאימות כמעט לכל עסק, איך בוחרים עם איזו להתחיל, ופרומפטים מוכנים להעתקה.</p>
+  </header>
+
+  <section class="band cyan" aria-labelledby="num-h">
+    <h2 id="num-h">המספרים האמיתיים</h2>
+    <p>כמה עסקים בישראל משלמים על כלי <bdi>AI</bdi>?</p>
+    <div class="bars" role="img" aria-label="עסקים גדולים 29 אחוז, עסקים קטנים 16 אחוז">
+      <div class="bar"><b>29%</b><i style="height:8.7rem;background:var(--paper)"></i><span>עסקים גדולים<small>250+ עובדים</small></span></div>
+      <div class="bar"><b>16%</b><i style="height:4.8rem;background:var(--red)"></i><span>עסקים קטנים<small>עד 50 עובדים</small></span></div>
+    </div>
+    <p>אם עוד לא התחלתם, אתם ברוב. וזה גם אומר שיש כאן יתרון למי שמתחיל עכשיו, בצעד אחד קטן.</p>
+    <p class="src">מקור: הלמ"ס, סקר מגמות בעסקים, יוני 2025 (עסקים עם 10 עובדים ומעלה, שימוש בתשלום).</p>
+  </section>
+
+  <section aria-labelledby="rule-h">
+    <h2 id="rule-h">הכלל: <span class="stk">בעיה אחת</span>, לא כלי</h2>
+    <p>רוב מי שמתחיל עם <bdi>AI</bdi> נתקע כי הוא בוחר כלי ומחפש לו שימוש. עדיף הפוך: בוחרים את הדבר האחד שהכי גוזל זמן, ופותרים רק אותו. ענו על שלוש שאלות קצרות:</p>
+    <div class="band pink" id="picker">
+      <div class="q"><h3>1. איפה הלקוחות פונים אליכם הכי הרבה?</h3>
+        <div class="opts" data-q="1"><button class="opt" type="button" data-v="w">בוואטסאפ</button><button class="opt" type="button" data-v="o">בטלפון או במייל</button></div></div>
+      <div class="q"><h3>2. מה הכי מעצבן אתכם בסוף החודש?</h3>
+        <div class="opts" data-q="2"><button class="opt" type="button" data-v="i">חשבוניות וגבייה</button><button class="opt" type="button" data-v="o">משהו אחר</button></div></div>
+      <div class="q"><h3>3. לקוחות שוכחים פגישות או תורים?</h3>
+        <div class="opts" data-q="3"><button class="opt" type="button" data-v="r">כן, קורה הרבה</button><button class="opt" type="button" data-v="o">כמעט אף פעם</button></div></div>
+      <p class="verdict" id="verdict" aria-live="polite">בחרו תשובות, ונראה לכם עם מה להתחיל.</p>
+    </div>
+  </section>
+
+  <section aria-labelledby="auto-h">
+    <h2 id="auto-h">3 מקומות להתחיל</h2>
+    <div class="autos">
+      <article class="clip auto" id="a-w">
+        <span class="stk tag" hidden>מתחילים כאן</span>
+        <div class="emo" aria-hidden="true">💬</div>
+        <h3>וואטסאפ שעונה ללקוח מיד</h3>
+        <p>באפליקציית <bdi>WhatsApp Business</bdi> (חינמית) יש כלים מובנים: הודעת פתיחה ללקוח חדש, הודעת "לא זמין" מחוץ לשעות, ותשובות מהירות לשאלות שחוזרות. נמצאים בהגדרות, תחת כלים לעסקים.</p>
+        <ul><li>מה צריך: את האפליקציה, ורשימה של 5 השאלות שהכי חוזרות.</li><li>את הנוסחים כותבים עם הפרומפט למטה.</li></ul>
+      </article>
+      <article class="clip auto" id="a-i">
+        <span class="stk tag" hidden>מתחילים כאן</span>
+        <div class="emo" aria-hidden="true">🧾</div>
+        <h3>חשבונית שיוצאת לבד</h3>
+        <p>בדקו בתוכנת החשבוניות שלכם אם יש מסמך חוזר (ללקוח קבוע) ותזכורת תשלום אוטומטית. את נוסחי התזכורות, מנומסים ולא נודניקים, כותבים עם <bdi>AI</bdi>.</p>
+        <ul><li>מה צריך: את תוכנת החשבוניות שכבר יש לכם, ורשימת לקוחות קבועים.</li><li>הפרטים משתנים בין תוכנות. אם לא מוצאים, שאלו את התמיכה שלהן.</li></ul>
+      </article>
+      <article class="clip auto" id="a-r">
+        <span class="stk tag" hidden>מתחילים כאן</span>
+        <div class="emo" aria-hidden="true">⏰</div>
+        <h3>תזכורת לפגישה</h3>
+        <p>הודעת תזכורת יום לפני ושעה לפני, עם אפשרות לאשר או לבטל. אם אתם עובדים עם מערכת זימון תורים, חפשו בה תזכורות אוטומטיות. אם לא, אפשר להתחיל מתשובה מהירה מוכנה בוואטסאפ.</p>
+        <ul><li>מה צריך: נוסח אחד טוב, ומקום שבו רואים את הפגישות של מחר.</li></ul>
+      </article>
+    </div>
+  </section>
+
+  <section aria-labelledby="pr-h">
+    <h2 id="pr-h">פרומפטים להעתקה</h2>
+    <p>מעתיקים ל-<bdi>ChatGPT</bdi>, ל-<bdi>Claude</bdi> או ל-<bdi>Gemini</bdi>, וממלאים את מה שבסוגריים.</p>
+    <div class="copybox"><div class="copybar"><b>1. הודעת פתיחה והודעת "לא זמין"</b><button class="copy" type="button" data-t="p1">העתקה</button></div>
+<pre id="p1">אני בעל/ת עסק בתחום [התחום], והלקוחות שלי פונים בוואטסאפ.
+כתוב לי בעברית, בטון [חם / מקצועי / קליל]:
+1. הודעת פתיחה ללקוח חדש (עד 3 שורות), שמציגה את העסק ושואלת במה אפשר לעזור.
+2. הודעה מחוץ לשעות הפעילות ([שעות הפעילות]), שאומרת מתי נחזור.
+בלי הבטחות שאני לא יכול לקיים, ובלי אימוג'ים מיותרים.</pre></div>
+    <div class="copybox"><div class="copybar"><b>2. תשובות מהירות לשאלות שחוזרות</b><button class="copy" type="button" data-t="p2">העתקה</button></div>
+<pre id="p2">אלה 5 השאלות שהלקוחות שלי שואלים הכי הרבה:
+[שאלה 1]
+[שאלה 2]
+[שאלה 3]
+[שאלה 4]
+[שאלה 5]
+הנה המידע הנכון לכל אחת: [מחירים, שעות, כתובת, מדיניות]
+כתוב לכל שאלה תשובה קצרה (עד 2 שורות) לשמירה כתשובה מהירה בוואטסאפ, ותן לכל אחת קיצור של מילה אחת.
+אל תמציא מידע שלא נתתי לך. אם חסר משהו, כתוב [להשלים].</pre></div>
+    <div class="copybox"><div class="copybar"><b>3. תזכורת תשלום בשלוש דרגות</b><button class="copy" type="button" data-t="p3">העתקה</button></div>
+<pre id="p3">כתוב שלוש הודעות תזכורת לתשלום חשבונית, בעברית:
+1. יום לפני מועד התשלום (חברית).
+2. 3 ימים אחרי המועד (מנומסת וברורה).
+3. 10 ימים אחרי המועד (רשמית, עם בקשה לעדכן מתי ישולם).
+פרטים: שם העסק [שם], אמצעי תשלום [העברה / ביט / אשראי].
+השאר מקום ל-[שם הלקוח], [מספר חשבונית] ו-[סכום]. בלי איומים.</pre></div>
+    <div class="copybox"><div class="copybar"><b>4. תזכורת לפגישה עם אישור</b><button class="copy" type="button" data-t="p4">העתקה</button></div>
+<pre id="p4">כתוב לי שתי הודעות תזכורת קצרות לפגישה בעסק שלי ([סוג העסק]):
+1. יום לפני: עם התאריך, השעה והכתובת, ובקשה להשיב "מאשר/ת" או "צריך/ה לשנות".
+2. שעתיים לפני: תזכורת קצרה ואיך מגיעים / חונים.
+השאר מקום ל-[שם], [תאריך], [שעה]. טון [חם / מקצועי].</pre></div>
+    <div class="copybox"><div class="copybar"><b>5. לא יודעים מה לבחור? תנו ל-AI לראיין אתכם</b><button class="copy" type="button" data-t="p5">העתקה</button></div>
+<pre id="p5">אני בעל/ת עסק קטן בתחום [התחום], עם [מספר] עובדים.
+שאל אותי עד 6 שאלות, אחת בכל פעם, כדי להבין איפה הולך לי הכי הרבה זמן על עבודה שחוזרת על עצמה.
+בסוף, הצע לי משימה אחת בלבד להעביר לאוטומציה או ל-AI השבוע, ותסביר איך מתחילים בשלושה צעדים פשוטים.</pre></div>
+  </section>
+
+  <section class="band green" aria-labelledby="safe-h">
+    <h2 id="safe-h">לפני שמתחילים</h2>
+    <ul style="margin:0;padding-inline-start:1.2rem;display:flex;flex-direction:column;gap:.4rem">
+      <li>לא מדביקים בצ'אט פרטים אישיים של לקוחות: תעודות זהות, פרטי אשראי, מידע רפואי.</li>
+      <li>קוראים כל נוסח לפני ששולחים. <bdi>AI</bdi> כותב מהר, אבל לפעמים ממציא פרטים.</li>
+      <li>מתחילים בדבר אחד, ונותנים לו שבועיים לפני שמוסיפים עוד.</li>
+    </ul>
+  </section>
+
+  <section aria-labelledby="faq-h">
+    <h2 id="faq-h">שאלות נפוצות</h2>
+    <div>
+      <details><summary><span>זה עולה כסף?</span></summary><div class="ans"><p>שלושת הצעדים כאן אפשר להתחיל בחינם: <bdi>WhatsApp Business</bdi> חינמית, ולפרומפטים מספיקה גרסה חינמית של צ'אט <bdi>AI</bdi>. אוטומציות מתקדמות (למשל בוט שעונה לבד) כבר עולות כסף, ושווה לבדוק קודם מה באמת חסר.</p></div></details>
+      <details><summary><span>אני צריך להבין בטכנולוגיה?</span></summary><div class="ans"><p>לא. אם אתם יודעים לשלוח הודעה בוואטסאפ ולהעתיק טקסט, אתם יכולים לעשות את שלושת הצעדים.</p></div></details>
+      <details><summary><span>מאיפה הנתונים בסרטון?</span></summary><div class="ans"><p>מסקר מגמות בעסקים של הלמ"ס, יוני 2025. הסקר כולל עסקים עם 10 עובדים ומעלה, ובודק שימוש בכלי <bdi>AI</bdi> בתשלום. הכותרות בתחילת הסרטון הן כותרות לדוגמה.</p></div></details>
+    </div>
+  </section>
+
+  <footer>
+    <div class="lme">LME</div>
+    <span>הטמעת מערכות מידע ו-<bdi>AI</bdi> לעסקים. רוצים שנגדיר לכם את זה? שלחו לנו הודעה.</span>
+    <div class="contact">
+      <a href="https://lmeacademy.co.il" target="_blank" rel="noopener">lmeacademy.co.il</a>
+      <span class="ph" id="phone">053-6576136</span>
+      <button class="copy" type="button" data-t="phone">העתקת מספר</button>
+    </div>
+  </footer>
+</div>
+<script>
+document.addEventListener('click',e=>{const b=e.target.closest('button.copy');if(!b)return;const el=document.getElementById(b.dataset.t);const label=b.textContent;
+ const ok=()=>{b.textContent='הועתק ✓';b.classList.add('done');setTimeout(()=>{b.textContent=label;b.classList.remove('done')},1600)};
+ const sel=()=>{const r=document.createRange();r.selectNodeContents(el);const s=getSelection();s.removeAllRanges();s.addRange(r);b.textContent='סומן, העתיקו'};
+ try{navigator.clipboard.writeText(el.textContent).then(ok,sel)}catch(_){sel()}});
+const ans={};
+const NAMES={w:'וואטסאפ שעונה ללקוח מיד',i:'חשבונית שיוצאת לבד',r:'תזכורת לפגישה'};
+document.querySelectorAll('.opts').forEach(g=>g.addEventListener('click',e=>{const b=e.target.closest('.opt');if(!b)return;
+ g.querySelectorAll('.opt').forEach(x=>x.setAttribute('aria-pressed',x===b?'true':'false'));ans[g.dataset.q]=b.dataset.v;show()}));
+function show(){const pick=ans[1]==='w'?'w':ans[2]==='i'?'i':ans[3]==='r'?'r':null;const v=document.getElementById('verdict');
+ document.querySelectorAll('.auto').forEach(a=>{const on=pick&&a.id==='a-'+pick;a.classList.toggle('pick',!!on);a.querySelector('.tag').hidden=!on});
+ if(pick)v.textContent='מתחילים עם: '+NAMES[pick]+'. הפרטים והפרומפט מחכים למטה.';
+ else if(Object.keys(ans).length===3)v.textContent='נשמע שהעומס אצלכם במקום אחר. התחילו בפרומפט 5: הוא יראיין אתכם וימצא את המשימה הראשונה.';
+ else v.textContent='בחרו תשובות, ונראה לכם עם מה להתחיל.'}
+</script>
+
+</body>
+</html>

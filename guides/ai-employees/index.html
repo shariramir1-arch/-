@@ -1,0 +1,213 @@
+<!doctype html>
+<html lang="he" dir="rtl">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<style>:root{padding-top:env(safe-area-inset-top,0px);padding-bottom:env(safe-area-inset-bottom,0px)}body{margin:0}img{max-width:100%}[hidden]{display:none!important}</style>
+<title>5 משימות ל-AI</title>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Heebo:wght@300;400;500;700;800&display=swap">
+<style>
+/* Layout: reel 08's world as a page — warm off-white, near-black Heebo, one blue accent, wide air, one idea per block.
+   A quiet "9 in 10" opener with the honest caveat, five chores as a numbered list (a real order: easiest first),
+   each with a prompt and a line to say to the team. Interaction follows apple-design: press feedback, instant copy
+   state, details open from their row, reduced motion. Deliberately single-theme (bright), every colour set explicitly. */
+:root{
+ --bg:#F6F3ED;--card:#FFFFFF;--ink:#17171C;--mute:#6E6B78;--line:#DDD8CF;--blue:#2F6BFF;--blueSoft:#E6EDFF;--good:#1E9E5A;
+ --f:"Heebo",system-ui,sans-serif;--ease:cubic-bezier(.2,.8,.2,1);color-scheme:light}
+*{box-sizing:border-box}
+body{background:var(--bg);color:var(--ink);font-family:var(--f);font-size:1.06rem;line-height:1.7;font-weight:400;
+ padding-left:max(16px,env(safe-area-inset-left,0px));padding-right:max(16px,env(safe-area-inset-right,0px));padding-block:2.4rem 3rem}
+.wrap{max-width:42rem;margin-inline:auto;display:flex;flex-direction:column;gap:3rem}
+h1,h2,h3{margin:0;text-wrap:balance}
+h1{font-size:clamp(2.3rem,8.5vw,3.6rem);line-height:1.05;font-weight:800;letter-spacing:-.025em}
+h2{font-size:clamp(1.5rem,5vw,2rem);line-height:1.15;font-weight:800;letter-spacing:-.015em}
+h3{font-size:1.2rem;line-height:1.3;font-weight:700}
+p{margin:0}
+section{display:flex;flex-direction:column;gap:1.1rem}
+.kick{font-size:.9rem;font-weight:500;color:var(--mute);letter-spacing:.02em}
+.lede{font-size:1.2rem;color:var(--mute);max-width:34rem}
+.blue{color:var(--blue)}
+.src{font-size:.86rem;color:var(--mute)}
+
+.stat{display:flex;flex-direction:column;gap:.8rem;padding-block:1rem;border-block:1px solid var(--line)}
+.stat .n{font-size:clamp(3.4rem,14vw,5.4rem);font-weight:800;line-height:1;letter-spacing:-.03em}
+.dots{display:flex;gap:.45rem;direction:ltr;justify-content:flex-end;flex-wrap:wrap}
+.dots i{width:1.1rem;height:1.1rem;border-radius:50%;background:var(--blue)}
+.dots i:last-child{background:var(--line)}
+.but{background:var(--card);border-radius:18px;padding:1.1rem 1.2rem;display:flex;flex-direction:column;gap:.5rem}
+.row{display:grid;grid-template-columns:4.2rem minmax(0,1fr);gap:.8rem;align-items:center}
+.row b{font-size:1.5rem;font-weight:800;direction:ltr;text-align:right;font-variant-numeric:tabular-nums}
+.track{height:.5rem;border-radius:.25rem;background:var(--line);overflow:hidden;margin-top:.3rem}
+.track i{display:block;height:100%;border-radius:.25rem}
+
+ol.tasks{list-style:none;margin:0;padding:0;counter-reset:t;display:flex;flex-direction:column;gap:1.4rem}
+ol.tasks>li{counter-increment:t;background:var(--card);border-radius:20px;padding:1.3rem 1.2rem;display:flex;flex-direction:column;gap:.8rem;min-width:0}
+ol.tasks>li>h3::before{content:counter(t);display:inline-grid;place-items:center;width:2rem;height:2rem;border-radius:50%;background:var(--blueSoft);color:var(--blue);font-weight:800;font-size:1rem;margin-inline-end:.6rem;vertical-align:.1rem}
+.say{border-inline-start:3px solid var(--blue);padding-inline-start:.8rem;color:var(--ink)}
+.say small{display:block;color:var(--mute);font-size:.85rem}
+
+.copybox{border:1px solid var(--line);border-radius:14px;background:var(--bg);display:flex;flex-direction:column;min-width:0}
+.copybar{display:flex;justify-content:space-between;align-items:center;gap:.8rem;padding:.5rem .8rem;border-bottom:1px solid var(--line)}
+.copybar span{font-size:.9rem;color:var(--mute)}
+.copybox pre{margin:0;padding:.85rem .9rem;white-space:pre-wrap;word-break:break-word;font-family:var(--f);font-size:.98rem;line-height:1.75}
+button.copy{font:700 .92rem var(--f);background:var(--blue);color:#FFFFFF;border:0;border-radius:999px;padding:.42rem 1rem;cursor:pointer;flex:none;min-width:5.4rem;
+ transition:transform .25s var(--ease),background-color .2s}
+button.copy:active{transform:scale(.97);transition-duration:80ms}
+button.copy.done{background:var(--good)}
+:is(button,a,summary):focus-visible{outline:2px solid var(--blue);outline-offset:3px}
+
+.talk{background:var(--blueSoft);border-radius:20px;padding:1.3rem 1.2rem;display:flex;flex-direction:column;gap:.8rem}
+.talk ol{margin:0;padding-inline-start:1.3rem;display:flex;flex-direction:column;gap:.5rem}
+ul.plain{margin:0;padding-inline-start:1.2rem;display:flex;flex-direction:column;gap:.4rem}
+
+details{border-bottom:1px solid var(--line)}
+summary{cursor:pointer;list-style:none;display:flex;justify-content:space-between;gap:1rem;align-items:center;padding:.9rem 0;font-weight:700}
+summary::-webkit-details-marker{display:none}
+summary::after{content:"+";font-weight:400;font-size:1.6rem;color:var(--blue);transition:transform .35s var(--ease)}
+details[open] summary::after{transform:rotate(45deg)}
+details .ans{padding-bottom:1rem;color:var(--mute);transform-origin:top right;animation:drop .35s var(--ease)}
+@keyframes drop{from{opacity:0;transform:translateY(-6px)}}
+
+footer{border-top:1px solid var(--line);padding-top:1.4rem;display:flex;flex-direction:column;gap:.7rem}
+footer .lme{font-size:1.7rem;font-weight:800;letter-spacing:.14em;direction:ltr;text-align:right}
+.contact{display:flex;flex-wrap:wrap;gap:.6rem;align-items:center}
+.contact a{font-weight:700;color:var(--blue);text-decoration:none;direction:ltr}
+.contact .ph{font-weight:700;direction:ltr;user-select:all}
+@media (prefers-reduced-motion:reduce){*,*::before,*::after{transition-duration:1ms!important;animation:none!important}}
+</style>
+</head>
+<body>
+<div class="wrap" dir="rtl" lang="he">
+  <header style="display:flex;flex-direction:column;gap:1rem">
+    <div class="kick">LME · המדריך לסרטון "ה-<bdi>AI</bdi> ייקח לך את העובדים?"</div>
+    <h1>5 משימות להעביר<br>ל-<bdi>AI</bdi> <span class="blue">השבוע</span></h1>
+    <p class="lede">לא כדי להחליף מישהו. כדי שהצוות שלכם יפסיק לבזבז שעות על עבודה שאף אחד לא אוהב.</p>
+  </header>
+
+  <section aria-labelledby="facts-h">
+    <h2 id="facts-h">קודם, העובדות</h2>
+    <div class="stat">
+      <div class="n"><span class="blue">9</span> מתוך 10</div>
+      <div class="dots" aria-hidden="true"><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i></div>
+      <p>עסקים שמשתמשים ב-<bdi>AI</bdi> אמרו שמספר העובדים אצלם לא השתנה בגללו.</p>
+      <p class="src">מקור: הלמ"ס, סקר מגמות בעסקים, יוני 2025 (עסקים עם 10 עובדים ומעלה). כ-90% מהעסקים שמשתמשים ב-<bdi>AI</bdi> ציינו שאין לו כרגע השפעה על היקף התעסוקה.</p>
+    </div>
+    <div class="but">
+      <h3>אבל כדאי לדעת: עסקים מגייסים פחות</h3>
+      <div class="row"><b>13%</b><div>ויתרו על גיוס עובד<div class="track"><i style="width:65%;background:var(--blue)"></i></div></div></div>
+      <div class="row"><b>3.3%</b><div>פיטרו עובד בגלל <bdi>AI</bdi><div class="track"><i style="width:16.5%;background:var(--ink)"></i></div></div></div>
+      <p class="src">סקר בארה"ב (<bdi>PYMNTS</bdi>, 2026), בקרב עסקים קטנים ובינוניים שמשתמשים ב-<bdi>AI</bdi>. נתון מארה"ב, לא מישראל.</p>
+    </div>
+  </section>
+
+  <section aria-labelledby="tasks-h">
+    <h2 id="tasks-h">5 המשימות</h2>
+    <p>מסודרות מהקלה לקשה. כל משימה באה עם פרומפט מוכן ל-<bdi>ChatGPT</bdi>, ל-<bdi>Claude</bdi> או ל-<bdi>Gemini</bdi>, ועם משפט אחד לומר לצוות.</p>
+    <ol class="tasks">
+      <li>
+        <h3>תשובות לשאלות שחוזרות</h3>
+        <p>מאגר תשובות מוכנות לשאלות שהצוות עונה עליהן כל יום. העובד עדיין עונה, רק מהר יותר.</p>
+        <div class="copybox"><div class="copybar"><span>פרומפט</span><button class="copy" type="button" data-t="t1">העתקה</button></div>
+<pre id="t1">אני מנהל/ת עסק בתחום [התחום]. אלה השאלות שהלקוחות שואלים אותנו הכי הרבה:
+[רשימת שאלות]
+וזה המידע הנכון: [מחירים, שעות, מדיניות, כתובת]
+כתוב לכל שאלה תשובה קצרה וחמה בעברית, שהצוות יוכל להעתיק ולהתאים.
+אל תמציא מידע. אם חסר משהו, כתוב [להשלים].</pre></div>
+        <p class="say"><small>מה להגיד לצוות</small>"הכנו תשובות מוכנות, כדי שלא תצטרכו להקליד את אותו הדבר עשרים פעם ביום."</p>
+      </li>
+      <li>
+        <h3>סיכום פגישה למשימות</h3>
+        <p>מדביקים את הסיכום שלכם או את התמלול, ומקבלים רשימה ברורה: מה הוחלט, מי עושה מה ועד מתי.</p>
+        <div class="copybox"><div class="copybar"><span>פרומפט</span><button class="copy" type="button" data-t="t2">העתקה</button></div>
+<pre id="t2">הנה ההערות מהפגישה שלנו:
+[הדבקת הערות או תמלול]
+סכם בעברית:
+1. מה הוחלט (עד 5 נקודות).
+2. משימות: מי, מה, עד מתי.
+3. שאלות שנשארו פתוחות.
+אל תוסיף החלטות שלא נאמרו.</pre></div>
+        <p class="say"><small>מה להגיד לצוות</small>"מעכשיו אף אחד לא צריך לשבת אחרי הפגישה ולכתוב סיכום."</p>
+      </li>
+      <li>
+        <h3>טיוטה להודעה או מייל ללקוח</h3>
+        <p>הודעות רגישות: עיכוב, שינוי מחיר, תשובה ללקוח כועס. ה-<bdi>AI</bdi> כותב טיוטה, ואדם מאשר ושולח.</p>
+        <div class="copybox"><div class="copybar"><span>פרומפט</span><button class="copy" type="button" data-t="t3">העתקה</button></div>
+<pre id="t3">כתוב טיוטה בעברית להודעה ללקוח.
+המצב: [מה קרה]
+מה אני רוצה שהלקוח יבין: [המסר]
+מה אני מציע לו: [הפתרון]
+טון: [אמפתי / עניני / רשמי]. עד 6 שורות. בלי להבטיח דברים שלא כתבתי.</pre></div>
+        <p class="say"><small>מה להגיד לצוות</small>"ה-AI כותב טיוטה ראשונה, ואתם מחליטים מה יוצא בסוף."</p>
+      </li>
+      <li>
+        <h3>הצעת מחיר מתבנית</h3>
+        <p>מתבנית קבועה שלכם ומכמה פרטים על הלקוח מקבלים הצעה מסודרת. את המחירים תמיד בודק בן אדם.</p>
+        <div class="copybox"><div class="copybar"><span>פרומפט</span><button class="copy" type="button" data-t="t4">העתקה</button></div>
+<pre id="t4">זו התבנית של הצעת המחיר שלנו:
+[הדבקת תבנית]
+פרטי הלקוח והעבודה: [שם, מה הוא צריך, היקף, מועדים]
+מלא את התבנית בעברית מקצועית. השאר את שדות המחיר כ-[מחיר לבדיקה] ואל תחשב מחירים בעצמך.
+בסוף, רשום לי 3 שאלות שכדאי לשאול את הלקוח לפני ששולחים.</pre></div>
+        <p class="say"><small>מה להגיד לצוות</small>"חוסכים את ההקלדה. את המספרים אתם בודקים, כמו תמיד."</p>
+      </li>
+      <li>
+        <h3>מה הלקוחות אומרים עלינו</h3>
+        <p>מדביקים ביקורות, תגובות או הודעות, ומקבלים את שלושת הנושאים שחוזרים: מה אוהבים, ממה מתלוננים ומה כדאי לשפר קודם.</p>
+        <div class="copybox"><div class="copybar"><span>פרומפט</span><button class="copy" type="button" data-t="t5">העתקה</button></div>
+<pre id="t5">הנה ביקורות ותגובות של לקוחות על העסק שלי (בלי שמות ובלי פרטים אישיים):
+[הדבקה]
+1. מה 3 הדברים שהלקוחות הכי אוהבים?
+2. מה 3 התלונות שחוזרות הכי הרבה?
+3. מה הדבר האחד שכדאי לשפר קודם, ולמה?
+צטט משפט קצר אחד לכל נקודה מתוך מה שהדבקתי, ואל תמציא ציטוטים.</pre></div>
+        <p class="say"><small>מה להגיד לצוות</small>"נראה ביחד מה הלקוחות אוהבים בעבודה שלכם, ומה מפריע להם."</p>
+      </li>
+    </ol>
+  </section>
+
+  <section class="talk" aria-labelledby="talk-h">
+    <h2 id="talk-h">איך מציגים את זה לצוות</h2>
+    <ol>
+      <li><b>מתחילים בבעיה, לא בכלי.</b> "כולנו מבזבזים זמן על X. בואו ננסה לקצר את זה."</li>
+      <li><b>אומרים את האמת.</b> המטרה היא לפנות זמן, לא לצמצם אנשים. אם זה המצב אצלכם, תגידו את זה במפורש.</li>
+      <li><b>נותנים לעובד לנהל את זה.</b> מי שעושה את המשימה כל יום יודע הכי טוב איפה ה-<bdi>AI</bdi> עוזר ואיפה הוא טועה.</li>
+    </ol>
+  </section>
+
+  <section aria-labelledby="safe-h">
+    <h2 id="safe-h">לפני שמתחילים</h2>
+    <ul class="plain">
+      <li>לא מדביקים בצ'אט פרטים אישיים: שמות מלאים, תעודות זהות, פרטי אשראי או מידע רפואי.</li>
+      <li>בן אדם קורא כל דבר לפני שהוא יוצא ללקוח.</li>
+      <li>מתחילים במשימה אחת, ומוסיפים את הבאה אחרי שבועיים.</li>
+    </ul>
+  </section>
+
+  <section aria-labelledby="faq-h">
+    <h2 id="faq-h">שאלות נפוצות</h2>
+    <div>
+      <details><summary><span>אז ה-<bdi>AI</bdi> לא יחליף עובדים?</span></summary><div class="ans"><p>לפי הלמ"ס, ברוב העסקים שמשתמשים בו הוא לא שינה את מספר העובדים. אבל יש עסקים שמגייסים פחות, וזה עלול לגדול. לכן ההמלצה כאן היא להשתמש בו כדי לפנות זמן של העובדים שכבר יש לכם.</p></div></details>
+      <details><summary><span>צריך לשלם על כלי <bdi>AI</bdi>?</span></summary><div class="ans"><p>לחמשת הפרומפטים מספיקה גרסה חינמית. לשימוש קבוע של צוות, ובמיוחד עם מידע עסקי, שווה לבדוק תוכנית עסקית של הכלי ואת הגדרות הפרטיות שלה.</p></div></details>
+      <details><summary><span>מאיפה הנתונים?</span></summary><div class="ans"><p>9 מתוך 10: הלמ"ס, סקר מגמות בעסקים, יוני 2025, עסקים עם 10 עובדים ומעלה. 13% ו-3.3%: סקר של <bdi>PYMNTS</bdi> בארה"ב מ-2026.</p></div></details>
+    </div>
+  </section>
+
+  <footer>
+    <div class="lme">LME</div>
+    <span>הטמעת מערכות מידע ו-<bdi>AI</bdi> לעסקים. רוצים שנעזור לכם להכניס את זה לעסק? שלחו לנו הודעה.</span>
+    <div class="contact">
+      <a href="https://lmeacademy.co.il" target="_blank" rel="noopener">lmeacademy.co.il</a>
+      <span class="ph" id="phone">053-6576136</span>
+      <button class="copy" type="button" data-t="phone">העתקת מספר</button>
+    </div>
+  </footer>
+</div>
+<script>
+document.addEventListener('click',e=>{const b=e.target.closest('button.copy');if(!b)return;const el=document.getElementById(b.dataset.t);const label=b.textContent;
+ const ok=()=>{b.textContent='הועתק ✓';b.classList.add('done');setTimeout(()=>{b.textContent=label;b.classList.remove('done')},1600)};
+ const sel=()=>{const r=document.createRange();r.selectNodeContents(el);const s=getSelection();s.removeAllRanges();s.addRange(r);b.textContent='סומן, העתיקו'};
+ try{navigator.clipboard.writeText(el.textContent).then(ok,sel)}catch(_){sel()}});
+</script>
+
+</body>
+</html>
