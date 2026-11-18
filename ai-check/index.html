@@ -1,0 +1,1693 @@
+<!doctype html><html><head><meta charset=utf8><meta name=viewport content="width=device-width,initial-scale=1,viewport-fit=cover"><style>:root{color-scheme:light;box-sizing:border-box;padding-top:env(safe-area-inset-top,0px);padding-bottom:env(safe-area-inset-bottom,0px)}html{scroll-padding-top:env(safe-area-inset-top,0px)}body{margin:0;padding:0;font:14px -apple-system,BlinkMacSystemFont,sans-serif;background:#fff;color:#000}img{max-width:100%}[hidden]:not([hidden=until-found i]){display:none!important}</style></head><body>
+<title>בדיקת מוכנות ל-AI</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Heebo:wght@400;600;800&display=swap">
+<style>
+/* AI Readiness Check: "a calm diagnostic card".
+   Warm paper, ink, orange for action and the score, violet for progress, green for strength. */
+
+/* ---------- Tokens ---------- */
+:root {
+  color-scheme: light;
+  --bg: #FBF7F2;
+  --bg-glow: #FFEFE5;
+  --surface: #FFFFFF;
+  --surface-2: #F6F0E8;
+  --ink: #1E1B2E;
+  --ink-2: #4A4560;
+  --muted: #6E6880;
+  --line: #ECE4DA;
+  --line-strong: #DCD1C4;
+
+  --accent: #FF6A3D;
+  --accent-ink: #1E1B2E; /* dark ink on orange: 6:1 (white was 2.85:1) */
+  --accent-hover: #F25A2C;
+  --accent-soft: #FFE6DC;
+  --accent2: #7C5CFF;
+  --accent2-soft: #ECE6FF;
+  --good: #2FD68F;
+  --good-ink: #0B5A39;
+  --good-soft: #DDF8EC;
+  --wa: #25D366;
+  --wa-hover: #1EBE5A;
+  --wa-ink: #0B2E1A;
+
+  --chart-low: var(--accent);
+  --chart-mid: var(--accent2);
+  --chart-high: var(--good);
+  --chart-track: #EFE7DD;
+
+  --focus: #7C5CFF;
+  --shadow-sm: 0 1px 2px rgba(30, 27, 46, 0.06), 0 2px 6px rgba(30, 27, 46, 0.04);
+  --shadow-md: 0 2px 4px rgba(30, 27, 46, 0.04), 0 10px 30px rgba(30, 27, 46, 0.08);
+  --shadow-cta: 0 6px 18px rgba(255, 106, 61, 0.28);
+
+  --radius: 20px;
+  --radius-md: 16px;
+  --radius-sm: 12px;
+  --gutter: 16px;
+  --maxw: 36rem;
+
+  --font: "Heebo", system-ui, -apple-system, "Segoe UI", Arial, sans-serif;
+  --ease-out: cubic-bezier(0.22, 1, 0.36, 1);
+  --ease-in-out: cubic-bezier(0.65, 0, 0.35, 1);
+  --dur-fast: 120ms;
+  --dur: 240ms;
+  --dur-slow: 900ms;
+}
+
+@media (prefers-color-scheme: dark) {
+  :root:not([data-theme="light"]) {
+    color-scheme: dark;
+    --bg: #2A2540;
+    --bg-glow: #3A2F55;
+    --surface: #352F4E;
+    --surface-2: #3D3659;
+    --ink: #F6F1EA;
+    --ink-2: #DDD5E8;
+    --muted: #B3AACB;
+    --line: #4A4268;
+    --line-strong: #5B527C;
+    --accent-hover: #FF8159;
+    --accent-soft: #553A49;
+    --accent2: #9B82FF;
+    --accent2-soft: #463D72;
+    --good-ink: #9AF0C8;
+    --good-soft: #2C4A4A;
+    --chart-mid: #9B82FF;
+    --chart-track: #463F63;
+    --focus: #B5A2FF;
+    --shadow-sm: 0 1px 2px rgba(10, 8, 20, 0.25);
+    --shadow-md: 0 2px 6px rgba(10, 8, 20, 0.2), 0 12px 30px rgba(10, 8, 20, 0.28);
+    --shadow-cta: 0 6px 18px rgba(255, 106, 61, 0.3);
+  }
+}
+:root[data-theme="dark"] {
+  color-scheme: dark;
+  --bg: #2A2540;
+  --bg-glow: #3A2F55;
+  --surface: #352F4E;
+  --surface-2: #3D3659;
+  --ink: #F6F1EA;
+  --ink-2: #DDD5E8;
+  --muted: #B3AACB;
+  --line: #4A4268;
+  --line-strong: #5B527C;
+  --accent-hover: #FF8159;
+  --accent-soft: #553A49;
+  --accent2: #9B82FF;
+  --accent2-soft: #463D72;
+  --good-ink: #9AF0C8;
+  --good-soft: #2C4A4A;
+  --chart-mid: #9B82FF;
+  --chart-track: #463F63;
+  --focus: #B5A2FF;
+  --shadow-sm: 0 1px 2px rgba(10, 8, 20, 0.25);
+  --shadow-md: 0 2px 6px rgba(10, 8, 20, 0.2), 0 12px 30px rgba(10, 8, 20, 0.28);
+  --shadow-cta: 0 6px 18px rgba(255, 106, 61, 0.3);
+}
+
+/* ---------- Base ---------- */
+*, *::before, *::after { box-sizing: border-box; }
+html { -webkit-text-size-adjust: 100%; text-size-adjust: 100%; }
+html, body { margin: 0; padding: 0; }
+body {
+  min-height: 100vh;
+  min-height: 100dvh;
+  background-color: var(--bg);
+  background-image: radial-gradient(120% 60% at 85% -10%, var(--bg-glow) 0%, transparent 60%);
+  background-repeat: no-repeat;
+  color: var(--ink);
+  font-family: var(--font);
+  font-size: 1rem;
+  line-height: 1.6;
+  overflow-x: hidden;
+  -webkit-font-smoothing: antialiased;
+  -webkit-tap-highlight-color: transparent;
+}
+bdi { unicode-bidi: isolate; }
+button { font: inherit; color: inherit; }
+[hidden] { display: none !important; }
+.sr-only {
+  position: absolute !important;
+  width: 1px; height: 1px;
+  margin: -1px; padding: 0;
+  overflow: hidden;
+  clip: rect(0 0 0 0);
+  clip-path: inset(50%);
+  white-space: nowrap;
+  border: 0;
+}
+
+#app {
+  width: 100%;
+  max-width: calc(var(--maxw) + 2 * var(--gutter));
+  margin: 0 auto;
+  padding: 24px var(--gutter) 40px;
+  direction: rtl;
+}
+
+:where(a, button, [tabindex]):focus-visible {
+  outline: 3px solid var(--focus);
+  outline-offset: 3px;
+}
+
+/* ---------- Screen card ---------- */
+.screen {
+  background: var(--surface);
+  border: 1px solid var(--line);
+  border-radius: var(--radius);
+  box-shadow: var(--shadow-md);
+  padding: 24px 16px 20px;
+  animation: screen-in 360ms var(--ease-out) both;
+  overflow-wrap: anywhere;
+}
+@keyframes screen-in {
+  from { opacity: 0; transform: translateY(12px); }
+  to { opacity: 1; transform: none; }
+}
+@media (min-width: 480px) {
+  .screen { padding: 36px 32px 28px; }
+}
+@media (min-width: 768px) {
+  #app { padding-top: 48px; }
+}
+
+/* ---------- Type ---------- */
+.kicker {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  margin: 0 0 12px;
+  padding: 4px 12px;
+  border-radius: 999px;
+  background: var(--accent-soft);
+  color: var(--ink);
+  font-size: 0.8125rem;
+  font-weight: 600;
+  letter-spacing: 0.01em;
+}
+.kicker::before {
+  content: "";
+  width: 8px; height: 8px;
+  border-radius: 50%;
+  background: var(--accent);
+  flex: none;
+}
+.title {
+  margin: 0 0 12px;
+  font-size: clamp(1.75rem, 1.2rem + 2.6vw, 2.25rem);
+  font-weight: 800;
+  line-height: 1.15;
+  letter-spacing: -0.01em;
+  text-wrap: balance;
+}
+.lede {
+  margin: 0 0 20px;
+  font-size: 1.0625rem;
+  color: var(--ink-2);
+  text-wrap: pretty;
+}
+.bullets {
+  list-style: none;
+  margin: 0 0 24px;
+  padding: 0;
+  display: grid;
+  gap: 10px;
+}
+.bullets li {
+  position: relative;
+  padding: 12px 44px 12px 14px;
+  border-radius: var(--radius-sm);
+  background: var(--surface-2);
+  color: var(--ink);
+  line-height: 1.45;
+}
+.bullets li::before {
+  content: "";
+  position: absolute;
+  right: 14px;
+  top: 50%;
+  width: 20px; height: 20px;
+  margin-top: -10px;
+  border-radius: 50%;
+  background: var(--good) url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 20 20'%3E%3Cpath d='M5.5 10.5l3 3 6-7' fill='none' stroke='%230B2E1A' stroke-width='2.2' stroke-linecap='round' stroke-linejoin='round'/%3E%3C/svg%3E") center / 20px no-repeat;
+}
+.meta {
+  margin: 12px 0 0;
+  font-size: 0.875rem;
+  color: var(--muted);
+  text-align: center;
+}
+
+/* ---------- Buttons ---------- */
+.btn {
+  -webkit-appearance: none;
+  appearance: none;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 10px;
+  min-height: 52px;
+  padding: 12px 22px;
+  border: 1px solid transparent;
+  border-radius: var(--radius-md);
+  background: var(--surface-2);
+  color: var(--ink);
+  font-size: 1.0625rem;
+  font-weight: 600;
+  line-height: 1.2;
+  text-align: center;
+  text-decoration: none;
+  cursor: pointer;
+  user-select: none;
+  touch-action: manipulation;
+  transition: transform var(--dur-fast) var(--ease-out),
+              background-color var(--dur) var(--ease-out),
+              box-shadow var(--dur) var(--ease-out),
+              border-color var(--dur) var(--ease-out),
+              opacity var(--dur) var(--ease-out);
+}
+.btn:active:not([disabled]):not([aria-disabled="true"]) { transform: scale(0.97); }
+.btn-primary {
+  width: 100%;
+  background: var(--accent);
+  color: var(--accent-ink);
+  font-weight: 800;
+  box-shadow: var(--shadow-cta);
+}
+.btn-ghost {
+  background: transparent;
+  border-color: var(--line-strong);
+  color: var(--ink);
+}
+.btn-wa {
+  width: 100%;
+  background: var(--wa);
+  color: var(--wa-ink);
+  font-weight: 800;
+  box-shadow: 0 6px 18px rgba(37, 211, 102, 0.28);
+}
+.btn-wa::before {
+  content: "";
+  width: 22px; height: 22px;
+  flex: none;
+  background: currentColor;
+  -webkit-mask: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24'%3E%3Cpath d='M12 2.5a9.5 9.5 0 0 0-8.2 14.3L2.5 21.5l4.8-1.3A9.5 9.5 0 1 0 12 2.5zm0 1.8a7.7 7.7 0 1 1-3.9 14.3l-.3-.2-2.8.8.8-2.7-.2-.3A7.7 7.7 0 0 1 12 4.3zm-3.1 3.9c-.2 0-.5.1-.7.3-.3.3-.9.9-.9 2.1s.9 2.4 1 2.6c.1.2 1.8 2.8 4.4 3.8 2.2.9 2.6.7 3.1.6.5 0 1.5-.6 1.7-1.2.2-.6.2-1.1.2-1.2-.1-.1-.2-.2-.5-.3l-1.7-.8c-.2-.1-.4-.1-.6.1l-.8 1c-.1.2-.3.2-.5.1-.3-.1-1.1-.4-2-1.2-.8-.7-1.3-1.5-1.4-1.8-.2-.3 0-.4.1-.5l.4-.4.2-.4c.1-.2 0-.3 0-.4l-.8-1.9c-.2-.5-.4-.4-.5-.4h-.4z'/%3E%3C/svg%3E") center / contain no-repeat;
+          mask: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24'%3E%3Cpath d='M12 2.5a9.5 9.5 0 0 0-8.2 14.3L2.5 21.5l4.8-1.3A9.5 9.5 0 1 0 12 2.5zm0 1.8a7.7 7.7 0 1 1-3.9 14.3l-.3-.2-2.8.8.8-2.7-.2-.3A7.7 7.7 0 0 1 12 4.3zm-3.1 3.9c-.2 0-.5.1-.7.3-.3.3-.9.9-.9 2.1s.9 2.4 1 2.6c.1.2 1.8 2.8 4.4 3.8 2.2.9 2.6.7 3.1.6.5 0 1.5-.6 1.7-1.2.2-.6.2-1.1.2-1.2-.1-.1-.2-.2-.5-.3l-1.7-.8c-.2-.1-.4-.1-.6.1l-.8 1c-.1.2-.3.2-.5.1-.3-.1-1.1-.4-2-1.2-.8-.7-1.3-1.5-1.4-1.8-.2-.3 0-.4.1-.5l.4-.4.2-.4c.1-.2 0-.3 0-.4l-.8-1.9c-.2-.5-.4-.4-.5-.4h-.4z'/%3E%3C/svg%3E") center / contain no-repeat;
+}
+@media (hover: hover) {
+  .btn:hover:not([disabled]):not([aria-disabled="true"]) { background: var(--line); }
+  .btn-primary:hover:not([disabled]):not([aria-disabled="true"]) { background: var(--accent-hover); }
+  .btn-ghost:hover:not([disabled]):not([aria-disabled="true"]) { background: var(--surface-2); border-color: var(--ink-2); }
+  .btn-wa:hover:not([disabled]):not([aria-disabled="true"]) { background: var(--wa-hover); }
+}
+.btn[disabled],
+.btn[aria-disabled="true"] {
+  cursor: not-allowed;
+  background: var(--surface-2);
+  border-color: var(--line);
+  color: var(--muted);
+  box-shadow: none;
+  opacity: 0.8;
+}
+.btn-wa[disabled]::before,
+.btn-wa[aria-disabled="true"]::before { opacity: 0.6; }
+
+/* ---------- Quiz ---------- */
+.progress {
+  position: relative;
+  height: 8px;
+  margin: 0 0 10px;
+  border-radius: 999px;
+  background: var(--accent2-soft);
+  overflow: hidden;
+}
+.progress-bar {
+  position: absolute;
+  inset-block: 0;
+  right: 0;
+  width: 0;
+  max-width: 100%;
+  border-radius: 999px;
+  background: var(--accent2);
+  transition: width 420ms var(--ease-out);
+}
+.progress-text {
+  margin: 0 0 20px;
+  font-size: 0.875rem;
+  font-weight: 600;
+  color: var(--muted);
+  font-variant-numeric: tabular-nums;
+}
+.q-text {
+  margin: 0 0 8px;
+  font-size: clamp(1.3125rem, 1.05rem + 1.3vw, 1.625rem);
+  font-weight: 800;
+  line-height: 1.3;
+  text-wrap: balance;
+}
+.q-hint {
+  margin: 0 0 4px;
+  font-size: 0.9375rem;
+  color: var(--muted);
+}
+.options {
+  list-style: none;
+  display: grid;
+  gap: 10px;
+  margin: 20px 0 0;
+  padding: 0;
+}
+.option {
+  -webkit-appearance: none;
+  appearance: none;
+  position: relative;
+  display: flex;
+  align-items: center;
+  gap: 14px;
+  width: 100%;
+  min-height: 60px;
+  padding: 12px 14px;
+  border: 2px solid var(--line);
+  border-radius: var(--radius-md);
+  background: var(--surface);
+  color: var(--ink);
+  font-size: 1.0625rem;
+  font-weight: 400;
+  line-height: 1.4;
+  text-align: start;
+  cursor: pointer;
+  touch-action: manipulation;
+  user-select: none;
+  transition: transform var(--dur-fast) var(--ease-out),
+              border-color var(--dur) var(--ease-out),
+              background-color var(--dur) var(--ease-out),
+              box-shadow var(--dur) var(--ease-out);
+}
+.option-key {
+  flex: none;
+  display: inline-grid;
+  place-items: center;
+  width: 32px; height: 32px;
+  border-radius: 10px;
+  background: var(--surface-2);
+  border: 1px solid var(--line-strong);
+  color: var(--ink-2);
+  font-size: 0.9375rem;
+  font-weight: 800;
+  font-variant-numeric: tabular-nums;
+  transition: background-color var(--dur) var(--ease-out),
+              color var(--dur) var(--ease-out),
+              border-color var(--dur) var(--ease-out);
+}
+@media (hover: hover) {
+  .option:hover {
+    border-color: var(--accent2);
+    background: var(--surface-2);
+  }
+  .option:hover .option-key { border-color: var(--accent2); color: var(--accent2); }
+}
+.option:active { transform: scale(0.98); }
+.option:focus-visible {
+  outline: 3px solid var(--focus);
+  outline-offset: 2px;
+  border-color: var(--accent2);
+}
+.option.is-selected,
+.option[aria-pressed="true"] {
+  border-color: var(--accent);
+  background: var(--accent-soft);
+  box-shadow: 0 0 0 1px var(--accent) inset, var(--shadow-sm);
+  font-weight: 600;
+}
+.option.is-selected .option-key,
+.option[aria-pressed="true"] .option-key {
+  background: var(--accent);
+  border-color: var(--accent);
+  color: var(--accent-ink);
+}
+.option.is-selected::after,
+.option[aria-pressed="true"]::after {
+  content: "";
+  margin-inline-start: auto;
+  flex: none;
+  width: 22px; height: 22px;
+  border-radius: 50%;
+  background: var(--accent) url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 20 20'%3E%3Cpath d='M5.5 10.5l3 3 6-7' fill='none' stroke='%231E1B2E' stroke-width='2.4' stroke-linecap='round' stroke-linejoin='round'/%3E%3C/svg%3E") center / 20px no-repeat;
+  animation: pop 220ms var(--ease-out) both;
+}
+@keyframes pop {
+  from { transform: scale(0.5); opacity: 0; }
+  to { transform: none; opacity: 1; }
+}
+
+.nav {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  gap: 12px;
+  margin-top: 24px;
+}
+.nav .btn { min-height: 48px; padding-inline: 18px; }
+.nav .btn-primary { width: auto; }
+
+/* ---------- Result ---------- */
+.score {
+  display: grid;
+  justify-items: center;
+  margin: 8px 0 20px;
+  text-align: center;
+}
+.score-label {
+  margin: 0 0 8px;
+  font-size: 0.9375rem;
+  color: var(--muted);
+  font-weight: 600;
+}
+.score-ring,
+.score-num {
+  grid-row: 2;
+  grid-column: 1;
+}
+.score-ring {
+  display: block;
+  width: min(200px, 60vw);
+  height: auto;
+  aspect-ratio: 1;
+  overflow: visible;
+}
+.score-ring circle {
+  fill: none;
+  stroke-width: 12;
+  stroke-linecap: round;
+}
+.score-ring circle:first-of-type {
+  stroke: var(--chart-track);
+  stroke-opacity: 1;
+}
+.score-ring circle:not(:first-of-type),
+.score-ring .score-ring-value {
+  stroke: var(--accent);
+  transition: stroke-dasharray 1100ms var(--ease-out),
+              stroke-dashoffset 1100ms var(--ease-out),
+              stroke var(--dur) var(--ease-out);
+}
+.score.is-high .score-ring circle:not(:first-of-type),
+.score[data-level="scale"] .score-ring circle:not(:first-of-type) { stroke: var(--good); }
+.score.is-mid .score-ring circle:not(:first-of-type),
+.score[data-level="build"] .score-ring circle:not(:first-of-type) { stroke: var(--accent); }
+.score-num {
+  align-self: center;
+  font-size: clamp(3rem, 2.4rem + 3vw, 3.75rem);
+  font-weight: 800;
+  line-height: 1;
+  letter-spacing: -0.02em;
+  font-variant-numeric: tabular-nums;
+  color: var(--ink);
+}
+.score-level {
+  grid-row: 3;
+  grid-column: 1;
+  display: inline-block;
+  margin-top: 14px;
+  padding: 6px 16px;
+  border-radius: 999px;
+  background: var(--accent-soft);
+  color: var(--ink);
+  font-size: 1.125rem;
+  font-weight: 800;
+}
+.score.is-high .score-level,
+.score[data-level="scale"] .score-level { background: var(--good-soft); color: var(--good-ink); }
+.score.is-mid .score-level,
+.score[data-level="build"] .score-level { background: var(--accent2-soft); }
+
+.summary {
+  margin: 0 0 24px;
+  text-align: center;
+  color: var(--ink-2);
+  font-size: 1.0625rem;
+  text-wrap: pretty;
+}
+.summary strong, .summary h2, .summary h3 {
+  display: block;
+  margin: 0 0 6px;
+  color: var(--ink);
+  font-size: 1.25rem;
+  font-weight: 800;
+  line-height: 1.3;
+}
+.summary p { margin: 0; }
+
+h2.kicker { margin-top: 28px; }
+.score .kicker { margin: 0 0 14px; }
+
+/* ---------- Chart ---------- */
+.chart {
+  margin: 0 0 8px;
+  padding: 12px 8px;
+  border-radius: var(--radius-md);
+  background: var(--surface-2);
+}
+@media (min-width: 480px) {
+  .chart { padding: 16px 14px; }
+}
+.chart-svg {
+  /* Laid out in CSS px (no viewBox), so text sizes below are the real rendered sizes. */
+  display: block;
+  width: 100%;
+  overflow: visible;
+}
+.chart-label {
+  fill: var(--ink);
+  color: var(--ink);
+  font-family: var(--font);
+  font-size: 15px;
+  font-weight: 600;
+}
+.chart-value {
+  fill: var(--ink-2);
+  color: var(--ink-2);
+  font-family: var(--font);
+  font-size: 15px;
+  font-weight: 800;
+  font-variant-numeric: tabular-nums;
+}
+.chart-track {
+  fill: var(--chart-track);
+  background: var(--chart-track);
+}
+.chart-bar {
+  fill: var(--chart-mid);
+  transform-box: fill-box;
+  transform-origin: 100% 50%; /* RTL: grow from the right edge */
+  transition: transform var(--dur-slow) var(--ease-out),
+              fill var(--dur) var(--ease-out);
+}
+.chart-row:nth-of-type(2) .chart-bar { transition-delay: 70ms; }
+.chart-row:nth-of-type(3) .chart-bar { transition-delay: 140ms; }
+.chart-row:nth-of-type(4) .chart-bar { transition-delay: 210ms; }
+.chart-bar.is-low { fill: var(--chart-low); }
+.chart-bar.is-mid { fill: var(--chart-mid); }
+.chart-bar.is-high { fill: var(--chart-high); }
+
+/* ---------- Recommendations ---------- */
+.recs {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+  display: grid;
+  gap: 12px;
+}
+.rec {
+  position: relative;
+  padding: 16px 14px 14px;
+  border: 1px solid var(--line);
+  border-radius: var(--radius-md);
+  background: var(--surface);
+  box-shadow: var(--shadow-sm);
+  border-inline-start: 4px solid var(--accent2);
+}
+.rec:first-child { border-inline-start-color: var(--accent); }
+.rec-dim {
+  display: inline-block;
+  margin: 0 0 6px;
+  padding: 2px 10px;
+  border-radius: 999px;
+  background: var(--accent2-soft);
+  color: var(--ink);
+  font-size: 0.8125rem;
+  font-weight: 600;
+}
+.rec:first-child .rec-dim { background: var(--accent-soft); }
+.rec-title {
+  margin: 0 0 6px;
+  font-size: 1.125rem;
+  font-weight: 800;
+  line-height: 1.35;
+}
+.rec-text {
+  margin: 0 0 12px;
+  color: var(--ink-2);
+}
+.rec-step {
+  margin: 0;
+  padding: 10px 12px;
+  border-radius: var(--radius-sm);
+  background: var(--surface-2);
+  color: var(--ink);
+  font-size: 0.9375rem;
+  line-height: 1.5;
+}
+.rec-step strong, .rec-step b {
+  color: var(--ink);
+  font-weight: 800;
+}
+
+/* ---------- CTA ---------- */
+.cta {
+  margin: 28px 0 0;
+  padding: 22px 18px 18px;
+  border-radius: var(--radius);
+  background:
+    radial-gradient(120% 90% at 100% 0%, var(--accent-soft) 0%, transparent 65%),
+    var(--surface-2);
+  border: 1px solid var(--line);
+  text-align: center;
+}
+.cta-title {
+  margin: 0 0 6px;
+  font-size: 1.3125rem;
+  font-weight: 800;
+  line-height: 1.3;
+  text-wrap: balance;
+}
+.cta-text {
+  margin: 0 0 16px;
+  color: var(--ink-2);
+  text-wrap: pretty;
+}
+
+.actions {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 10px;
+  margin-top: 16px;
+}
+.actions .btn { flex: 1 1 100%; }
+@media (min-width: 480px) {
+  .actions .btn { flex: 1 1 0; }
+}
+
+.disclaimer {
+  margin: 20px 0 0;
+  font-size: 0.8125rem;
+  line-height: 1.5;
+  color: var(--muted);
+  text-align: center;
+}
+
+.brand {
+  margin: 20px 0 0;
+  font-size: 0.8125rem;
+  color: var(--muted);
+  text-align: center;
+  letter-spacing: 0.01em;
+}
+.brand strong, .brand b { color: var(--ink); font-weight: 800; }
+
+/* ---------- Reduced motion ---------- */
+@media (prefers-reduced-motion: reduce) {
+  *, *::before, *::after {
+    animation-duration: 0.01ms !important;
+    animation-delay: 0ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.01ms !important;
+    transition-delay: 0ms !important;
+    scroll-behavior: auto !important;
+  }
+  .btn:active, .option:active { transform: none !important; }
+  .chart-bar { transition: none !important; }
+}
+
+</style>
+<main id="app" dir="rtl" lang="he">
+  <section id="screen-intro" class="screen"></section>
+  <section id="screen-quiz" class="screen" hidden></section>
+  <section id="screen-result" class="screen" hidden></section>
+</main>
+<script>window.LME_CONFIG = { whatsapp: '972536576136' };</script>
+<script>
+(function () {
+// AI readiness check: 12 questions, 3 per dimension (data / process / people / tools).
+// Options are listed 0 -> 3 (0 = least ready, 3 = most ready).
+const G = typeof window !== 'undefined' ? window : globalThis;
+
+G.LME_QUESTIONS = [
+  {
+    id: 'q1', dim: 'tools',
+    text: 'איך אתם מנהלים היום פגישות ותורים?',
+    hint: '',
+    options: [
+      { label: 'ביומן נייר או בזיכרון', value: 0 },
+      { label: 'ביומן בטלפון, כל אחד לעצמו', value: 1 },
+      { label: 'ביומן משותף לכל הצוות', value: 2 },
+      { label: 'מערכת זימון שהלקוחות קובעים בה לבד', value: 3 }
+    ]
+  },
+  {
+    id: 'q2', dim: 'data',
+    text: 'איפה נמצאים היום פרטי הלקוחות שלכם?',
+    hint: 'מספרי טלפון, פניות קודמות, מה הזמינו ומתי',
+    options: [
+      { label: 'בעיקר בוואטסאפ ובזיכרון', value: 0 },
+      { label: 'באקסל או במחברת, לא תמיד מעודכן', value: 1 },
+      { label: 'בטבלה אחת מסודרת שכולם מעדכנים', value: 2 },
+      { label: 'במערכת CRM עם כל ההיסטוריה', value: 3 }
+    ]
+  },
+  {
+    id: 'q3', dim: 'process',
+    text: 'מה קורה אחרי שלקוח מבקש הצעת מחיר?',
+    hint: '',
+    options: [
+      { label: 'כותבים מאפס, כשמתפנה רגע', value: 0 },
+      { label: 'מעתיקים הצעה קודמת ומתקנים', value: 1 },
+      { label: 'יש תבנית קבועה ומישהו שחוזר ללקוח', value: 2 },
+      { label: 'ההצעה יוצאת מהמערכת, עם תזכורת למעקב', value: 3 }
+    ]
+  },
+  {
+    id: 'q4', dim: 'people',
+    text: 'מישהו אצלכם כבר משתמש ב-ChatGPT, Claude או כלי דומה?',
+    hint: '',
+    options: [
+      { label: 'עוד לא, לא היה זמן לבדוק', value: 0 },
+      { label: 'ניסינו פעם-פעמיים, מסקרנות', value: 1 },
+      { label: 'חלק מאיתנו משתמשים בזה באופן קבוע', value: 2 },
+      { label: 'זה חלק מהעבודה, עם הנחיות (פרומפטים) קבועות', value: 3 }
+    ]
+  },
+  {
+    id: 'q5', dim: 'data',
+    text: 'רוצים לדעת כמה הכנסתם החודש מכל שירות או מוצר. כמה זמן זה לוקח?',
+    hint: '',
+    options: [
+      { label: 'קשה לדעת, אין לנו את הנתונים האלה', value: 0 },
+      { label: 'כמה שעות של קבלות ואקסלים', value: 1 },
+      { label: 'בערך חצי שעה, צריך לחבר כמה דוחות', value: 2 },
+      { label: 'כמה דקות, יש דוח מוכן', value: 3 }
+    ]
+  },
+  {
+    id: 'q6', dim: 'tools',
+    text: 'המערכות שלכם מדברות זו עם זו?',
+    hint: 'למשל: חשבונית שנוצרת לבד כשנסגרת עסקה',
+    options: [
+      { label: 'אין ממש מערכות, הכול ידני', value: 0 },
+      { label: 'יש כמה, ומעתיקים ביניהן ידנית', value: 1 },
+      { label: 'חלק מחוברות, חלק עדיין ידני', value: 2 },
+      { label: 'רובן מחוברות, והמידע עובר לבד', value: 3 }
+    ]
+  },
+  {
+    id: 'q7', dim: 'process',
+    text: 'המשימות שחוזרות על עצמן כתובות איפשהו?',
+    hint: 'למשל: קליטת לקוח חדש, הוצאת חשבונית, שליחת תזכורת',
+    options: [
+      { label: 'לא, זה בראש של מי שעושה', value: 0 },
+      { label: 'קצת, בעיקר בהודעות ובפתקים', value: 1 },
+      { label: 'יש מסמך נהלים, לא תמיד מעודכן', value: 2 },
+      { label: 'כתוב ומעודכן, כל אחד יכול למלא מקום', value: 3 }
+    ]
+  },
+  {
+    id: 'q8', dim: 'people',
+    text: 'איך הצוות בדרך כלל מגיב כשמכניסים כלי חדש?',
+    hint: 'עובדים לבד? ענו על עצמכם',
+    options: [
+      { label: 'מעדיפים להישאר עם מה שמוכר, וזה טבעי', value: 0 },
+      { label: 'מנסים, אבל חוזרים מהר להרגלים', value: 1 },
+      { label: 'מסתגלים אחרי הדרכה וקצת סבלנות', value: 2 },
+      { label: 'מתלהבים, ואפילו מציעים כלים בעצמם', value: 3 }
+    ]
+  },
+  {
+    id: 'q9', dim: 'data',
+    text: 'צריך חוזה או קבלה מלפני שנה. תוך כמה זמן אתם מוצאים אותם?',
+    hint: '',
+    options: [
+      { label: 'לפעמים לא מוצאים בכלל', value: 0 },
+      { label: 'מחפשים בוואטסאפ, במייל ובמגירה', value: 1 },
+      { label: 'די מהר, בתיקייה במחשב', value: 2 },
+      { label: 'תוך דקה, הכול מסודר בתיקיות בענן', value: 3 }
+    ]
+  },
+  {
+    id: 'q10', dim: 'process',
+    text: 'כמה זמן בשבוע הולך על עבודה משרדית?',
+    hint: 'הקלדות, תיאומים, חשבוניות, מעקב אחרי תשלומים',
+    options: [
+      { label: 'רוב השבוע, על חשבון העבודה עצמה', value: 0 },
+      { label: 'בערך יום-יומיים בשבוע', value: 1 },
+      { label: 'כמה שעות, רק מה שחייבים', value: 2 },
+      { label: 'מעט מאוד, רוב זה קורה אוטומטית', value: 3 }
+    ]
+  },
+  {
+    id: 'q11', dim: 'tools',
+    text: 'איך מתנהלות אצלכם החשבוניות וההנהלה החשבונית?',
+    hint: '',
+    options: [
+      { label: 'בפנקס קבלות ובניירות לרואה החשבון', value: 0 },
+      { label: 'בקבצי וורד או אקסל במחשב', value: 1 },
+      { label: 'בתוכנת חשבוניות דיגיטלית', value: 2 },
+      { label: 'בתוכנה שמחוברת לבנק ולמערכת הלקוחות', value: 3 }
+    ]
+  },
+  {
+    id: 'q12', dim: 'people',
+    text: 'מי אחראי אצלכם על החלטות בנושא טכנולוגיה, ויש לזה זמן?',
+    hint: '',
+    options: [
+      { label: 'אף אחד, זה נדחה כל פעם מחדש', value: 0 },
+      { label: 'אני, כשנשאר זמן בסוף היום', value: 1 },
+      { label: 'אני, ואני מפנה לזה זמן ותקציב', value: 2 },
+      { label: 'יש אחראי, עם זמן ותקציב מוגדרים', value: 3 }
+    ]
+  }
+];
+})();
+
+</script>
+<script>
+(function () {
+// Scoring for the AI readiness check. Pure functions, no DOM.
+const G = typeof window !== 'undefined' ? window : globalThis;
+
+G.LME_DIMS = {
+  data: 'מידע ונתונים',
+  process: 'תהליכים',
+  people: 'צוות והרגלים',
+  tools: 'כלים ומערכות',
+};
+
+G.LME_LEVELS = {
+  start: { min: 0, max: 39, name: 'מתחילים' },
+  build: { min: 40, max: 69, name: 'בונים' },
+  scale: { min: 70, max: 100, name: 'מאיצים' },
+};
+
+// Level id for a 0–100 score (rounded and clamped first).
+G.LME_LEVEL_FOR = function (score) {
+  let s = Math.round(Number(score));
+  if (!Number.isFinite(s)) s = 0;
+  s = Math.min(100, Math.max(0, s));
+  if (s >= G.LME_LEVELS.scale.min) return 'scale';
+  if (s >= G.LME_LEVELS.build.min) return 'build';
+  return 'start';
+};
+
+G.LME_SCORE = function (answers, questions) {
+  const DIM_ORDER = ['data', 'process', 'people', 'tools'];
+  const ans = answers && typeof answers === 'object' ? answers : {};
+  const qs = Array.isArray(questions) ? questions : [];
+
+  const sums = { data: 0, process: 0, people: 0, tools: 0 };
+  const counts = { data: 0, process: 0, people: 0, tools: 0 };
+  let answered = 0;
+
+  for (const q of qs) {
+    if (!q || typeof q !== 'object') continue;
+    const has = Object.prototype.hasOwnProperty.call(ans, q.id);
+    const raw = has ? ans[q.id] : undefined;
+    const isNum = raw !== null && raw !== undefined && raw !== '' && Number.isFinite(Number(raw));
+    if (isNum) answered++;
+    if (!Object.prototype.hasOwnProperty.call(sums, q.dim)) continue;
+    counts[q.dim]++;
+    if (isNum) sums[q.dim] += Math.min(3, Math.max(0, Number(raw)));
+  }
+
+  const dims = {};
+  for (const d of DIM_ORDER) {
+    dims[d] = counts[d] ? Math.round((sums[d] / (3 * counts[d])) * 100) : 0;
+  }
+
+  const total = Math.round(DIM_ORDER.reduce((a, d) => a + dims[d], 0) / DIM_ORDER.length);
+
+  const weakest = DIM_ORDER.slice()
+    .sort((a, b) => dims[a] - dims[b] || DIM_ORDER.indexOf(a) - DIM_ORDER.indexOf(b))
+    .slice(0, 3);
+
+  return {
+    total,
+    level: G.LME_LEVEL_FOR(total),
+    dims,
+    weakest,
+    answered,
+    complete: qs.length > 0 && answered === qs.length,
+  };
+};
+})();
+
+</script>
+<script>
+(function () {
+// Recommendations shown on the result page (see SPEC.md, contract 3).
+// overall[level] → headline + summary; dims[dimId][level] → title, text, firstStep.
+// Plain text only (no HTML). Latin tool names are left for the renderer to isolate.
+const G = typeof window !== 'undefined' ? window : globalThis;
+
+G.LME_RECS = {
+  overall: {
+    start: {
+      headline: 'נקודת פתיחה טובה לצעד הראשון',
+      summary:
+        'הרבה עסקים קטנים מתחילים בדיוק מכאן, וזה בסדר גמור. לפני שמכניסים כלי AI כדאי לסדר את הבסיס: איפה המידע נמצא ומה חוזר על עצמו כל יום. צעד קטן אחד בכל שבוע כבר מקדם אתכם. אם תרצו, ב-LME נשמח לעזור למפות את הצעדים הראשונים.',
+    },
+    build: {
+      headline: 'הבסיס קיים, עכשיו מחברים',
+      summary:
+        'כבר יש לכם כלים והרגלים שעובדים. השלב הבא הוא לחבר ביניהם, לצמצם עבודה ידנית ולבחור תהליך אחד שבו כדאי לבדוק אם AI חוסך לכם זמן. אם תרצו, ב-LME נשמח לעזור לבחור מאיפה להתחיל.',
+    },
+    scale: {
+      headline: 'העסק שלכם מוכן להאיץ',
+      summary:
+        'ברוב התחומים הבסיס אצלכם כבר חזק: מידע מסודר, תהליכים ברורים וצוות פתוח לכלים חדשים. מכאן אפשר לבנות אוטומציות מתקדמות יותר ולמדוד מה באמת עובד. כדאי להתקדם בצעדים מדודים ולבדוק כל שינוי לפני שמרחיבים אותו. אם תרצו, ב-LME נשמח לחשוב איתכם על השלב הבא.',
+    },
+  },
+
+  dims: {
+    data: {
+      start: {
+        title: 'לרכז את המידע במקום אחד',
+        text:
+          'כשפרטי לקוחות, הזמנות ומחירים מפוזרים בין מחברות, וואטסאפ וקבצים, קשה לראות את התמונה המלאה. כלי AI צריכים מידע מסודר כדי לעזור באמת.',
+        firstStep: 'פתחו גיליון משותף אחד, למשל ב-Google Sheets, ורשמו בו את עשרת הלקוחות האחרונים: שם, טלפון ומה הזמינו.',
+      },
+      build: {
+        title: 'להפוך את המידע לאחיד ונקי',
+        text:
+          'המידע כבר נאסף, אבל אם כל אחד רושם אותו אחרת, קשה לסנן, לחפש ולהעביר לכלים אחרים. מבנה קבוע הוא מה שמאפשר אוטומציה בהמשך.',
+        firstStep: 'בחרו את הטבלה החשובה ביותר וקבעו לה עמודות קבועות ורשימות נפתחות, כך שכולם ירשמו באותה צורה.',
+      },
+      scale: {
+        title: 'לתת למידע לעבוד בשבילכם',
+        text:
+          'כשהמידע מסודר, אפשר לשאול עליו שאלות ולקבל סיכומים במקום לחפש ידנית. זה הזמן לחבר אותו לדוחות קבועים ולכלי AI, בזהירות עם פרטיות הלקוחות.',
+        firstStep: 'הגדירו דוח שבועי אחד קבוע מהנתונים שלכם, שיגיע אליכם בכל יום ראשון.',
+      },
+    },
+
+    process: {
+      start: {
+        title: 'לכתוב איך דברים נעשים היום',
+        text:
+          'כשתהליך קיים רק בראש של מישהו, אי אפשר לשפר אותו או להעביר אותו לכלי. תיעוד פשוט הוא הצעד הראשון לפני כל אוטומציה.',
+        firstStep: 'רשמו שלב אחר שלב תהליך אחד שחוזר כל שבוע, למשל טיפול בפנייה חדשה.',
+      },
+      build: {
+        title: 'לאתר את המשימה שחוזרת הכי הרבה',
+        text:
+          'יש לכם תהליכים מוכרים, אבל חלק מהם עדיין נעשים ידנית שוב ושוב. משימה חוזרת וברורה היא המועמדת הטובה ביותר לאוטומציה ראשונה.',
+        firstStep: 'בחרו משימה ידנית אחת שחוזרת כל יום ובדקו אם Zapier או Make יכולים לבצע אותה.',
+      },
+      scale: {
+        title: 'לחבר תהליכים מקצה לקצה',
+        text:
+          'התהליכים מתועדים וחלקם כבר אוטומטיים. עכשיו אפשר לחבר ביניהם כך שפנייה, הצעת מחיר ומעקב יזרמו בלי העתקה ידנית בין מערכות.',
+        firstStep: 'מפו על דף אחד את מסלול הלקוח מהפנייה ועד התשלום וסמנו איפה מעתיקים ידנית.',
+      },
+    },
+
+    people: {
+      start: {
+        title: 'להתחיל בהיכרות רגועה עם AI',
+        text:
+          'כלים חדשים מצליחים כשהצוות מרגיש בנוח איתם. התנסות קטנה במשימה מוכרת עוזרת להבין מה הכלי יודע לעשות, בלי לחץ ובלי התחייבות.',
+        firstStep: 'נסחו בעזרת ChatGPT או Claude תשובה אחת ללקוח, בלי פרטים אישיים שלו, ובדקו את התוצאה לפני השליחה.',
+      },
+      build: {
+        title: 'להפוך ניסיונות להרגל משותף',
+        text:
+          'חלק מהצוות כבר משתמש בכלים, אבל כל אחד בדרך משלו. כשמשתפים מה עובד, כולם לומדים מזה ונמנעות טעויות חוזרות.',
+        firstStep: 'קבעו פגישת צוות של חצי שעה, שבה כל אחד מראה שימוש אחד ב-AI שעזר בעבודה, ורכזו את הדוגמאות במסמך משותף.',
+      },
+      scale: {
+        title: 'לקבוע כללים ולהוביל מבפנים',
+        text:
+          'הצוות פתוח ומשתמש בכלים. כדי שזה יישאר בטוח ועקבי, צריך כללים ברורים: באילו כלים משתמשים, מה מותר להזין להם ומי אחראי עליהם בעסק.',
+        firstStep: 'כתבו עמוד אחד של כללי שימוש ב-AI בעסק, כולל מה אסור להזין לכלים.',
+      },
+    },
+
+    tools: {
+      start: {
+        title: 'לבחור כלי בסיס אחד ולהתמיד',
+        text:
+          'אין צורך בהרבה מערכות כדי להתחיל. כלי אחד שכולם משתמשים בו באמת, כמו WhatsApp Business או גיליון משותף, שווה יותר מכמה כלים שאף אחד לא פותח.',
+        firstStep: 'הגדירו ב-WhatsApp Business הודעת פתיחה ותשובות מהירות לשאלות הנפוצות.',
+      },
+      build: {
+        title: 'לגרום לכלים לדבר זה עם זה',
+        text:
+          'יש לכם כמה כלים טובים, אבל המידע עובר ביניהם ידנית. חיבור בין המערכות חוסך הקלדה כפולה ומקטין טעויות.',
+        firstStep: 'רשמו את כל הכלים שאתם משתמשים בהם וסמנו בין אילו מהם מעתיקים מידע ידנית.',
+      },
+      scale: {
+        title: 'לבנות מערך כלים מסודר וחכם',
+        text:
+          'הכלים מחוברים ועובדים. בשלב הזה כדאי לבדוק אם מערכת CRM מרכזית עם יכולות AI יכולה להחליף כמה כלים נפרדים ולפשט את העבודה.',
+        firstStep: 'עברו על הכלים שאתם כבר משלמים עליהם ובדקו אילו מהם כוללים יכולות AI שעוד לא הפעלתם.',
+      },
+    },
+  },
+};
+})();
+
+</script>
+<script>
+(function () {
+// UI copy for the AI readiness check (Hebrew, plural "you").
+const G = typeof window !== 'undefined' ? window : globalThis;
+
+G.LME_COPY = {
+  intro: {
+    kicker: 'בדיקה עצמית חינמית',
+    title: 'העסק שלכם מוכן ל-AI?',
+    lede: '12 שאלות קצרות, בלי ידע טכני, ותקבלו כיוון ברור מאיפה כדאי להתחיל.',
+    bullets: [
+      'ציון מוכנות מ-0 עד 100',
+      'איפה אתם עומדים ב-4 תחומים: מידע ונתונים, תהליכים, צוות והרגלים, כלים ומערכות',
+      '3 צעדים ראשונים שמתאימים למצב של העסק שלכם',
+    ],
+    start: 'בואו נתחיל',
+    time: 'בערך 3 דקות · בלי הרשמה',
+  },
+  quiz: {
+    progress: 'שאלה {n} מתוך {total}',
+    back: 'חזרה',
+    next: 'לשאלה הבאה',
+    finish: 'לתוצאות שלי',
+  },
+  result: {
+    scoreLabel: 'ציון המוכנות שלכם',
+    dimsTitle: 'איפה אתם עומדים בכל תחום',
+    recsTitle: 'מאיפה כדאי להתחיל',
+    firstStepLabel: 'צעד ראשון לשבוע הזה:',
+    ctaTitle: 'רוצים לעשות את הצעד הראשון יחד?',
+    ctaText: 'שלחו לנו את התוצאה בוואטסאפ, ונקבע שיחה קצרה, בלי עלות, כדי לחשוב יחד מה הצעד הראשון שהכי נכון לעסק שלכם.',
+    ctaButton: 'שליחת התוצאה בוואטסאפ',
+    ctaDisabled: 'שליחה בוואטסאפ תיפתח בקרוב',
+    restart: 'לעשות את הבדיקה מחדש',
+    share: 'לשתף את הבדיקה',
+    disclaimer: 'זו בדיקה עצמית להתמצאות בלבד, לא ייעוץ ולא אבחון מקצועי, והציון מבוסס רק על התשובות שלכם. התשובות נשמרות רק בדפדפן שלכם עד שתסגרו את הלשונית, ולא נשלחות לשום מקום, אלא אם תבחרו לשלוח את התוצאה בעצמכם בוואטסאפ.',
+  },
+  whatsapp: {
+    template: 'היי, עשיתי את בדיקת המוכנות ל-AI 👋\n' +
+      'הציון שלי: {total} מתוך 100 (רמה: {levelName})\n' +
+      'הציונים לפי תחום: {dimsLine}\n' +
+      'התחומים שהכי כדאי לחזק: {weakestLine}\n' +
+      'אשמח לשיחה קצרה כדי להבין מה הצעד הראשון שנכון לעסק שלי.',
+  },
+};
+})();
+
+</script>
+<script>
+(function () {
+/* LME AI readiness check: per-dimension horizontal bar chart (RTL, inline SVG).
+   G.LME_CHART(container, dims, labels) replaces container's content.
+   Colors come from styles.css (.chart-*); bars grow from the right via
+   transform: scaleX(0 -> 1), so styles.css should set a transition on
+   .chart-bar's transform (and drop it under prefers-reduced-motion). */
+const G = typeof window !== 'undefined' ? window : globalThis;
+
+G.LME_CHART = (function () {
+  const ORDER = ['data', 'process', 'people', 'tools'];
+  // No viewBox: the SVG is laid out in real CSS pixels (horizontal positions in %),
+  // so text keeps its CSS size (>= 14px) on every screen width instead of
+  // shrinking with a scaled viewBox. Each row: label (right) + value (left) on
+  // one line, a full-width track under it.
+  const ROW = 52;         // row height (px)
+  const PAD_Y = 4;
+  const TEXT_Y = 13;      // text line centre inside a row
+  const BAR_Y = 30;       // bar top inside a row
+  const BAR_H = 12;
+
+  function esc(s) {
+    return String(s).replace(/[&<>"']/g, (c) => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[c]));
+  }
+  function clamp(v) {
+    const n = Number(v);
+    if (!isFinite(n)) return 0;
+    return Math.round(Math.min(100, Math.max(0, n)));
+  }
+  function band(v) {
+    return v < 40 ? 'is-low' : v < 70 ? 'is-mid' : 'is-high';
+  }
+  function reducedMotion() {
+    try {
+      return !!(G.matchMedia && G.matchMedia('(prefers-reduced-motion: reduce)').matches);
+    } catch (e) { return false; }
+  }
+
+  return function LME_CHART(container, dims, labels) {
+    if (!container) return;
+    dims = dims || {};
+    labels = labels || G.LME_DIMS || {};
+    const raf = typeof G.requestAnimationFrame === 'function' ? G.requestAnimationFrame.bind(G) : null;
+    const animate = !!raf && typeof container.querySelectorAll === 'function' && !reducedMotion();
+
+    const H = PAD_Y * 2 + ROW * ORDER.length;
+    const summary = [];
+    let rows = '';
+
+    ORDER.forEach((id, i) => {
+      const v = clamp(dims[id]);
+      const label = labels[id] != null ? String(labels[id]) : id;
+      summary.push(label + ' ' + v + ' מתוך 100');
+      const top = PAD_Y + ROW * i;
+      const ty = top + TEXT_Y;
+      const by = top + BAR_Y;
+      const scale = animate ? 0 : 1;
+      rows +=
+        '<g class="chart-row" data-dim="' + id + '">' +
+          '<text class="chart-label" x="100%" y="' + ty + '" direction="rtl" text-anchor="start" dominant-baseline="central">' + esc(label) + '</text>' +
+          '<text class="chart-value" x="0" y="' + ty + '" direction="ltr" text-anchor="start" dominant-baseline="central">' + v + '</text>' +
+          '<rect class="chart-track" x="0" y="' + by + '" width="100%" height="' + BAR_H + '" rx="' + BAR_H / 2 + '"></rect>' +
+          (v > 0
+            ? '<rect class="chart-bar ' + band(v) + '" data-value="' + v + '" x="' + (100 - v) + '%" y="' + by + '" width="' + v + '%" height="' + BAR_H + '" rx="' + BAR_H / 2 + '"' +
+              ' style="transform-box:fill-box;transform-origin:100% 50%;transform:scaleX(' + scale + ')"></rect>'
+            : '') +
+        '</g>';
+    });
+
+    const aria = summary.join(', ');
+    container.innerHTML =
+      '<svg class="chart-svg" width="100%" height="' + H + '" role="img" aria-label="' + esc(aria) + '" xmlns="http://www.w3.org/2000/svg">' +
+        '<title>' + esc(aria) + '</title>' +
+        '<style>:where(.chart-bar){fill:currentColor}:where(.chart-track){fill:none}:where(.chart-label,.chart-value){fill:currentColor}</style>' +
+        rows +
+      '</svg>';
+
+    if (animate) {
+      const bars = container.querySelectorAll('.chart-bar');
+      // Two frames so the scaleX(0) state is painted before the transition starts.
+      raf(() => raf(() => {
+        for (let i = 0; i < bars.length; i++) bars[i].style.transform = 'scaleX(1)';
+      }));
+    }
+  };
+})();
+})();
+
+</script>
+<script>
+/* AI readiness check: flow and DOM (intro -> quiz -> result). See SPEC.md, module 7. */
+// G is scoped inside the IIFE: a top-level `const G` in several classic scripts would collide.
+(function () {
+  const G = typeof window !== 'undefined' ? window : globalThis;
+  if (typeof document === 'undefined') return;
+
+  const STORE_KEY = 'lme-ai-readiness-v1';
+  const DIM_ORDER = ['data', 'process', 'people', 'tools'];
+  const RING_R = 52;
+  const RING_C = 2 * Math.PI * RING_R;
+  const LATIN = /[A-Za-z][A-Za-z0-9 .+\-]*/g;
+
+  let state = { screen: 'intro', index: 0, answers: {} };
+  let advanceTimer = null;
+  let liveEl = null;
+
+  /* ---------- helpers ---------- */
+
+  function esc(s) {
+    return String(s == null ? '' : s)
+      .replace(/&/g, '&amp;')
+      .replace(/</g, '&lt;')
+      .replace(/>/g, '&gt;')
+      .replace(/"/g, '&quot;')
+      .replace(/'/g, '&#39;');
+  }
+
+  // Escape text and isolate Latin runs (brand names etc.) in <bdi>.
+  function txt(s) {
+    const str = String(s == null ? '' : s);
+    let out = '';
+    let last = 0;
+    str.replace(LATIN, function (m, offset) {
+      const core = m.replace(/[ .]+$/, '');
+      out += esc(str.slice(last, offset)) + '<bdi>' + esc(core) + '</bdi>';
+      last = offset + core.length;
+      return m;
+    });
+    return out + esc(str.slice(last));
+  }
+
+  function fill(tpl, vars) {
+    return String(tpl == null ? '' : tpl).replace(/\{(\w+)\}/g, function (m, k) {
+      return Object.prototype.hasOwnProperty.call(vars, k) ? String(vars[k]) : m;
+    });
+  }
+
+  function reducedMotion() {
+    try {
+      return !!(G.matchMedia && G.matchMedia('(prefers-reduced-motion: reduce)').matches);
+    } catch (e) {
+      return false;
+    }
+  }
+
+  function $(id) { return document.getElementById(id); }
+
+  function mods() {
+    return {
+      questions: G.LME_QUESTIONS,
+      score: G.LME_SCORE,
+      levels: G.LME_LEVELS,
+      dims: G.LME_DIMS,
+      recs: G.LME_RECS,
+      copy: G.LME_COPY,
+      chart: G.LME_CHART,
+      config: G.LME_CONFIG || {}
+    };
+  }
+
+  function modulesOk() {
+    const m = mods();
+    return Array.isArray(m.questions) && m.questions.length > 0 &&
+      typeof m.score === 'function' &&
+      m.levels && typeof m.levels === 'object' &&
+      m.dims && typeof m.dims === 'object' &&
+      m.recs && m.recs.overall && m.recs.dims &&
+      m.copy && m.copy.intro && m.copy.quiz && m.copy.result;
+  }
+
+  function showError() {
+    const app = $('app');
+    if (!app) return;
+    app.innerHTML =
+      '<section class="screen"><h1 class="title" tabindex="-1">משהו לא נטען כמו שצריך</h1>' +
+      '<p class="lede">מצטערים, הבדיקה לא נטענה כרגע. נסו לרענן את הדף בעוד רגע.</p></section>';
+  }
+
+  function announce(msg) {
+    if (!liveEl) {
+      liveEl = document.createElement('div');
+      liveEl.setAttribute('aria-live', 'polite');
+      liveEl.setAttribute('role', 'status');
+      liveEl.style.cssText = 'position:absolute;width:1px;height:1px;margin:-1px;padding:0;overflow:hidden;clip:rect(0 0 0 0);white-space:nowrap;border:0;';
+      document.body.appendChild(liveEl);
+    }
+    liveEl.textContent = '';
+    setTimeout(function () { if (liveEl) liveEl.textContent = msg; }, 30);
+  }
+
+  function focusHeading(section) {
+    const h = section && section.querySelector('[data-focus]');
+    if (h) {
+      try { h.focus({ preventScroll: false }); } catch (e) { h.focus(); }
+    }
+  }
+
+  function levelFor(score) {
+    const levels = G.LME_LEVELS || {};
+    const ids = Object.keys(levels);
+    for (let i = 0; i < ids.length; i++) {
+      const l = levels[ids[i]];
+      if (l && score >= l.min && score <= l.max) return ids[i];
+    }
+    return score >= 70 ? 'scale' : score >= 40 ? 'build' : 'start';
+  }
+
+  function brandHtml() {
+    return '<p class="brand">' + txt('LME · הטמעת מערכות מידע ו-AI לעסקים') + '</p>';
+  }
+
+  /* ---------- persistence ---------- */
+
+  function save() {
+    try {
+      G.sessionStorage.setItem(STORE_KEY, JSON.stringify(state));
+    } catch (e) { /* storage unavailable: keep going */ }
+  }
+
+  function clearSaved() {
+    try { G.sessionStorage.removeItem(STORE_KEY); } catch (e) { /* ignore */ }
+  }
+
+  function load() {
+    let raw = null;
+    try { raw = G.sessionStorage.getItem(STORE_KEY); } catch (e) { return; }
+    if (!raw) return;
+    try {
+      const s = JSON.parse(raw);
+      const qs = G.LME_QUESTIONS;
+      const answers = {};
+      if (s && s.answers && typeof s.answers === 'object') {
+        qs.forEach(function (q) {
+          const v = s.answers[q.id];
+          if (typeof v === 'number' && q.options.some(function (o) { return o.value === v; })) answers[q.id] = v;
+        });
+      }
+      let screen = ['intro', 'quiz', 'result'].indexOf(s.screen) >= 0 ? s.screen : 'intro';
+      let index = Math.max(0, Math.min(qs.length - 1, parseInt(s.index, 10) || 0));
+      if (screen === 'result' && Object.keys(answers).length === 0) screen = 'intro';
+      state = { screen: screen, index: index, answers: answers };
+    } catch (e) { /* corrupt: start fresh */ }
+  }
+
+  /* ---------- screens ---------- */
+
+  function show(name) {
+    ['intro', 'quiz', 'result'].forEach(function (n) {
+      const el = $('screen-' + n);
+      if (el) el.hidden = n !== name;
+    });
+  }
+
+  function renderIntro() {
+    const c = G.LME_COPY.intro;
+    const sec = $('screen-intro');
+    if (!sec) return;
+    const bullets = (c.bullets || []).map(function (b) { return '<li>' + txt(b) + '</li>'; }).join('');
+    sec.innerHTML =
+      (c.kicker ? '<p class="kicker">' + txt(c.kicker) + '</p>' : '') +
+      '<h1 class="title" tabindex="-1" data-focus>' + txt(c.title) + '</h1>' +
+      (c.lede ? '<p class="lede">' + txt(c.lede) + '</p>' : '') +
+      (bullets ? '<ul class="bullets">' + bullets + '</ul>' : '') +
+      '<div class="actions"><button type="button" class="btn btn-primary" data-act="start">' + txt(c.start) + '</button></div>' +
+      (c.time ? '<p class="meta">' + txt(c.time) + '</p>' : '') +
+      brandHtml();
+    show('intro');
+    return sec;
+  }
+
+  function renderQuiz() {
+    const qs = G.LME_QUESTIONS;
+    const c = G.LME_COPY.quiz;
+    const sec = $('screen-quiz');
+    if (!sec) return;
+    const i = state.index;
+    const q = qs[i];
+    const n = qs.length;
+    const chosen = state.answers[q.id];
+    const answered = typeof chosen === 'number';
+    const pct = Math.round(((i + 1) / n) * 100);
+    const progressText = fill(c.progress, { n: i + 1, total: n });
+    const isLast = i === n - 1;
+
+    const opts = q.options.map(function (o, k) {
+      const sel = o.value === chosen;
+      return '<button type="button" class="option' + (sel ? ' is-selected' : '') + '" aria-pressed="' + sel +
+        '" data-value="' + esc(o.value) + '">' +
+        '<span class="option-key" aria-hidden="true">' + (k + 1) + '</span>' +
+        '<span class="option-label">' + txt(o.label) + '</span></button>';
+    }).join('');
+
+    sec.innerHTML =
+      '<div class="progress" role="progressbar" aria-valuemin="0" aria-valuemax="' + n + '" aria-valuenow="' + (i + 1) +
+        '" aria-label="' + esc(progressText) + '"><div class="progress-bar" style="width:' + pct + '%"></div></div>' +
+      '<p class="progress-text">' + txt(progressText) + '</p>' +
+      '<h1 class="q-text" id="q-text" tabindex="-1" data-focus>' + txt(q.text) + '</h1>' +
+      (q.hint ? '<p class="q-hint">' + txt(q.hint) + '</p>' : '') +
+      '<div class="options" role="group" aria-labelledby="q-text">' + opts + '</div>' +
+      '<div class="nav">' +
+        '<button type="button" class="btn btn-ghost" data-act="back">' + txt(c.back) + '</button>' +
+        '<button type="button" class="btn btn-primary" data-act="next"' + (answered ? '' : ' disabled') + '>' +
+          txt(isLast ? c.finish : c.next) + '</button>' +
+      '</div>';
+    show('quiz');
+    return sec;
+  }
+
+  function buildWhatsApp(result) {
+    const m = mods();
+    const number = String(m.config.whatsapp || '').replace(/\D/g, '');
+    if (!number) return null;
+    const dimsLine = DIM_ORDER.map(function (d) { return m.dims[d] + ' ' + result.dims[d]; }).join(' · ');
+    const weakestLine = result.weakest.slice(0, 2).map(function (d) { return m.dims[d]; }).join(', ');
+    const lvl = m.levels[result.level];
+    const msg = fill((m.copy.whatsapp && m.copy.whatsapp.template) || '', {
+      total: result.total,
+      levelName: lvl ? lvl.name : '',
+      dimsLine: dimsLine,
+      weakestLine: weakestLine
+    });
+    return 'https://wa.me/' + number + '?text=' + encodeURIComponent(msg);
+  }
+
+  function renderResult() {
+    const m = mods();
+    const c = m.copy.result;
+    const sec = $('screen-result');
+    if (!sec) return;
+    const r = m.score(state.answers, m.questions);
+    const lvl = m.levels[r.level] || { name: '' };
+    const overall = m.recs.overall[r.level] || {};
+    const dash = (Math.max(0, Math.min(100, r.total)) / 100) * RING_C;
+
+    const recs = (r.weakest || []).slice(0, 3).map(function (d) {
+      const dl = levelFor(r.dims[d]);
+      const rec = (m.recs.dims[d] && m.recs.dims[d][dl]) || {};
+      return '<li class="rec">' +
+        '<p class="rec-dim">' + txt(m.dims[d]) + ' · ' + esc(r.dims[d]) + '</p>' +
+        '<h3 class="rec-title">' + txt(rec.title) + '</h3>' +
+        '<p class="rec-text">' + txt(rec.text) + '</p>' +
+        (rec.firstStep ? '<p class="rec-step"><strong>' + txt(c.firstStepLabel) + '</strong> ' + txt(rec.firstStep) + '</p>' : '') +
+        '</li>';
+    }).join('');
+
+    const wa = buildWhatsApp(r);
+    const ctaBtn = wa
+      ? '<a class="btn btn-wa" href="' + esc(wa) + '" target="_blank" rel="noopener">' + txt(c.ctaButton) +
+        '<span class="sr-only"> (נפתח בחלון חדש)</span></a>'
+      : '<button type="button" class="btn btn-wa" disabled>' + txt(c.ctaDisabled) + '</button>';
+
+    sec.innerHTML =
+      '<div class="score">' +
+        '<svg class="score-ring" viewBox="0 0 120 120" width="160" height="160" aria-hidden="true" focusable="false">' +
+          '<circle cx="60" cy="60" r="' + RING_R + '" fill="none" stroke="var(--ring-track, currentColor)" stroke-opacity="0.15" stroke-width="10"></circle>' +
+          '<circle class="score-ring-value" cx="60" cy="60" r="' + RING_R + '" fill="none" stroke="var(--accent, #FF6A3D)" stroke-width="10" stroke-linecap="round"' +
+            ' transform="rotate(-90 60 60)" stroke-dasharray="0 ' + RING_C.toFixed(2) + '" data-dash="' + dash.toFixed(2) + '"></circle>' +
+        '</svg>' +
+        '<p class="kicker">' + txt(c.scoreLabel) + '</p>' +
+        '<p class="score-num" aria-hidden="true">' + esc(r.total) + '</p>' +
+        // The heading carries the full result for screen readers (focus + live announcement).
+        '<h1 class="score-level" tabindex="-1" data-focus>' +
+          '<span class="sr-only">' + txt(c.scoreLabel) + ' ' + esc(r.total) + ' מתוך 100, רמה: </span>' +
+          '<span class="score-level-name">' + txt(lvl.name) + '</span></h1>' +
+      '</div>' +
+      '<div class="summary">' +
+        (overall.headline ? '<h2 class="title">' + txt(overall.headline) + '</h2>' : '') +
+        (overall.summary ? '<p class="lede">' + txt(overall.summary) + '</p>' : '') +
+      '</div>' +
+      '<h2 class="kicker">' + txt(c.dimsTitle) + '</h2>' +
+      '<div class="chart"></div>' +
+      '<h2 class="kicker">' + txt(c.recsTitle) + '</h2>' +
+      '<ol class="recs">' + recs + '</ol>' +
+      '<div class="cta">' +
+        '<h2 class="cta-title">' + txt(c.ctaTitle) + '</h2>' +
+        '<p class="cta-text">' + txt(c.ctaText) + '</p>' + ctaBtn +
+      '</div>' +
+      '<div class="actions">' +
+        '<button type="button" class="btn btn-ghost" data-act="restart">' + txt(c.restart) + '</button>' +
+        '<button type="button" class="btn btn-ghost" data-act="share">' + txt(c.share) + '</button>' +
+      '</div>' +
+      (c.disclaimer ? '<p class="disclaimer">' + txt(c.disclaimer) + '</p>' : '') +
+      brandHtml();
+
+    const chartEl = sec.querySelector('.chart');
+    let chartOk = false;
+    if (typeof m.chart === 'function') {
+      try { m.chart(chartEl, r.dims, m.dims); chartOk = true; } catch (e) { chartOk = false; }
+    }
+    if (!chartOk && chartEl) {
+      chartEl.innerHTML = '<ul>' + DIM_ORDER.map(function (d) {
+        return '<li>' + txt(m.dims[d]) + ': ' + esc(r.dims[d]) + '</li>';
+      }).join('') + '</ul>';
+    }
+
+    show('result');
+
+    const ring = sec.querySelector('.score-ring-value');
+    if (ring) {
+      const target = ring.getAttribute('data-dash') + ' ' + RING_C.toFixed(2);
+      if (reducedMotion()) {
+        ring.setAttribute('stroke-dasharray', target);
+      } else {
+        ring.style.transition = 'stroke-dasharray 1s cubic-bezier(.2,.8,.2,1)';
+        const raf = G.requestAnimationFrame || function (f) { return setTimeout(f, 16); };
+        raf(function () { raf(function () { ring.setAttribute('stroke-dasharray', target); ring.style.strokeDasharray = target; }); });
+      }
+    }
+    return sec;
+  }
+
+  function render(opts) {
+    try {
+      if (!modulesOk()) { showError(); return; }
+      let sec;
+      if (state.screen === 'quiz') sec = renderQuiz();
+      else if (state.screen === 'result') sec = renderResult();
+      else sec = renderIntro();
+      if (opts && opts.focus && sec) {
+        focusHeading(sec);
+        const h = sec.querySelector('[data-focus]');
+        if (h && opts.announce !== false) announce(h.textContent);
+      }
+    } catch (e) {
+      if (G.console) G.console.error(e);
+      showError();
+    }
+  }
+
+  /* ---------- actions ---------- */
+
+  function cancelAdvance() {
+    if (advanceTimer) { clearTimeout(advanceTimer); advanceTimer = null; }
+  }
+
+  function go(screen, index) {
+    cancelAdvance();
+    state.screen = screen;
+    if (typeof index === 'number') state.index = index;
+    save();
+    render({ focus: true });
+    if (screen === 'quiz') {
+      const qs = G.LME_QUESTIONS;
+      const p = fill(G.LME_COPY.quiz.progress, { n: state.index + 1, total: qs.length });
+      announce(p + '. ' + qs[state.index].text);
+    }
+  }
+
+  function next() {
+    const qs = G.LME_QUESTIONS;
+    const q = qs[state.index];
+    if (typeof state.answers[q.id] !== 'number') return;
+    if (state.index < qs.length - 1) go('quiz', state.index + 1);
+    else go('result');
+  }
+
+  function back() {
+    if (state.index > 0) go('quiz', state.index - 1);
+    else go('intro');
+  }
+
+  function choose(k) {
+    const q = G.LME_QUESTIONS[state.index];
+    const opt = q && q.options[k];
+    if (!opt) return;
+    cancelAdvance();
+    state.answers[q.id] = opt.value;
+    save();
+    // Update the current screen in place (keep focus on the chosen option).
+    const sec = $('screen-quiz');
+    if (sec) {
+      sec.querySelectorAll('.option').forEach(function (b, idx) {
+        const on = idx === k;
+        b.classList.toggle('is-selected', on);
+        b.setAttribute('aria-pressed', String(on));
+      });
+      const nb = sec.querySelector('[data-act="next"]');
+      if (nb) nb.disabled = false;
+    }
+    const idx = state.index;
+    const doAdvance = function () {
+      advanceTimer = null;
+      if (state.screen === 'quiz' && state.index === idx) next();
+    };
+    if (reducedMotion()) doAdvance();
+    else advanceTimer = setTimeout(doAdvance, 250);
+  }
+
+  function restart() {
+    cancelAdvance();
+    state = { screen: 'intro', index: 0, answers: {} };
+    clearSaved();
+    render({ focus: true });
+  }
+
+  function share(btn) {
+    const c = G.LME_COPY;
+    const url = String(G.location && G.location.href || '').split('#')[0];
+    const title = (c.intro && c.intro.title) || document.title;
+    const done = function (msg) {
+      if (!btn) return;
+      const orig = btn.innerHTML;
+      btn.textContent = msg;
+      announce(msg);
+      setTimeout(function () { btn.innerHTML = orig; }, 2000);
+    };
+    try {
+      if (G.navigator && typeof G.navigator.share === 'function') {
+        G.navigator.share({ title: title, url: url }).catch(function () { /* cancelled */ });
+        return;
+      }
+      if (G.navigator && G.navigator.clipboard && G.navigator.clipboard.writeText) {
+        G.navigator.clipboard.writeText(url).then(
+          function () { done('הקישור הועתק'); },
+          function () { done('לא הצלחנו להעתיק את הקישור'); }
+        );
+        return;
+      }
+      done('לא הצלחנו להעתיק את הקישור');
+    } catch (e) {
+      done('לא הצלחנו להעתיק את הקישור');
+    }
+  }
+
+  function onClick(e) {
+    const t = e.target && e.target.closest ? e.target.closest('button, a') : null;
+    if (!t || t.disabled) return;
+    const opt = t.classList.contains('option') ? t : null;
+    if (opt) {
+      const all = Array.prototype.slice.call(t.parentNode.querySelectorAll('.option'));
+      choose(all.indexOf(t));
+      return;
+    }
+    const act = t.getAttribute('data-act');
+    if (!act) return;
+    if (act === 'start') {
+      // Resume at the first unanswered question.
+      const qs = G.LME_QUESTIONS;
+      let i = 0;
+      while (i < qs.length - 1 && typeof state.answers[qs[i].id] === 'number') i++;
+      go('quiz', i);
+    } else if (act === 'next') next();
+    else if (act === 'back') back();
+    else if (act === 'restart') restart();
+    else if (act === 'share') share(t);
+  }
+
+  function onKey(e) {
+    if (state.screen !== 'quiz' || e.altKey || e.ctrlKey || e.metaKey) return;
+    const tag = e.target && e.target.tagName;
+    if (tag === 'INPUT' || tag === 'TEXTAREA' || tag === 'SELECT') return;
+    const q = G.LME_QUESTIONS[state.index];
+    if (/^[1-9]$/.test(e.key)) {
+      const k = parseInt(e.key, 10) - 1;
+      if (k < q.options.length) { e.preventDefault(); choose(k); }
+    } else if (e.key === 'ArrowLeft') {
+      e.preventDefault(); next();
+    } else if (e.key === 'ArrowRight') {
+      e.preventDefault(); back();
+    } else if (e.key === 'Enter') {
+      if (tag === 'BUTTON' || tag === 'A') return; // native activation
+      e.preventDefault(); next();
+    }
+  }
+
+  /* ---------- init ---------- */
+
+  function init() {
+    try {
+      if (!$('app')) return;
+      if (!modulesOk()) { showError(); return; }
+      load();
+      const app = $('app');
+      app.addEventListener('click', onClick);
+      document.addEventListener('keydown', onKey);
+      render({ focus: false });
+    } catch (e) {
+      if (G.console) G.console.error(e);
+      showError();
+    }
+  }
+
+  G.LME_APP = {
+    get state() { return state; },
+    render: function () { render({ focus: false }); },
+    esc: esc,
+    txt: txt
+  };
+
+  if (document.readyState === 'loading') document.addEventListener('DOMContentLoaded', init);
+  else init();
+})();
+
+</script>
+
+</body></html>
